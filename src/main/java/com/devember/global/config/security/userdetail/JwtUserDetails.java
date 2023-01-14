@@ -1,6 +1,6 @@
 package com.devember.global.config.security.userdetail;
 
-import com.polymorph.pipeline.user.entity.User;
+import com.devember.devember.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

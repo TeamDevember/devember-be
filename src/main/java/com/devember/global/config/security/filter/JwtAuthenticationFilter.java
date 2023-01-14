@@ -1,7 +1,7 @@
 package com.devember.global.config.security.filter;
 
-import com.polymorph.pipeline.config.security.service.CustomUserDetailsService;
-import com.polymorph.pipeline.utils.JwtUtils;
+import com.devember.global.config.security.service.CustomUserDetailsService;
+import com.devember.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

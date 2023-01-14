@@ -1,11 +1,11 @@
 package com.devember.global.config.security;
 
-import com.polymorph.pipeline.config.security.filter.JwtAuthenticationFilter;
-import com.polymorph.pipeline.config.security.handler.JwtAccessDeniedHandler;
-import com.polymorph.pipeline.config.security.handler.JwtAuthenticationEntryPoint;
-import com.polymorph.pipeline.config.security.service.CustomUserDetailsService;
-import com.polymorph.pipeline.user.repository.UserRepository;
-import com.polymorph.pipeline.utils.JwtUtils;
+import com.devember.devember.user.repository.UserRepository;
+import com.devember.global.config.security.filter.JwtAuthenticationFilter;
+import com.devember.global.config.security.handler.JwtAccessDeniedHandler;
+import com.devember.global.config.security.handler.JwtAuthenticationEntryPoint;
+import com.devember.global.config.security.service.CustomUserDetailsService;
+import com.devember.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

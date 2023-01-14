@@ -30,7 +30,7 @@ public class User extends BaseEntity {
 	private UUID id;
 
 	private String email;
-	private String nickname;
+	private String name;
 	private String password;
 
 	@Enumerated(EnumType.STRING)
@@ -51,7 +51,7 @@ public class User extends BaseEntity {
 
 	public static User from(JoinDto.Request request){
 		return User.builder().email(request.getEmail())
-				.nickname(request.getNickname())
+				.name(request.getNickname())
 				.userStatus(UserStatus.ACTIVE)
 				.password(request.getPassword())
 				.build();

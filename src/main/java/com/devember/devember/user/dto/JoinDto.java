@@ -26,7 +26,7 @@ public class JoinDto {
 
 		public static Response from(User user){
 			return Response.builder()
-					.nickname(user.getNickname())
+					.nickname(user.getName())
 					.build();
 		}
 	}

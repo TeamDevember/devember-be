@@ -1,8 +1,8 @@
 package com.devember.global.config.security.service;
 
-import com.polymorph.pipeline.config.security.userdetail.JwtUserDetails;
-import com.polymorph.pipeline.user.entity.User;
-import com.polymorph.pipeline.user.repository.UserRepository;
+import com.devember.devember.user.entity.User;
+import com.devember.devember.user.repository.UserRepository;
+import com.devember.global.config.security.userdetail.JwtUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -39,7 +39,7 @@ public class UserDto {
 		public static JoinResponse from(User user){
 			return JoinResponse.builder()
 					.name(user.getName())
-					.nickname(user.getNickname())
+					.nickname(user.getName())
 					.createdAt(user.getCreatedAt())
 					.build();
 		}
