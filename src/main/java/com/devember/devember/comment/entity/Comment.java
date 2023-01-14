@@ -2,15 +2,12 @@ package com.devember.devember.comment.entity;
 
 import com.devember.devember.comment.dto.CommentDto;
 import com.devember.devember.user.entity.User;
-import com.devember.global.entity.BaseEntity;
+import com.devember.devember.entity.BaseEntity;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter

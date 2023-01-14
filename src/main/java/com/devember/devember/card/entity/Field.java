@@ -1,16 +1,14 @@
 package com.devember.devember.card.entity;
 
-import com.devember.global.entity.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.devember.devember.entity.BaseEntity;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Builder
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Field extends BaseEntity {
@@ -19,8 +17,15 @@ public class Field extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne
+	@OneToOne
 	private ProfileCard profileCard;
 
 	private String name;
+
+
+	public static Field from(String name){
+		return Field.builder()
+				.name(name)
+				.build();
+	}
 }

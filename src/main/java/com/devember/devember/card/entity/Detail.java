@@ -1,6 +1,6 @@
 package com.devember.devember.card.entity;
 
-import com.devember.global.entity.BaseEntity;
+import com.devember.devember.entity.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

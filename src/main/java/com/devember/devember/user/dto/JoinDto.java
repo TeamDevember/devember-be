@@ -21,7 +21,6 @@ public class JoinDto {
 	@Getter
 	@Setter
 	public static class Response {
-		private String name;
 		private String nickname;
 
 		public static Response from(User user){

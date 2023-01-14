@@ -4,7 +4,7 @@ package com.devember.devember.user.entity;
 import com.devember.devember.card.entity.ProfileCard;
 import com.devember.devember.user.dto.JoinDto;
 import com.devember.devember.user.type.UserStatus;
-import com.devember.global.entity.BaseEntity;
+import com.devember.devember.entity.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +30,7 @@ public class User extends BaseEntity {
 	private UUID id;
 
 	private String email;
+	private String nickname;
 	private String name;
 	private String password;
 

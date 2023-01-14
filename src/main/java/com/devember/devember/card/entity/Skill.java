@@ -1,16 +1,14 @@
 package com.devember.devember.card.entity;
 
-import com.devember.global.entity.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.devember.devember.entity.BaseEntity;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Builder
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Skill extends BaseEntity {
@@ -23,4 +21,12 @@ public class Skill extends BaseEntity {
 	private ProfileCard profileCard;
 
 	private String  name;
+
+	public static Skill from(String name){
+		return Skill.builder()
+				.name(name)
+				.build();
+	}
+
+
 }

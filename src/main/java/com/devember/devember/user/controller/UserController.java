@@ -4,8 +4,8 @@ import com.devember.devember.user.dto.JoinDto;
 import com.devember.devember.user.dto.LoginDto;
 import com.devember.devember.user.entity.User;
 import com.devember.devember.user.service.UserService;
-import com.devember.global.utils.CookieUtils;
-import com.devember.global.utils.JwtUtils;
+import com.devember.devember.utils.CookieUtils;
+import com.devember.devember.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -70,23 +70,23 @@ public class UserController {
 		return ResponseEntity.ok().body(res);
 	}
 
-	@PostMapping("/social-login")
-	public ResponseEntity socialLogin(
-			HttpServletResponse response,
-			@RequestBody LoginDto.SocialRequest loginDto
-	) throws Exception {
-		log.info("status = {}", loginDto.getStatus());
-		log.info("token = {}", loginDto.getToken());
-		Authentication authentication = userService.socialLogin(loginDto.getToken(), loginDto.getStatus());
-
-		String accessToken = generateToken(response, authentication);
-
-		LoginDto.Response res = LoginDto.Response.builder()
-				.token(accessToken)
-				.build();
-
-		return ResponseEntity.ok().body(res);
-	}
+//	@PostMapping("/social-login")
+//	public ResponseEntity socialLogin(
+//			HttpServletResponse response,
+//			@RequestBody LoginDto.SocialRequest loginDto
+//	) throws Exception {
+//		log.info("status = {}", loginDto.getStatus());
+//		log.info("token = {}", loginDto.getToken());
+//		Authentication authentication = userService.socialLogin(loginDto.getToken(), loginDto.getStatus());
+//
+//		String accessToken = generateToken(response, authentication);
+//
+//		LoginDto.Response res = LoginDto.Response.builder()
+//				.token(accessToken)
+//				.build();
+//
+//		return ResponseEntity.ok().body(res);
+//	}
 
 	@GetMapping("/email-auth")
 	public ResponseEntity<?> auth(String id) {
