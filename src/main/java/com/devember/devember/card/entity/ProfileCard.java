@@ -23,16 +23,16 @@ public class ProfileCard extends BaseEntity {
 	@OneToOne
 	private User user;
 
-	@OneToMany(mappedBy = "profileCard")
+	@OneToMany(mappedBy = "profileCard",cascade = CascadeType.ALL)
 	private Set<Sns> snsSet = new HashSet<>();
 
 	@OneToOne(cascade = CascadeType.ALL)
 	private Detail detail;
 
-	@OneToMany(mappedBy = "profileCard")
+	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
 	private Set<Skill> skillSet = new HashSet<>();
 
-	@OneToOne(mappedBy = "profileCard")
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	private Field field;
 
 

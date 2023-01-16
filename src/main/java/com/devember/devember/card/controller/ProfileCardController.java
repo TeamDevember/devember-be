@@ -4,6 +4,7 @@ package com.devember.devember.card.controller;
 import com.devember.devember.card.dto.ProfileCardDto;
 import com.devember.devember.card.service.ProfileCardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +23,7 @@ public class ProfileCardController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> read(@PathVariable Long id){
-		profileCardService.read(id);
-		return ResponseEntity.ok().build();
+		return new ResponseEntity<>(profileCardService.read(id), HttpStatus.OK);
 	}
 
 	@PostMapping("/snss")
@@ -68,5 +68,22 @@ public class ProfileCardController {
 		return ResponseEntity.ok().build();
 	}
 
+	@DeleteMapping("/snss")
+	public ResponseEntity deleteSns(@RequestBody ProfileCardDto.DeleteSns request){
+		profileCardService.deleteSns(request);
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping("/skills")
+	public ResponseEntity deleteSns(@RequestBody ProfileCardDto.DeleteSkill request){
+		profileCardService.deleteSkill(request);
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping("/fields")
+	public ResponseEntity deleteSns(@RequestBody ProfileCardDto.DeleteField request){
+		profileCardService.deleteField(request);
+		return ResponseEntity.ok().build();
+	}
 
 }

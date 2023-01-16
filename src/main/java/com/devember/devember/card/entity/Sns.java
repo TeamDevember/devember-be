@@ -17,7 +17,7 @@ public class Sns extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	private ProfileCard profileCard;
 
 	private String name;

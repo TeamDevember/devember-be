@@ -11,4 +11,5 @@ public interface FieldRepository extends JpaRepository<Field, Long> {
 
 	Optional<Field> findByProfileCard(ProfileCard pc);
 	Optional<Field> findByName(String name);
+	Optional<Field> findByProfileCard_User(User user);
 }

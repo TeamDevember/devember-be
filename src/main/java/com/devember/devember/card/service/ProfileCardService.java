@@ -12,6 +12,7 @@ import com.devember.devember.user.type.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ public class ProfileCardService {
 
 	// TODO: USER 권한 설정 필요
 
+	@Transactional
 	public void createProfileCard(ProfileCardDto.CardRequest request) {
 
 		User user = userRepository.findById(request.getUser().getId())
@@ -43,7 +45,7 @@ public class ProfileCardService {
 		profileCardRepository.save(pc);
 	}
 
-
+	@Transactional
 	public void addSns(ProfileCardDto.SnsRequest request) {
 
 		User user = userRepository.findById(request.getUser().getId())
@@ -67,7 +69,7 @@ public class ProfileCardService {
 		Set<Sns> snsSet = pc.getSnsSet();
 	}
 
-
+	@Transactional
 	public void addSkill(ProfileCardDto.SkillRequest request) {
 
 		User user = userRepository.findById(request.getUser().getId())
@@ -90,6 +92,7 @@ public class ProfileCardService {
 		profileCardRepository.save(pc);
 	}
 
+	@Transactional
 	public void addField(ProfileCardDto.FieldRequest request) {
 
 		// 유저 검토
@@ -109,20 +112,20 @@ public class ProfileCardService {
 		} else {
 			field = Field.from(request.getField());
 		}
-		field.setProfileCard(pc);
 		pc.setField(field);
 		profileCardRepository.save(pc);
 
 	}
 
-	public void read(Long id) {
-		ProfileCard profileCard = profileCardRepository.findById(id)
+	@Transactional
+	public ProfileCardDto.ReadResponse read(Long id) {
+		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
-		profileCard.getDetail();
-
+		return ProfileCardDto.ReadResponse.from(pc);
 	}
 
+	@Transactional
 	public void addDetail(ProfileCardDto.DetailRequest request) {
 		User user = userRepository.findById(request.getUser().getId())
 				.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -143,4 +146,27 @@ public class ProfileCardService {
 		pc.setDetail(detail);
 		profileCardRepository.save(pc);
 	}
+
+	public void deleteSns(ProfileCardDto.DeleteSns request){
+		Sns sns = snsRepository.findByName(request.getSns())
+				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+		snsRepository.delete(sns);
+	}
+
+	public void deleteSkill(ProfileCardDto.DeleteSkill request){
+		Skill sns = skillRepository.findByName(request.getSkill())
+				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+		skillRepository.delete(sns);
+	}
+	public void deleteField(ProfileCardDto.DeleteField request){
+		User user = userRepository.findById(request.getUser().getId()).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+		ProfileCard pc = profileCardRepository.findByUser(user).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+
+		//TODO: 다른 방법 검토
+		pc.setField(null);
+		profileCardRepository.save(pc);
+	}
 }
+
+
