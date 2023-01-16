@@ -141,7 +141,7 @@ public class UserService {
 //					.email(email)
 //					.role(Role.ANONYMOUS)
 //					.createType(CreateType.valueOf(status))
-//					.userStatus(UserStatus.UNACTIVE)
+//					.userStatus(CardStatus.UNACTIVE)
 //					.build()
 //			);
 //		}

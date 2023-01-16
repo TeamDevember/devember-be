@@ -7,15 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 public class ProfileCardDto {
 
 	@Getter
 	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class createCard {
+	public static class CardRequest {
 
 		private User user;
 
@@ -25,11 +23,11 @@ public class ProfileCardDto {
 	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class snsUpdate {
+	public static class SnsRequest {
 
 		private User user;
 
-		private String name;
+		private String sns;
 		private String account;
 
 	}
@@ -38,10 +36,10 @@ public class ProfileCardDto {
 	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class skillUpdate {
+	public static class SkillRequest {
 
 		private User user;
-		private List<String> skillList;
+		private String skill;
 
 	}
 
@@ -49,12 +47,33 @@ public class ProfileCardDto {
 	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class fieldUpdate {
+	public static class FieldRequest {
 
 		private User user;
 		private String field;
 
 	}
+//
+//	@Getter
+//	@Setter
+//	@NoArgsConstructor
+//	@AllArgsConstructor
+//	public static class Response {
+//
+//		private String ;
+//		private String ;
+//		private String ;
+//		private String ;
+//		private String ;
+//		private String ;
+//		private String ;
+//		private String  ;
+//		private String field;
+//		private List<String> skillList;
+//		private List<String> snsList;
+//
+//
+//	}
 
 
 }

@@ -1,12 +1,12 @@
 package com.devember.devember.card.entity;
 
-import com.devember.devember.card.dto.ProfileCardDto;
 import com.devember.devember.entity.BaseEntity;
 import com.devember.devember.user.entity.User;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -24,13 +24,13 @@ public class ProfileCard extends BaseEntity {
 	private User user;
 
 	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
-	private List<Sns> snsList;
+	private Set<Sns> snsSet = new HashSet<>();
 
 	@OneToOne
 	private Detail detail;
 
 	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
-	private List<Skill> skillList;
+	private Set<Skill> skillSet = new HashSet<>();
 
 	@OneToOne(mappedBy = "profileCard", cascade = CascadeType.ALL)
 	private Field field;
@@ -42,27 +42,12 @@ public class ProfileCard extends BaseEntity {
 				.build();
 	}
 
-	public void updateSns(ProfileCardDto.snsUpdate request) {
-
-
-
-	}
-//
-//	public void updateSkillList(ProfileCardDto.skillUpdate request) {
-//
-//		List<Skill> skillList = new ArrayList<>();
-//		List<String> skills = request.getSkill();
-//
-//		for (String skill : skills) {
-//			skillList.add(Skill.from(skill));
-//		}
-//
-//		this.skillList = skillList;
-//	}
-
-	public void updateField(ProfileCardDto.fieldUpdate request) {
-		this.field = Field.from(request.getField());
+	public void addSns(Sns sns){
+		this.snsSet.add(sns);
 	}
 
+	public void addSkill(Skill skill){
+		this.skillSet.add(skill);
+	}
 
 }
