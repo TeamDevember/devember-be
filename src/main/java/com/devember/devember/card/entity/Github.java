@@ -1,10 +1,8 @@
-package com.devember.devember.github.entity;
+package com.devember.devember.card.entity;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.devember.devember.entity.BaseEntity;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -12,17 +10,17 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
-public class Github {
+public class Github extends BaseEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	private String name;
+	private String Login;
 
 	@Column(name = "profile_image_url")
 	private String profileImageUrl;
@@ -30,10 +28,10 @@ public class Github {
 	private String url;
 
 	@Column(name = "followers_url")
-	private String followersUrl;
+	private Long followersUrl;
 
 	@Column(name = "following_url")
-	private String followingUrl;
+	private Long followingUrl;
 
 	private String location;
 

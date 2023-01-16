@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RequestMapping("/cards")
 @RestController
 @RequiredArgsConstructor
@@ -69,21 +71,26 @@ public class ProfileCardController {
 	}
 
 	@DeleteMapping("/snss")
-	public ResponseEntity deleteSns(@RequestBody ProfileCardDto.DeleteSns request){
+	public ResponseEntity<?> deleteSns(@RequestBody ProfileCardDto.DeleteSns request){
 		profileCardService.deleteSns(request);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/skills")
-	public ResponseEntity deleteSns(@RequestBody ProfileCardDto.DeleteSkill request){
+	public ResponseEntity<?> deleteSns(@RequestBody ProfileCardDto.DeleteSkill request){
 		profileCardService.deleteSkill(request);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/fields")
-	public ResponseEntity deleteSns(@RequestBody ProfileCardDto.DeleteField request){
+	public ResponseEntity<?> deleteSns(@RequestBody ProfileCardDto.DeleteField request){
 		profileCardService.deleteField(request);
 		return ResponseEntity.ok().build();
 	}
 
+	@PostMapping("/github/{id}")
+	public ResponseEntity<?> saveGithub(@PathVariable String id) throws IOException {
+		profileCardService.saveGithubInfo(id);
+		return ResponseEntity.ok().build();
+	}
 }

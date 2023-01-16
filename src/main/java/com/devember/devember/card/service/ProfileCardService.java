@@ -10,12 +10,20 @@ import com.devember.devember.user.exception.UserException;
 import com.devember.devember.user.repository.UserRepository;
 import com.devember.devember.user.type.UserErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProfileCardService {
@@ -26,6 +34,7 @@ public class ProfileCardService {
 	private final SkillRepository skillRepository;
 	private final FieldRepository fieldRepository;
 	private final DetailRepository detailRepository;
+	private final GithubRepository githubRepository;
 
 	// TODO: USER 권한 설정 필요
 
@@ -166,6 +175,40 @@ public class ProfileCardService {
 		//TODO: 다른 방법 검토
 		pc.setField(null);
 		profileCardRepository.save(pc);
+	}
+
+
+	public void saveGithubInfo(String githubId) throws IOException {
+		URL url = new URL("https://api.github.com/users/" + githubId);
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
+
+		String result = br.readLine();
+
+		JSONObject jsonObject = new JSONObject(result);
+
+
+		String name = jsonObject.getString("name");
+		String login = jsonObject.getString("login");
+		Long id = jsonObject.getLong("id");
+		String githubUrl = jsonObject.getString("url");
+		Long followers = jsonObject.getLong("followers");
+		Long following = jsonObject.getLong("following");
+		String location = jsonObject.getString("location");
+		String imageUrl = jsonObject.getString("avatar_url");
+
+
+		Github github = new Github();
+		github.setName(name);
+		github.setLogin(login);
+		github.setId(id);
+		github.setLocation(location);
+		github.setUrl(githubUrl);
+		github.setFollowersUrl(followers);
+		github.setFollowingUrl(following);
+		github.setProfileImageUrl(imageUrl);
+
+		githubRepository.save(github);
 	}
 }
 
