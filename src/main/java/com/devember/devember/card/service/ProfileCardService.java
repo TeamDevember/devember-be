@@ -11,7 +11,10 @@ import com.devember.devember.user.repository.UserRepository;
 import com.devember.devember.user.type.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -178,25 +181,50 @@ public class ProfileCardService {
 	}
 
 
-	public void saveGithubInfo(String githubId) throws IOException {
-		URL url = new URL("https://api.github.com/users/" + githubId);
+	public void saveGithubInfo(String githubId) throws IOException, ParseException {
+		JSONParser parser = new JSONParser();
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
+		URL mainUrl = new URL("https://api.github.com/users/" + githubId);
 
+		BufferedReader br = new BufferedReader(new InputStreamReader(mainUrl.openStream(), StandardCharsets.UTF_8));
 		String result = br.readLine();
+		JSONObject o1 = (JSONObject) parser.parse(result);
 
-		JSONObject jsonObject = new JSONObject(result);
+		String name = (String) o1.get("name");
+		String login = (String) o1.get("login");
+		Long id = (Long) o1.get("id");
+		String githubUrl = (String) o1.get("url");
+		Long followers = (Long) o1.get("followers");
+		Long following = (Long) o1.get("following");
+		String location = (String) o1.get("location");
+		String imageUrl = (String) o1.get("avatar_url");
 
+		URL subUrl = new URL("https://api.github.com/users/"+ githubId +"/events");
+		BufferedReader subBr = new BufferedReader(new InputStreamReader(subUrl.openStream(), StandardCharsets.UTF_8));
+		String subResult = subBr.readLine();
 
-		String name = jsonObject.getString("name");
-		String login = jsonObject.getString("login");
-		Long id = jsonObject.getLong("id");
-		String githubUrl = jsonObject.getString("url");
-		Long followers = jsonObject.getLong("followers");
-		Long following = jsonObject.getLong("following");
-		String location = jsonObject.getString("location");
-		String imageUrl = jsonObject.getString("avatar_url");
+		JSONArray jsonArray = (JSONArray) parser.parse(subResult);
+		String message = "";
+		String date = "";
 
+		for (Object o : jsonArray) {
+			JSONObject o2 = (JSONObject) o;
+
+			if(o2.get("type").equals("PushEvent")) {
+				date = (String) o2.get("created_at");
+				Object payload = o2.get("payload");
+				JSONObject payload1 = (JSONObject) payload;
+				Object commits = payload1.get("commits");
+				JSONArray commits1 = (JSONArray) commits;
+
+				if(commits1.size() > 0){
+					Object o3 = commits1.get(0);
+					JSONObject o31 = (JSONObject) o3;
+					message = (String) o31.get("message");
+					break;
+				}
+			}
+		}
 
 		Github github = new Github();
 		github.setName(name);
@@ -207,6 +235,8 @@ public class ProfileCardService {
 		github.setFollowersUrl(followers);
 		github.setFollowingUrl(following);
 		github.setProfileImageUrl(imageUrl);
+		github.setRecentCommitAt(date);
+		github.setRecentCommitMessage(message);
 
 		githubRepository.save(github);
 	}

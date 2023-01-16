@@ -4,6 +4,7 @@ package com.devember.devember.card.controller;
 import com.devember.devember.card.dto.ProfileCardDto;
 import com.devember.devember.card.service.ProfileCardService;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -89,7 +90,7 @@ public class ProfileCardController {
 	}
 
 	@PostMapping("/github/{id}")
-	public ResponseEntity<?> saveGithub(@PathVariable String id) throws IOException {
+	public ResponseEntity<?> saveGithub(@PathVariable String id) throws IOException, ParseException {
 		profileCardService.saveGithubInfo(id);
 		return ResponseEntity.ok().build();
 	}

@@ -27,6 +27,9 @@ public class Github extends BaseEntity {
 
 	private String url;
 
+	private String recentCommitAt;
+	private String recentCommitMessage;
+
 	@Column(name = "followers_url")
 	private Long followersUrl;
 
