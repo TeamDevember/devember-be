@@ -50,16 +50,23 @@ public class ProfileCardController {
 		return ResponseEntity.ok().build();
 	}
 
-//	@PutMapping("/skills")
-//	public ResponseEntity<?> updateSkill(@RequestBody ProfileCardDto.SkillRequest request){
-//		profileCardService.updateSkill(request);
-//		return ResponseEntity.ok().build();
-//	}
-//
-//	@PutMapping("/fields")
-//	public ResponseEntity<?> updateField(@RequestBody ProfileCardDto.FieldRequest request){
-//		profileCardService.updateField(request);
-//		return ResponseEntity.ok().build();
-//	}
+	@PutMapping("/skills")
+	public ResponseEntity<?> updateSkill(@RequestBody ProfileCardDto.SkillRequest request){
+		profileCardService.addSkill(request);
+		return ResponseEntity.ok().build();
+	}
+
+	@PutMapping("/fields")
+	public ResponseEntity<?> updateField(@RequestBody ProfileCardDto.FieldRequest request){
+		profileCardService.addField(request);
+		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/details")
+	public ResponseEntity<?> addDetail(@RequestBody ProfileCardDto.DetailRequest request){
+		profileCardService.addDetail(request);
+		return ResponseEntity.ok().build();
+	}
+
 
 }

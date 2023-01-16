@@ -1,15 +1,9 @@
 package com.devember.devember.card.service;
 
 import com.devember.devember.card.dto.ProfileCardDto;
-import com.devember.devember.card.entity.Field;
-import com.devember.devember.card.entity.ProfileCard;
-import com.devember.devember.card.entity.Skill;
-import com.devember.devember.card.entity.Sns;
+import com.devember.devember.card.entity.*;
 import com.devember.devember.card.exception.CardException;
-import com.devember.devember.card.repository.FieldRepository;
-import com.devember.devember.card.repository.ProfileCardRepository;
-import com.devember.devember.card.repository.SkillRepository;
-import com.devember.devember.card.repository.SnsRepository;
+import com.devember.devember.card.repository.*;
 import com.devember.devember.card.type.CardErrorCode;
 import com.devember.devember.user.entity.User;
 import com.devember.devember.user.exception.UserException;
@@ -30,6 +24,7 @@ public class ProfileCardService {
 	private final SnsRepository snsRepository;
 	private final SkillRepository skillRepository;
 	private final FieldRepository fieldRepository;
+	private final DetailRepository detailRepository;
 
 	// TODO: USER 권한 설정 필요
 
@@ -108,7 +103,7 @@ public class ProfileCardService {
 		// 중복 검토 -> 정보 없으면 추가
 		Optional<Field> findField = fieldRepository.findByProfileCard(pc);
 		Field field;
-		if(findField.isPresent()){
+		if (findField.isPresent()) {
 			field = findField.get();
 			field.setName(request.getField());
 		} else {
@@ -126,5 +121,26 @@ public class ProfileCardService {
 
 		profileCard.getDetail();
 
+	}
+
+	public void addDetail(ProfileCardDto.DetailRequest request) {
+		User user = userRepository.findById(request.getUser().getId())
+				.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+		ProfileCard pc = profileCardRepository.findByUser(user)
+				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+
+		Optional<Detail> findDetail = detailRepository.findByProfileCard(pc);
+		Detail detail;
+		if(findDetail.isPresent()){
+			detail = findDetail.get();
+			detail.setStatus(request.getStatus());
+			detail.setStatusMessage(request.getStatusMessage());
+		} else {
+			detail = Detail.from(request);
+		}
+		detail.setProfileCard(pc);
+		pc.setDetail(detail);
+		profileCardRepository.save(pc);
 	}
 }

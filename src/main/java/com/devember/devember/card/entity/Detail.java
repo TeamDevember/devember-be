@@ -1,17 +1,15 @@
 package com.devember.devember.card.entity;
 
+import com.devember.devember.card.dto.ProfileCardDto;
 import com.devember.devember.entity.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 
 @Builder
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Detail extends BaseEntity {
@@ -20,17 +18,18 @@ public class Detail extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private Long followers;
-	private Long following;
-
 	private String status;
 	@Column(name = "status_message")
 	private String statusMessage;
 
-	private String location;
-
-	@Column(name = "committed_at")
-	private LocalDate committedAt;
+	@OneToOne(mappedBy = "detail")
+	private ProfileCard profileCard;
 
 
+	public static Detail from(ProfileCardDto.DetailRequest request){
+		return Detail.builder()
+				.status(request.getStatus())
+				.statusMessage(request.getStatusMessage())
+				.build();
+	}
 }

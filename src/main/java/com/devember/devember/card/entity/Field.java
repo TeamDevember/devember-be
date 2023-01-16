@@ -17,7 +17,7 @@ public class Field extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne
+	@OneToOne(cascade = CascadeType.ALL)
 	private ProfileCard profileCard;
 
 	private String name;

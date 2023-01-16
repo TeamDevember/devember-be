@@ -17,7 +17,7 @@ public class Skill extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	private ProfileCard profileCard;
 
 	private String  name;

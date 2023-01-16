@@ -53,27 +53,19 @@ public class ProfileCardDto {
 		private String field;
 
 	}
-//
-//	@Getter
-//	@Setter
-//	@NoArgsConstructor
-//	@AllArgsConstructor
-//	public static class Response {
-//
-//		private String ;
-//		private String ;
-//		private String ;
-//		private String ;
-//		private String ;
-//		private String ;
-//		private String ;
-//		private String  ;
-//		private String field;
-//		private List<String> skillList;
-//		private List<String> snsList;
-//
-//
-//	}
+
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class DetailRequest {
+		private User user;
+
+		private String status;
+		private String statusMessage;
+
+
+	}
 
 
 }
