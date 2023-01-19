@@ -6,6 +6,8 @@ import lombok.*;
 
 import javax.persistence.*;
 
+import static javax.persistence.FetchType.LAZY;
+
 @Builder
 @Entity
 @Getter
@@ -22,11 +24,10 @@ public class Detail extends BaseEntity {
 	@Column(name = "status_message")
 	private String statusMessage;
 
-	@OneToOne(mappedBy = "detail")
+	@OneToOne(mappedBy = "detail", fetch = LAZY)
 	private ProfileCard profileCard;
 
-
-	public static Detail from(ProfileCardDto.DetailRequest request){
+	public static Detail from(ProfileCardDto.updateRequest request){
 		return Detail.builder()
 				.status(request.getStatus())
 				.statusMessage(request.getStatusMessage())

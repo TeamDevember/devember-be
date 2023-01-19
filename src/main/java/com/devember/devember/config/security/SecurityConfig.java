@@ -1,14 +1,13 @@
 package com.devember.devember.config.security;
 
-import com.devember.devember.config.security.handler.JwtAuthenticationEntryPoint;
-import com.devember.devember.user.repository.UserRepository;
-import com.devember.devember.utils.JwtUtils;
 import com.devember.devember.config.security.filter.JwtAuthenticationFilter;
 import com.devember.devember.config.security.handler.JwtAccessDeniedHandler;
+import com.devember.devember.config.security.handler.JwtAuthenticationEntryPoint;
 import com.devember.devember.config.security.service.CustomUserDetailsService;
+import com.devember.devember.user.repository.UserRepository;
+import com.devember.devember.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -22,7 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.firewall.HttpFirewall;
 
-@Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor

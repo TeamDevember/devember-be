@@ -17,7 +17,7 @@ public class Field extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne(mappedBy = "field")
+	@OneToOne(mappedBy = "field", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
 
 	private String name;

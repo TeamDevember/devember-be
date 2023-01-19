@@ -69,8 +69,7 @@ public class JwtUtils {
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                ;
+                .getBody();
 
         return (String) claims.get("email");
     }

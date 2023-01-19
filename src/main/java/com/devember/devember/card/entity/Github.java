@@ -2,12 +2,15 @@ package com.devember.devember.card.entity;
 
 
 import com.devember.devember.entity.BaseEntity;
-import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -27,23 +30,13 @@ public class Github extends BaseEntity {
 
 	private String url;
 
-	private String recentCommitAt;
+	private LocalDate recentCommitAt;
 	private String recentCommitMessage;
 
-	@Column(name = "followers_url")
-	private Long followersUrl;
-
-	@Column(name = "following_url")
-	private Long followingUrl;
+	private Long followers;
+	private Long following;
 
 	private String location;
-
-	@Column(name = "created_at")
-	@CreatedDate
-	private LocalDateTime createdAt;
-
-	@Column(name = "modified_at")
-	@LastModifiedDate
-	private LocalDateTime modifiedAt;
+	private String company;
 
 }

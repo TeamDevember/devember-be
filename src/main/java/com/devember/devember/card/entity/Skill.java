@@ -5,6 +5,8 @@ import lombok.*;
 
 import javax.persistence.*;
 
+import static javax.persistence.FetchType.LAZY;
+
 @Builder
 @Entity
 @Getter
@@ -17,7 +19,8 @@ public class Skill extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne
+	@ManyToOne(fetch = LAZY)
+	@JoinColumn(name = "profile_card_id")
 	private ProfileCard profileCard;
 
 	private String  name;
@@ -27,6 +30,4 @@ public class Skill extends BaseEntity {
 				.name(name)
 				.build();
 	}
-
-
 }
