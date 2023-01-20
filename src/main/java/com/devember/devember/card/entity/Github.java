@@ -1,19 +1,21 @@
 package com.devember.devember.card.entity;
 
 
+import com.devember.devember.card.dto.GithubDto;
 import com.devember.devember.entity.BaseEntity;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import java.text.ParseException;
 import java.time.LocalDate;
 
+@Builder
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -23,12 +25,14 @@ public class Github extends BaseEntity {
 	private Long id;
 
 	private String name;
-	private String Login;
+	private String login;
 
-	@Column(name = "profile_image_url")
 	private String profileImageUrl;
 
 	private String url;
+
+	@OneToOne(mappedBy = "github")
+	private ProfileCard profileCard;
 
 	private LocalDate recentCommitAt;
 	private String recentCommitMessage;
@@ -39,4 +43,19 @@ public class Github extends BaseEntity {
 	private String location;
 	private String company;
 
+
+	public static Github from(GithubDto github) throws ParseException {
+
+		return Github.builder()
+				.id(github.getId())
+				.name(github.getName())
+				.login(github.getLogin())
+				.profileImageUrl(github.getImageUrl())
+				.url(github.getGithubUrl())
+				.recentCommitAt(github.getRecentCommitAt())
+				.recentCommitMessage(github.getRecentCommitMessage())
+				.location(github.getLocation())
+				.company(github.getCompany())
+				.build();
+	}
 }

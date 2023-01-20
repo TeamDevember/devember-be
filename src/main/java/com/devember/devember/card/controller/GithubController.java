@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 
-@RequestMapping("/cards/{profileCardId}/githubs")
+@RequestMapping("/cards/{id}/github")
 @RestController
 @RequiredArgsConstructor
 public class GithubController {
@@ -19,10 +19,23 @@ public class GithubController {
 	private final ProfileCardService profileCardService;
 
 	@PostMapping
-	public ResponseEntity<?> saveGithub(@PathVariable Long profileCardId,
-	                                    @PathVariable String id) throws IOException, ParseException {
+	public ResponseEntity<?> createGithub(@PathVariable Long id, String githubId) throws IOException, ParseException, java.text.ParseException {
 
-		profileCardService.saveGithubInfo(profileCardId, id);
+		profileCardService.saveGithubInfo(id, githubId);
+		return ResponseEntity.ok().build();
+	}
+
+	@PutMapping
+	public ResponseEntity<?> updateGithub(@PathVariable Long id, String githubId) throws IOException, ParseException, java.text.ParseException {
+
+		profileCardService.saveGithubInfo(id, githubId);
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping
+	public ResponseEntity<?> deleteGithub(@PathVariable Long id) throws IOException, ParseException {
+
+		profileCardService.deleteGithub(id);
 		return ResponseEntity.ok().build();
 	}
 }

@@ -5,14 +5,14 @@ import com.devember.devember.user.entity.User;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
 @Builder
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProfileCard extends BaseEntity {
@@ -24,22 +24,24 @@ public class ProfileCard extends BaseEntity {
 	@OneToOne(fetch = LAZY)
 	private User user;
 
-	@OneToMany(mappedBy = "profileCard",cascade = CascadeType.ALL)
-	private Set<Sns> snsSet = new HashSet<>();
+	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
+	private List<Sns> snsList;
 
-	@OneToOne(cascade = CascadeType.ALL, fetch = LAZY)
-	@JoinColumn(name = "detail_id")
-	private Detail detail;
+	private String statusMessage;
 
 	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
-	private Set<Skill> skillSet = new HashSet<>();
+	private List<ProfileCardSkill> profileCardSkillList;
 
-	@OneToOne(cascade = CascadeType.ALL, fetch = LAZY)
+	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "field_id")
 	private Field field;
 
-	@OneToOne(mappedBy = "user", fetch = LAZY, cascade = CascadeType.ALL)
+	@OneToOne(fetch = LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name = "github_id")
 	private Github github;
+
+	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
+	private List<ProfileCardTag> profileCardTagList;
 
 	public static ProfileCard from() {
 
@@ -47,28 +49,35 @@ public class ProfileCard extends BaseEntity {
 				.build();
 	}
 
-	public void addSns(Sns sns){
-		this.snsSet.add(sns);
-		sns.setProfileCard(this);
+	public void setSnsList(List<Sns> snsList){
+		this.snsList = snsList;
 	}
 
-	public void addSkill(Skill skill){
-		this.skillSet.add(skill);
-		skill.setProfileCard(this);
+	public void setStatusMessage(String statusMessage){
+		this.statusMessage = statusMessage;
+	}
+
+	public void setProfileCardSkillList(List<ProfileCardSkill> profileCardSkillList){
+		this.profileCardSkillList = profileCardSkillList;
+	}
+
+	public void setProfileCardTagList(List<ProfileCardTag> profileCardTagList){
+		this.profileCardTagList = profileCardTagList;
 	}
 
 	public void setField(Field field){
-		field.setProfileCard(this);
 		this.field = field;
+		field.addProfileCard(this);
 	}
 
-	public void setDetail(Detail detail){
-		detail.setProfileCard(this);
-		this.detail = detail;
-	}
+
 
 	public void setUser(User user){
 		user.setProfileCard(this);
 		this.user = user;
+	}
+
+	public void setGithub(Github github){
+		this.github = github;
 	}
 }

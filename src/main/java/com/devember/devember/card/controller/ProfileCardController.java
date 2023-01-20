@@ -24,14 +24,23 @@ public class ProfileCardController {
 
 	@PostMapping
 	public ResponseEntity<?> create(@RequestHeader(name = "Authorization") String token) {
+		System.out.println(token);
 		String email = jwtUtils.getUserEmailFromToken(token);
+		System.out.println(email);
 		profileCardService.createProfileCard(email);
 		return ResponseEntity.ok().build();
 	}
 
+	@PostMapping("/{id}")
+	public ResponseEntity<?> inputData(@PathVariable Long id, @RequestBody ProfileCardDto.updateRequest request) {
+		profileCardService.inputData(id, request);
+		return ResponseEntity.ok().build();
+	}
+
+
 	@PutMapping("/{id}")
-	public ResponseEntity<?> update(@PathVariable Long id, ProfileCardDto.updateRequest request) {
-		profileCardService.updateProfileCard(id, request);
+	public ResponseEntity<?> update(@PathVariable Long id, @RequestBody ProfileCardDto.updateRequest request) {
+		profileCardService.inputData(id, request);
 		return ResponseEntity.ok().build();
 	}
 
@@ -40,5 +49,4 @@ public class ProfileCardController {
 		profileCardService.deleteProfileCard(id);
 		return ResponseEntity.ok().build();
 	}
-
 }

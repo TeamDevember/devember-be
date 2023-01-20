@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ProfileCardRepository extends JpaRepository<ProfileCard, Long> {
 
 	Optional<ProfileCard> findByUser(User user);
+
 }

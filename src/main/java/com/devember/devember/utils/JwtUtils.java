@@ -53,7 +53,7 @@ public class JwtUtils {
         claims.setSubject(userDetails.getUserId());
         claims.put("email", userDetails.getEmail());
         claims.put("role", role);
-//        claims.put("name", userDetails.getName());
+        claims.put("name", userDetails.getName());
 
         Date now = new Date();
         return Jwts.builder()

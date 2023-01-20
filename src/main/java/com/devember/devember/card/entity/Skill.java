@@ -1,11 +1,10 @@
 package com.devember.devember.card.entity;
 
-import com.devember.devember.entity.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;
-
-import static javax.persistence.FetchType.LAZY;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Entity
@@ -13,17 +12,22 @@ import static javax.persistence.FetchType.LAZY;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Skill extends BaseEntity {
+public class Skill {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne(fetch = LAZY)
-	@JoinColumn(name = "profile_card_id")
-	private ProfileCard profileCard;
+	@OneToMany(mappedBy = "skill", cascade = CascadeType.ALL)
+	private List<ProfileCardSkill> profileCardSkillList = new ArrayList<>();
 
 	private String  name;
+
+
+	public void addProfileCardSkill(ProfileCardSkill profileCardSkill){
+		profileCardSkill.setSkill(this);
+		profileCardSkillList.add(profileCardSkill);
+	}
 
 	public static Skill from(String name){
 		return Skill.builder()

@@ -1,9 +1,10 @@
 package com.devember.devember.card.entity;
 
-import com.devember.devember.entity.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Entity
@@ -11,21 +12,25 @@ import javax.persistence.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Field extends BaseEntity {
+public class Field {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne(mappedBy = "field", fetch = FetchType.LAZY)
-	private ProfileCard profileCard;
+	@OneToMany(mappedBy = "field")
+	private List<ProfileCard> profileCardList;
 
 	private String name;
-
 
 	public static Field from(String name){
 		return Field.builder()
 				.name(name)
 				.build();
+	}
+
+	public void addProfileCard(ProfileCard profileCard){
+		this.profileCardList = new ArrayList<>();
+		profileCardList.add(profileCard);
 	}
 }

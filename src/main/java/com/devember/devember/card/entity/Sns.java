@@ -26,8 +26,9 @@ public class Sns extends BaseEntity {
 	private String name;
 	private String account;
 
-	public static Sns from(String name, String account){
+	public static Sns from(ProfileCard profileCard, String name, String account){
 		return Sns.builder()
+				.profileCard(profileCard)
 				.name(name)
 				.account(account)
 				.build();

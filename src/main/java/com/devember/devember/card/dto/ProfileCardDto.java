@@ -7,19 +7,20 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileCardDto {
 
 	@Getter
 	@Setter
 	public static class updateRequest{
-		private String status;
 		private String statusMessage;
 		private String field;
-		private Set<String> skillSet;
-		private Set<SnsDto> snsSet;
+		private List<String> skillList;
+		private List<SnsDto> snsList;
+		private List<String> tagList;
+
 	}
 
 	@Getter
@@ -27,13 +28,14 @@ public class ProfileCardDto {
 	@Builder
 	public static class ReadResponse {
 
-		private String status;
 		private String statusMessage;
 		private String field;
-		private Set<String> skillSet;
-		private Set<SnsDto> snsSet;
 		private String githubName;
 		private String githubAccount;
+
+		private List<String> tagSet;
+		private List<String> skillSet;
+		private List<SnsDto> snsSet;
 
 		private String githubProfileImageUrl;
 		private String githubUrl;
@@ -47,22 +49,27 @@ public class ProfileCardDto {
 		private String location;
 		private String company;
 
-		public static ReadResponse from(Detail detail, Field field, Github github, Set<Skill> skill, Set<Sns> sns) {
+		public static ReadResponse from(String statusMessage, Field field, Github github, List<ProfileCardSkill> profileCardSkillList, List<Sns> snsList, List<ProfileCardTag> profileCardTagList) {
 
-			Set<String> skills = new HashSet<>();
-			Set<SnsDto> snss = new HashSet<>();
+			List<String> skills = new ArrayList<>();
+			List<SnsDto> snss = new ArrayList<>();
+			List<String> tags = new ArrayList<>();
 
-			for (Skill s : skill) {
-				skills.add(s.getName());
+			for (ProfileCardSkill s : profileCardSkillList) {
+				skills.add(s.getSkill().getName());
 			}
 
-			for (Sns s : sns) {
+			for (Sns s : snsList) {
 				SnsDto.from(s);
 			}
 
+			for (ProfileCardTag profileCardTag : profileCardTagList) {
+				tags.add(profileCardTag.getTag().getName());
+			}
+
+
 		return ReadResponse.builder()
-				.status(detail.getStatus())
-				.statusMessage(detail.getStatusMessage())
+				.statusMessage(statusMessage)
 				.field(field.getName())
 				.skillSet(skills)
 				.snsSet(snss)
@@ -79,7 +86,6 @@ public class ProfileCardDto {
 		}
 	}
 
-
 	@Builder
 	@Setter
 	@Getter
@@ -95,5 +101,4 @@ public class ProfileCardDto {
 					.build();
 		}
 	}
-
 }
