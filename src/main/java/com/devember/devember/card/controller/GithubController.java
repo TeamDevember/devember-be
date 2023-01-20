@@ -19,7 +19,7 @@ public class GithubController {
 	private final ProfileCardService profileCardService;
 
 	@PostMapping
-	public ResponseEntity<?> createGithub(@PathVariable Long id, String githubId) throws IOException, ParseException, java.text.ParseException {
+	public ResponseEntity<?> registerGithub(@PathVariable Long id, String githubId) throws IOException, ParseException, java.text.ParseException {
 
 		profileCardService.saveGithubInfo(id, githubId);
 		return ResponseEntity.ok().build();

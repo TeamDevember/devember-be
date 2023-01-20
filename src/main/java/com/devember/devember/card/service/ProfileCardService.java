@@ -95,7 +95,6 @@ public class ProfileCardService {
 		return ProfileCardDto.ReadResponse.from(
 				pc.getStatusMessage(),
 				pc.getField(),
-				pc.getGithub(),
 				pc.getProfileCardSkillList(),
 				pc.getSnsList(),
 				pc.getProfileCardTagList()

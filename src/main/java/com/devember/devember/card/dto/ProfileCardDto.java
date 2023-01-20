@@ -14,7 +14,7 @@ public class ProfileCardDto {
 
 	@Getter
 	@Setter
-	public static class updateRequest{
+	public static class updateRequest {
 		private String statusMessage;
 		private String field;
 		private List<String> skillList;
@@ -30,26 +30,12 @@ public class ProfileCardDto {
 
 		private String statusMessage;
 		private String field;
-		private String githubName;
-		private String githubAccount;
 
-		private List<String> tagSet;
-		private List<String> skillSet;
-		private List<SnsDto> snsSet;
+		private List<String> tagList;
+		private List<String> skillList;
+		private List<SnsDto> snsList;
 
-		private String githubProfileImageUrl;
-		private String githubUrl;
-
-		private LocalDate recentCommitAt;
-		private String recentCommitMessage;
-
-		private Long follower;
-		private Long following;
-
-		private String location;
-		private String company;
-
-		public static ReadResponse from(String statusMessage, Field field, Github github, List<ProfileCardSkill> profileCardSkillList, List<Sns> snsList, List<ProfileCardTag> profileCardTagList) {
+		public static ReadResponse from(String statusMessage, Field field, List<ProfileCardSkill> profileCardSkillList, List<Sns> snsList, List<ProfileCardTag> profileCardTagList) {
 
 			List<String> skills = new ArrayList<>();
 			List<SnsDto> snss = new ArrayList<>();
@@ -60,29 +46,20 @@ public class ProfileCardDto {
 			}
 
 			for (Sns s : snsList) {
-				SnsDto.from(s);
+				snss.add(SnsDto.from(s));
 			}
 
 			for (ProfileCardTag profileCardTag : profileCardTagList) {
 				tags.add(profileCardTag.getTag().getName());
 			}
 
-
-		return ReadResponse.builder()
-				.statusMessage(statusMessage)
-				.field(field.getName())
-				.skillSet(skills)
-				.snsSet(snss)
-				.githubName(github.getName())
-				.githubAccount(github.getLogin())
-				.githubProfileImageUrl(github.getProfileImageUrl())
-				.recentCommitAt(github.getRecentCommitAt())
-				.recentCommitMessage(github.getRecentCommitMessage())
-				.follower(github.getFollowers())
-				.following(github.getFollowing())
-				.location(github.getLocation())
-				.company(github.getCompany())
-				.build();
+			return ReadResponse.builder()
+					.statusMessage(statusMessage)
+					.field(field.getName())
+					.skillList(skills)
+					.tagList(tags)
+					.snsList(snss)
+					.build();
 		}
 	}
 
@@ -98,6 +75,42 @@ public class ProfileCardDto {
 			return SnsDto.builder()
 					.name(sns.getName())
 					.account(sns.getAccount())
+					.build();
+		}
+	}
+
+
+	@Builder
+	@Setter
+	@Getter
+	public static class githubResponse {
+
+		private String githubName;
+		private String githubAccount;
+
+		private String githubProfileImageUrl;
+		private String githubUrl;
+
+		private LocalDate recentCommitAt;
+		private String recentCommitMessage;
+
+		private Long follower;
+		private Long following;
+
+		private String location;
+		private String company;
+
+		public static githubResponse from(Github github) {
+			return githubResponse.builder()
+					.githubName(github.getName())
+					.githubAccount(github.getLogin())
+					.githubProfileImageUrl(github.getProfileImageUrl())
+					.recentCommitAt(github.getRecentCommitAt())
+					.recentCommitMessage(github.getRecentCommitMessage())
+					.follower(github.getFollowers())
+					.following(github.getFollowing())
+					.location(github.getLocation())
+					.company(github.getCompany())
 					.build();
 		}
 	}
