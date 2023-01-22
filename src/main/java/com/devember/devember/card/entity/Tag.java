@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Entity
@@ -23,7 +23,7 @@ public class Tag extends BaseEntity {
 	private String name;
 
 	@OneToMany(mappedBy = "tag")
-	private List<ProfileCardTag> profileCardTag;
+	private Set<ProfileCardTag> profileCardTagSet;
 
 	public static Tag from(String name){
 		return Tag.builder()

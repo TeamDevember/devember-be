@@ -28,9 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -84,9 +82,9 @@ public class ProfileCardService {
 		return ProfileCardDto.ReadResponse.from(
 				pc.getStatusMessage(),
 				pc.getField(),
-				pc.getProfileCardSkillList(),
-				pc.getSnsList(),
-				pc.getProfileCardTagList()
+				pc.getProfileCardSkillSet(),
+				pc.getSnsSet(),
+				pc.getProfileCardTagSet()
 		);
 	}
 
@@ -97,47 +95,47 @@ public class ProfileCardService {
 
 	@Transactional
 	public void saveSnsList(ProfileCard pc, ProfileCardDto.updateRequest request) {
-		snsRepository.deleteAllByProfileCard(pc);
 
-		List<SnsDto> sList = request.getSnsList();
-		List<Sns> snsList = new ArrayList<>();
+		Set<Sns> allByProfileCard = snsRepository.findAllByProfileCard(pc);
+		snsRepository.deleteAllInBatch(allByProfileCard);
 
-		for (SnsDto snsDto : sList) {
-			Sns sns = snsRepository.save(Sns.from(pc, snsDto.getName(), snsDto.getAccount()));
-			snsList.add(sns);
+		Set<SnsDto> sSet = request.getSnsSet();
+
+		for (SnsDto snsDto : sSet) {
+			pc.addSns(Sns.from(pc, snsDto.getName(), snsDto.getAccount()));
 		}
-		pc.setSnsList(snsList);
+		Set<Sns> snsList = pc.getSnsSet();
+		snsRepository.saveAll(snsList);
 	}
 
 	@Transactional
 	public void saveTagList(ProfileCard pc, ProfileCardDto.updateRequest request) {
-		profileCardTagRepository.deleteAllByProfileCard(pc);
 
-		List<String> tList = request.getTagList();
-		List<ProfileCardTag> profileCardTagList = new ArrayList<>();
+		Set<ProfileCardTag> allByProfileCard = profileCardTagRepository.findAllByProfileCard(pc);
+		profileCardTagRepository.deleteAllInBatch(allByProfileCard);
 
+		Set<String> tSet = request.getTagSet();
 
-		for (String s : tList) {
-			Tag tag = tagRepository.save(Tag.from(s));
-			ProfileCardTag profileCardTag = profileCardTagRepository.save(ProfileCardTag.from(pc, tag));
-			profileCardTagList.add(profileCardTag);
+		for (String s : tSet) {
+			pc.setProfileCardTagSet(ProfileCardTag.from(pc,Tag.from(s)));
 		}
-		pc.setProfileCardTagList(profileCardTagList);
+		Set<ProfileCardTag> profileCardTagSet = pc.getProfileCardTagSet();
+		profileCardTagRepository.saveAll(profileCardTagSet);
+
 	}
 
 	@Transactional
 	public void saveSkillList(ProfileCard pc, ProfileCardDto.updateRequest request) {
-		profileCardSkillRepository.deleteAllByProfileCard(pc);
+		profileCardSkillRepository.deleteAllInBatch(pc.getProfileCardSkillSet());
 
-		List<String> sList = request.getSkillList();
-		List<ProfileCardSkill> profileCardSkillList = new ArrayList<>();
+		Set<String> sList = request.getSkillSet();
+		Set<ProfileCardSkill> profileCardSkillList = new HashSet<>();
 
 		for (String s : sList) {
 			Skill skill = skillRepository.findByName(s).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
-			ProfileCardSkill profileCardSkill = profileCardSkillRepository.save(ProfileCardSkill.from(pc, skill));
-			profileCardSkillList.add(profileCardSkill);
+			profileCardSkillList.add(ProfileCardSkill.from(pc, skill));
 		}
-		pc.setProfileCardSkillList(profileCardSkillList);
+		profileCardSkillRepository.saveAll(profileCardSkillList);
 	}
 
 	@Transactional
@@ -186,6 +184,7 @@ public class ProfileCardService {
 		JSONArray jsonArray = (JSONArray) parser.parse(subResult);
 		String message = "";
 		String date = "";
+
 
 		for (Object o : jsonArray) {
 			JSONObject o2 = (JSONObject) o;

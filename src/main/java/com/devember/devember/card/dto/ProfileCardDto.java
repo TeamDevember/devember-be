@@ -6,20 +6,28 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ProfileCardDto {
 
 	@Getter
 	@Setter
 	public static class updateRequest {
+
+		@NotBlank
 		private String statusMessage;
+		@NotBlank
 		private String field;
-		private List<String> skillList;
-		private List<SnsDto> snsList;
-		private List<String> tagList;
+		@NotNull
+		private Set<String> skillSet;
+		@NotNull
+		private Set<SnsDto> snsSet;
+		@NotNull
+		private Set<String> tagSet;
 
 	}
 
@@ -31,34 +39,34 @@ public class ProfileCardDto {
 		private String statusMessage;
 		private String field;
 
-		private List<String> tagList;
-		private List<String> skillList;
-		private List<SnsDto> snsList;
+		private Set<String> tagSet;
+		private Set<String> skillSet;
+		private Set<SnsDto> snsSet;
 
-		public static ReadResponse from(String statusMessage, Field field, List<ProfileCardSkill> profileCardSkillList, List<Sns> snsList, List<ProfileCardTag> profileCardTagList) {
+		public static ReadResponse from(String statusMessage, Field field, Set<ProfileCardSkill> profileCardSkillSet, Set<Sns> snsSet, Set<ProfileCardTag> profileCardTagSet) {
 
-			List<String> skills = new ArrayList<>();
-			List<SnsDto> snss = new ArrayList<>();
-			List<String> tags = new ArrayList<>();
+			Set<String> skills = new HashSet<>();
+			Set<SnsDto> snss = new HashSet<>();
+			Set<String> tags = new HashSet<>();
 
-			for (ProfileCardSkill s : profileCardSkillList) {
+			for (ProfileCardSkill s : profileCardSkillSet) {
 				skills.add(s.getSkill().getName());
 			}
 
-			for (Sns s : snsList) {
+			for (Sns s : snsSet) {
 				snss.add(SnsDto.from(s));
 			}
 
-			for (ProfileCardTag profileCardTag : profileCardTagList) {
+			for (ProfileCardTag profileCardTag : profileCardTagSet) {
 				tags.add(profileCardTag.getTag().getName());
 			}
 
 			return ReadResponse.builder()
 					.statusMessage(statusMessage)
 					.field(field.getName())
-					.skillList(skills)
-					.tagList(tags)
-					.snsList(snss)
+					.skillSet(skills)
+					.tagSet(tags)
+					.snsSet(snss)
 					.build();
 		}
 	}
