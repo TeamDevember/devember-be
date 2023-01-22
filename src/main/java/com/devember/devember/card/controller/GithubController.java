@@ -1,5 +1,6 @@
 package com.devember.devember.card.controller;
 
+import com.devember.devember.card.dto.GithubDto;
 import com.devember.devember.card.service.ProfileCardService;
 import com.devember.devember.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 
-@RequestMapping("/cards/{id}/github")
+@RequestMapping("/cards/github")
 @RestController
 @RequiredArgsConstructor
 public class GithubController {
@@ -19,23 +20,23 @@ public class GithubController {
 	private final ProfileCardService profileCardService;
 
 	@PostMapping
-	public ResponseEntity<?> registerGithub(@PathVariable Long id, String githubId) throws IOException, ParseException, java.text.ParseException {
+	public ResponseEntity<?> registerGithub(@RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
 
-		profileCardService.saveGithubInfo(id, githubId);
+		profileCardService.saveGithubInfo(request);
 		return ResponseEntity.ok().build();
 	}
 
 	@PutMapping
-	public ResponseEntity<?> updateGithub(@PathVariable Long id, String githubId) throws IOException, ParseException, java.text.ParseException {
+	public ResponseEntity<?> updateGithub(@RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
 
-		profileCardService.saveGithubInfo(id, githubId);
+		profileCardService.saveGithubInfo(request);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping
-	public ResponseEntity<?> deleteGithub(@PathVariable Long id) throws IOException, ParseException {
+	public ResponseEntity<?> deleteGithub(@RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
 
-		profileCardService.deleteGithub(id);
+		profileCardService.removeGithub(request);
 		return ResponseEntity.ok().build();
 	}
 }

@@ -36,8 +36,7 @@ public class ProfileCard extends BaseEntity {
 	@JoinColumn(name = "field_id")
 	private Field field;
 
-	@OneToOne(fetch = LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "github_id")
+	@OneToOne(mappedBy = "profileCard", fetch = FetchType.LAZY)
 	private Github github;
 
 	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
@@ -69,8 +68,6 @@ public class ProfileCard extends BaseEntity {
 		this.field = field;
 		field.addProfileCard(this);
 	}
-
-
 
 	public void setUser(User user){
 		user.setProfileCard(this);

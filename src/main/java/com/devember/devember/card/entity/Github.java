@@ -3,26 +3,25 @@ package com.devember.devember.card.entity;
 
 import com.devember.devember.card.dto.GithubDto;
 import com.devember.devember.entity.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.text.ParseException;
 import java.time.LocalDate;
 
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 public class Github extends BaseEntity {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
+	private Long githubNumberId;
 
 	private String name;
 	private String login;
@@ -31,7 +30,8 @@ public class Github extends BaseEntity {
 
 	private String url;
 
-	@OneToOne(mappedBy = "github")
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "profile_card_id")
 	private ProfileCard profileCard;
 
 	private LocalDate recentCommitAt;
@@ -47,7 +47,7 @@ public class Github extends BaseEntity {
 	public static Github from(GithubDto github) throws ParseException {
 
 		return Github.builder()
-				.id(github.getId())
+				.githubNumberId(github.getGithubId())
 				.name(github.getName())
 				.login(github.getLogin())
 				.profileImageUrl(github.getImageUrl())
@@ -56,6 +56,22 @@ public class Github extends BaseEntity {
 				.recentCommitMessage(github.getRecentCommitMessage())
 				.location(github.getLocation())
 				.company(github.getCompany())
+				.followers(github.getFollowers())
+				.following(github.getFollowing())
 				.build();
+	}
+
+	public void setAll(GithubDto github){
+		this.githubNumberId = github.getGithubId();
+		this.name = github.getName();
+		this.login = github.getLogin();
+		this.profileImageUrl = github.getImageUrl();
+		this.url = github.getGithubUrl();
+		this.recentCommitAt = github.getRecentCommitAt();
+		this.recentCommitMessage = github.getRecentCommitMessage();
+		this.location = github.getLocation();
+		this.company = github.getCompany();
+		this.followers = github.getFollowers();
+		this.following = github.getFollowing();
 	}
 }

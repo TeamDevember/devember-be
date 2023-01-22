@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -74,18 +75,6 @@ public class ProfileCardService {
 		profileCardRepository.save(pc);
 	}
 
-
-	// TODO: Profile Card에 들어가는 값들
-	// 1. Detail (상태메세지)
-	// 2. Field (활동 분야)
-	// 3. List<ProfileCardSkill> (주 사용 스킬)
-	// 4. List<ProfileCardTag> (태그)
-	// 5. List<Sns> (SNS)
-
-	// PC가 저장되기 전에 영속성 컨텍스트 항상 Clear() ? -> ID가 계속해서 증가함.. 새로운 게 Insert 된다는 소리
-	// 그렇다면 어떻게?
-
-
 	@Transactional
 	public ProfileCardDto.ReadResponse readProfileCard(Long id) {
 
@@ -101,10 +90,12 @@ public class ProfileCardService {
 		);
 	}
 
+	@Transactional
 	public void saveField(ProfileCard pc, ProfileCardDto.updateRequest request) {
 		pc.setField(fieldRepository.findByName(request.getField()).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND)));
 	}
 
+	@Transactional
 	public void saveSnsList(ProfileCard pc, ProfileCardDto.updateRequest request) {
 		snsRepository.deleteAllByProfileCard(pc);
 
@@ -118,8 +109,8 @@ public class ProfileCardService {
 		pc.setSnsList(snsList);
 	}
 
+	@Transactional
 	public void saveTagList(ProfileCard pc, ProfileCardDto.updateRequest request) {
-
 		profileCardTagRepository.deleteAllByProfileCard(pc);
 
 		List<String> tList = request.getTagList();
@@ -134,6 +125,7 @@ public class ProfileCardService {
 		pc.setProfileCardTagList(profileCardTagList);
 	}
 
+	@Transactional
 	public void saveSkillList(ProfileCard pc, ProfileCardDto.updateRequest request) {
 		profileCardSkillRepository.deleteAllByProfileCard(pc);
 
@@ -148,21 +140,34 @@ public class ProfileCardService {
 		pc.setProfileCardSkillList(profileCardSkillList);
 	}
 
-
 	@Transactional
 	public void deleteProfileCard(Long id) {
 		profileCardRepository.deleteById(id);
 	}
 
-	public void saveGithubInfo(Long profileCardId, String githubId) throws IOException, ParseException, java.text.ParseException {
-
-		ProfileCard pc = profileCardRepository.findById(profileCardId).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
-
-		pc.setGithub(Github.from(parsing(profileCardId, githubId)));
-		profileCardRepository.save(pc);
+	@Transactional
+	public void saveGithubInfo(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
+		ProfileCard pc = profileCardRepository.findById(request.getProfileCardId()).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+		Optional<Github> findGithub = githubRepository.findByProfileCard(pc);
+		if (findGithub.isPresent()) {
+			Github github = findGithub.get();
+			github.setAll(parsing(request.getGithubId()));
+		} else {
+			Github github = Github.from(parsing(request.getGithubId()));
+			github.setProfileCard(pc);
+			githubRepository.save(github);
+			pc.setGithub(github);
+		}
 	}
 
-	public GithubDto parsing(Long profileCardId, String githubId) throws IOException, ParseException, java.text.ParseException {
+	public void removeGithub(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
+		ProfileCard pc = profileCardRepository.findById(request.getProfileCardId()).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+		Github github = pc.getGithub();
+		githubRepository.delete(github);
+	}
+
+	public GithubDto parsing(String githubId) throws IOException, ParseException, java.text.ParseException {
+		System.out.println(githubId);
 		JSONParser parser = new JSONParser();
 
 		URL mainUrl = new URL("https://api.github.com/users/" + githubId);
@@ -170,6 +175,9 @@ public class ProfileCardService {
 		BufferedReader br = new BufferedReader(new InputStreamReader(mainUrl.openStream(), StandardCharsets.UTF_8));
 		String result = br.readLine();
 		JSONObject o1 = (JSONObject) parser.parse(result);
+
+		System.out.println(o1.toString());
+
 
 		URL subUrl = new URL("https://api.github.com/users/" + githubId + "/events");
 		BufferedReader subBr = new BufferedReader(new InputStreamReader(subUrl.openStream(), StandardCharsets.UTF_8));
@@ -204,7 +212,7 @@ public class ProfileCardService {
 		return GithubDto.builder()
 				.name((String) o1.get("name"))
 				.login((String) o1.get("login"))
-				.id((Long) o1.get("id"))
+				.githubId((Long) o1.get("id"))
 				.githubUrl((String) o1.get("url"))
 				.following((Long) o1.get("following"))
 				.followers((Long) o1.get("followers"))
@@ -215,6 +223,7 @@ public class ProfileCardService {
 				.build();
 	}
 
+	@Transactional
 	public void deleteGithub(Long id) {
 
 		ProfileCard pc = profileCardRepository.findById(id).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
@@ -223,5 +232,3 @@ public class ProfileCardService {
 
 
 }
-
-

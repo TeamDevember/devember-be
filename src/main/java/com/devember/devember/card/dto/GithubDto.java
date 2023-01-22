@@ -13,7 +13,7 @@ public class GithubDto {
 
 	private String name;
 	private String login;
-	private Long id;
+	private Long githubId;
 	private String githubUrl;
 	private Long followers;
 	private Long following;
@@ -22,5 +22,14 @@ public class GithubDto {
 	private String imageUrl;
 	private LocalDate recentCommitAt;
 	private String recentCommitMessage;
+
+
+	@Getter
+	@Setter
+	public static class Request {
+
+		private String githubId;
+		private Long profileCardId;
+	}
 }
 
