@@ -22,11 +22,9 @@ public class ProfileCardSkill {
 	@JoinColumn(name = "profile_card_id")
 	private ProfileCard profileCard;
 
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "skill_id")
 	private Skill skill;
-
 
 	public void setProfileCard(ProfileCard profileCard) {
 		this.profileCard = profileCard;

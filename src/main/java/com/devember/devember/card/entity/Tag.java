@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Set;
 
 @Getter
 @Entity
@@ -22,12 +21,17 @@ public class Tag extends BaseEntity {
 
 	private String name;
 
-	@OneToMany(mappedBy = "tag")
-	private Set<ProfileCardTag> profileCardTagSet;
+	@ManyToOne
+	@JoinColumn(name = "profile_card_id")
+	private ProfileCard profileCard;
 
 	public static Tag from(String name){
 		return Tag.builder()
 				.name(name)
 				.build();
+	}
+
+	public void setProfileCard(ProfileCard profileCard){
+		this.profileCard = profileCard;
 	}
 }

@@ -9,6 +9,4 @@ import java.util.Optional;
 public interface GithubRepository extends JpaRepository<Github, Long> {
 
 	Optional<Github> findByProfileCard(ProfileCard profileCard);
-
-	void deleteByProfileCard(ProfileCard profileCard);
 }

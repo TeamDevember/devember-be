@@ -23,12 +23,6 @@ public class Skill {
 
 	private String  name;
 
-
-	public void addProfileCardSkill(ProfileCardSkill profileCardSkill){
-		profileCardSkill.setSkill(this);
-		profileCardSkillList.add(profileCardSkill);
-	}
-
 	public static Skill from(String name){
 		return Skill.builder()
 				.name(name)

@@ -1,6 +1,5 @@
 package com.devember.devember.card.controller;
 
-
 import com.devember.devember.card.dto.ProfileCardDto;
 import com.devember.devember.card.service.ProfileCardService;
 import com.devember.devember.utils.JwtUtils;
@@ -24,23 +23,21 @@ public class ProfileCardController {
 
 	@PostMapping
 	public ResponseEntity<?> create(@RequestHeader(name = "Authorization") String token) {
-		System.out.println(token);
 		String email = jwtUtils.getUserEmailFromToken(token);
-		System.out.println(email);
 		profileCardService.createProfileCard(email);
 		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/{id}")
-	public ResponseEntity<?> inputData(@PathVariable Long id, @RequestBody ProfileCardDto.updateRequest request) {
-		profileCardService.inputData(id, request);
+	public ResponseEntity<?> input(@PathVariable Long id, @RequestBody ProfileCardDto.updateRequest request) {
+		profileCardService.input(id, request);
 		return ResponseEntity.ok().build();
 	}
 
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> update(@PathVariable Long id, @RequestBody ProfileCardDto.updateRequest request) {
-		profileCardService.inputData(id, request);
+		profileCardService.input(id, request);
 		return ResponseEntity.ok().build();
 	}
 

@@ -25,23 +25,23 @@ public class ProfileCard extends BaseEntity {
 	@OneToOne(fetch = LAZY)
 	private User user;
 
-	@OneToMany(mappedBy = "profileCard")
+	@OneToMany(mappedBy = "profileCard",cascade = CascadeType.ALL)
 	private Set<Sns> snsSet = new HashSet<>();
 
 	private String statusMessage;
 
-	@OneToMany(mappedBy = "profileCard")
+	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
 	private Set<ProfileCardSkill> profileCardSkillSet = new HashSet<>();
 
 	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "field_id")
 	private Field field;
 
-	@OneToOne(mappedBy = "profileCard", fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "profileCard", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Github github;
 
 	@OneToMany(mappedBy = "profileCard",cascade = CascadeType.ALL)
-	private Set<ProfileCardTag> profileCardTagSet = new HashSet<>();
+	private Set<Tag> tagList = new HashSet<>();
 
 	public static ProfileCard from() {
 
@@ -54,18 +54,13 @@ public class ProfileCard extends BaseEntity {
 		snsSet.add(sns);
 	}
 
+	public void addTag(Tag tag){
+		tag.setProfileCard(this);
+		tagList.add(tag);
+	}
+
 	public void setStatusMessage(String statusMessage) {
 		this.statusMessage = statusMessage;
-	}
-
-	public void addProfileCardSkill(ProfileCardSkill profileCardSkill) {
-		profileCardSkill.setProfileCard(this);
-		profileCardSkillSet.add(profileCardSkill);
-	}
-
-	public void setProfileCardTagSet(ProfileCardTag profileCardTag) {
-		profileCardTag.setProfileCard(this);
-		profileCardTagSet.add(profileCardTag);
 	}
 
 	public void setField(Field field) {
@@ -80,5 +75,11 @@ public class ProfileCard extends BaseEntity {
 
 	public void setGithub(Github github) {
 		this.github = github;
+	}
+
+
+	public void addProfileCardSkill(ProfileCardSkill profileCardSkill){
+		profileCardSkill.setProfileCard(this);
+		profileCardSkillSet.add(profileCardSkill);
 	}
 }

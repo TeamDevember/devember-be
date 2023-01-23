@@ -28,7 +28,9 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -43,7 +45,6 @@ public class ProfileCardService {
 	private final TagRepository tagRepository;
 	private final FieldRepository fieldRepository;
 	private final ProfileCardSkillRepository profileCardSkillRepository;
-	private final ProfileCardTagRepository profileCardTagRepository;
 
 	@Transactional
 	public void createProfileCard(String email) {
@@ -60,14 +61,14 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public void inputData(Long id, ProfileCardDto.updateRequest request) {
+	public void input(Long id, ProfileCardDto.updateRequest request) {
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
 		saveField(pc, request);
-		saveSnsList(pc, request);
-		saveSkillList(pc, request);
-		saveTagList(pc, request);
+		saveSnsSet(pc, request);
+		saveSkillSet(pc, request);
+		saveTagSet(pc, request);
 		pc.setStatusMessage(request.getStatusMessage());
 
 		profileCardRepository.save(pc);
@@ -84,7 +85,7 @@ public class ProfileCardService {
 				pc.getField(),
 				pc.getProfileCardSkillSet(),
 				pc.getSnsSet(),
-				pc.getProfileCardTagSet()
+				pc.getTagList()
 		);
 	}
 
@@ -94,38 +95,28 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public void saveSnsList(ProfileCard pc, ProfileCardDto.updateRequest request) {
+	public void saveSnsSet(ProfileCard pc, ProfileCardDto.updateRequest request) {
 
-		Set<Sns> allByProfileCard = snsRepository.findAllByProfileCard(pc);
-		snsRepository.deleteAllInBatch(allByProfileCard);
-
+		snsRepository.deleteAllInBatch(pc.getSnsSet());
 		Set<SnsDto> sSet = request.getSnsSet();
-
 		for (SnsDto snsDto : sSet) {
 			pc.addSns(Sns.from(pc, snsDto.getName(), snsDto.getAccount()));
 		}
-		Set<Sns> snsList = pc.getSnsSet();
-		snsRepository.saveAll(snsList);
 	}
 
 	@Transactional
-	public void saveTagList(ProfileCard pc, ProfileCardDto.updateRequest request) {
+	public void saveTagSet(ProfileCard pc, ProfileCardDto.updateRequest request) {
 
-		Set<ProfileCardTag> allByProfileCard = profileCardTagRepository.findAllByProfileCard(pc);
-		profileCardTagRepository.deleteAllInBatch(allByProfileCard);
+		tagRepository.deleteAllInBatch(pc.getTagList());
+		Set<String> requestTagSet = request.getTagSet();
 
-		Set<String> tSet = request.getTagSet();
-
-		for (String s : tSet) {
-			pc.setProfileCardTagSet(ProfileCardTag.from(pc,Tag.from(s)));
+		for (String s : requestTagSet) {
+			pc.addTag(Tag.from(s));
 		}
-		Set<ProfileCardTag> profileCardTagSet = pc.getProfileCardTagSet();
-		profileCardTagRepository.saveAll(profileCardTagSet);
-
 	}
 
 	@Transactional
-	public void saveSkillList(ProfileCard pc, ProfileCardDto.updateRequest request) {
+	public void saveSkillSet(ProfileCard pc, ProfileCardDto.updateRequest request) {
 		profileCardSkillRepository.deleteAllInBatch(pc.getProfileCardSkillSet());
 
 		Set<String> sList = request.getSkillSet();
@@ -133,9 +124,9 @@ public class ProfileCardService {
 
 		for (String s : sList) {
 			Skill skill = skillRepository.findByName(s).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
-			profileCardSkillList.add(ProfileCardSkill.from(pc, skill));
+			pc.addProfileCardSkill(ProfileCardSkill.from(pc, skill));
 		}
-		profileCardSkillRepository.saveAll(profileCardSkillList);
+		profileCardRepository.save(pc);
 	}
 
 	@Transactional
@@ -144,7 +135,7 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public void saveGithubInfo(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
+	public void saveGithub(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
 		ProfileCard pc = profileCardRepository.findById(request.getProfileCardId()).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 		Optional<Github> findGithub = githubRepository.findByProfileCard(pc);
 		if (findGithub.isPresent()) {
@@ -153,12 +144,12 @@ public class ProfileCardService {
 		} else {
 			Github github = Github.from(parsing(request.getGithubId()));
 			github.setProfileCard(pc);
-			githubRepository.save(github);
+//			githubRepository.save(github);
 			pc.setGithub(github);
 		}
 	}
 
-	public void removeGithub(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
+	public void deleteGithub(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
 		ProfileCard pc = profileCardRepository.findById(request.getProfileCardId()).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 		Github github = pc.getGithub();
 		githubRepository.delete(github);
@@ -221,13 +212,4 @@ public class ProfileCardService {
 				.recentCommitMessage(message)
 				.build();
 	}
-
-	@Transactional
-	public void deleteGithub(Long id) {
-
-		ProfileCard pc = profileCardRepository.findById(id).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
-		githubRepository.deleteById(pc.getGithub().getId());
-	}
-
-
 }

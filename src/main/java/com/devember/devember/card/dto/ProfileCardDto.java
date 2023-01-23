@@ -43,7 +43,7 @@ public class ProfileCardDto {
 		private Set<String> skillSet;
 		private Set<SnsDto> snsSet;
 
-		public static ReadResponse from(String statusMessage, Field field, Set<ProfileCardSkill> profileCardSkillSet, Set<Sns> snsSet, Set<ProfileCardTag> profileCardTagSet) {
+		public static ReadResponse from(String statusMessage, Field field, Set<ProfileCardSkill> profileCardSkillSet, Set<Sns> snsSet, Set<Tag> tagSet) {
 
 			Set<String> skills = new HashSet<>();
 			Set<SnsDto> snss = new HashSet<>();
@@ -57,8 +57,8 @@ public class ProfileCardDto {
 				snss.add(SnsDto.from(s));
 			}
 
-			for (ProfileCardTag profileCardTag : profileCardTagSet) {
-				tags.add(profileCardTag.getTag().getName());
+			for (Tag tag : tagSet) {
+				tags.add(tag.getName());
 			}
 
 			return ReadResponse.builder()
