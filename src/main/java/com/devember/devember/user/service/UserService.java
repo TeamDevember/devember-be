@@ -116,6 +116,16 @@ public class UserService {
 		tokenRepository.saveBlackList(accessToken, email, jwtUtils.ACCESS_TOKEN_EXPIRE_TIME.intValue());
 		tokenRepository.saveBlackList(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
 	}
+
+	public boolean checkUser(String email){
+		if(userRepository.findByEmail(email).isPresent()){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+
 //
 //	@Transactional
 //	public Authentication socialLogin(String token, String status) throws Exception {
