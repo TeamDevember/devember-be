@@ -1,26 +1,36 @@
 package com.devember.devember.card.entity;
 
-import com.devember.global.entity.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Field extends BaseEntity {
+public class Field {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne
-	private ProfileCard profileCard;
+	@OneToMany(mappedBy = "field")
+	private List<ProfileCard> profileCardList;
 
 	private String name;
+
+	public static Field from(String name){
+		return Field.builder()
+				.name(name)
+				.build();
+	}
+
+	public void addProfileCard(ProfileCard profileCard){
+		this.profileCardList = new ArrayList<>();
+		profileCardList.add(profileCard);
+	}
 }

@@ -1,6 +1,6 @@
 package com.devember.devember.user.service;
 
-import com.devember.global.config.MailComponent;
+import com.devember.devember.config.MailComponent;
 import com.devember.devember.user.dto.JoinDto;
 import com.devember.devember.user.dto.UserDto;
 import com.devember.devember.user.entity.CreateType;
@@ -12,7 +12,7 @@ import com.devember.devember.user.repository.UserRepository;
 import com.devember.devember.user.type.MailMessage;
 import com.devember.devember.user.type.UserErrorCode;
 import com.devember.devember.user.type.UserStatus;
-import com.devember.global.utils.JwtUtils;
+import com.devember.devember.utils.JwtUtils;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtils jwtUtils;
 	private final TokenRepository tokenRepository;
-	private final SocialRequest socialRequest;
+//	private final SocialRequest socialRequest;
 
 	@Transactional
 	public User signUp(JoinDto.Request request) {
@@ -117,37 +117,47 @@ public class UserService {
 		tokenRepository.saveBlackList(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
 	}
 
-	@Transactional
-	public Authentication socialLogin(String token, String status) throws Exception {
-		String email = "";
-		if(CreateType.KAKAO.getName().equals(status)) {
-			email = socialRequest.kakaoRequest(token);
+	public boolean checkUser(String email){
+		if(userRepository.findByEmail(email).isPresent()){
+			return true;
+		} else {
+			return false;
 		}
-		else if(CreateType.GOOGLE.getName().equals(status)){
-			email = socialRequest.googleRequest(token);
-		}
-		else if(CreateType.GITHUB.getName().equals(status)){
-			email = socialRequest.githubRequest(token);
-		}
-		else {
-			throw new RuntimeException("Not Found Login Type");
-		}
-
-		log.info("email = {}", email);
-		Optional<User> optionalUser = userRepository.findByEmail(email);
-
-		if(optionalUser.isEmpty()){
-			userRepository.save(User.builder()
-					.email(email)
-					.role(Role.ANONYMOUS)
-					.createType(CreateType.valueOf(status))
-					.userStatus(UserStatus.UNACTIVE)
-					.build()
-			);
-		}
-
-		Authentication authentication = jwtUtils.getAuthenticationByEmail(email);
-
-		return authentication;
 	}
+
+
+//
+//	@Transactional
+//	public Authentication socialLogin(String token, String status) throws Exception {
+//		String email = "";
+//		if(CreateType.KAKAO.getName().equals(status)) {
+//			email = socialRequest.kakaoRequest(token);
+//		}
+//		else if(CreateType.GOOGLE.getName().equals(status)){
+//			email = socialRequest.googleRequest(token);
+//		}
+//		else if(CreateType.GITHUB.getName().equals(status)){
+//			email = socialRequest.githubRequest(token);
+//		}
+//		else {
+//			throw new RuntimeException("Not Found Login Type");
+//		}
+//
+//		log.info("email = {}", email);
+//		Optional<User> optionalUser = userRepository.findByEmail(email);
+//
+//		if(optionalUser.isEmpty()){
+//			userRepository.save(User.builder()
+//					.email(email)
+//					.role(Role.ANONYMOUS)
+//					.createType(CreateType.valueOf(status))
+//					.userStatus(CardStatus.UNACTIVE)
+//					.build()
+//			);
+//		}
+//
+//		Authentication authentication = jwtUtils.getAuthenticationByEmail(email);
+//
+//		return authentication;
+//	}
 }
