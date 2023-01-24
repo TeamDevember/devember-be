@@ -47,7 +47,7 @@ public class JwtUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getName() {
-        return user.getName();
+        return user.getNickname();
     }
 
     @Override
