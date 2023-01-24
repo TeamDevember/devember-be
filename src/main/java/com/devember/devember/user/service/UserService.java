@@ -48,7 +48,7 @@ public class UserService {
 			savedUser = optionalUser.get();
 			if(savedUser.getCreateType() != CreateType.EMAIL){
 				savedUser.setUserStatus(UserStatus.ACTIVE);
-				savedUser.setName(user.getName());
+				savedUser.setNickname(user.getNickname());
 			}
 			else if(savedUser.getCreateType() == CreateType.EMAIL) {
 				return null;
