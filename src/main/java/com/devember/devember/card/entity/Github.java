@@ -30,8 +30,7 @@ public class Github extends BaseEntity {
 
 	private String url;
 
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "profile_card_id")
+	@OneToOne(mappedBy = "github", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
 
 	private LocalDate recentCommitAt;

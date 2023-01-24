@@ -37,7 +37,8 @@ public class ProfileCard extends BaseEntity {
 	@JoinColumn(name = "field_id")
 	private Field field;
 
-	@OneToOne(mappedBy = "profileCard", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
+	@JoinColumn(name = "github_id", unique = true)
 	private Github github;
 
 	@OneToMany(mappedBy = "profileCard",cascade = CascadeType.ALL)

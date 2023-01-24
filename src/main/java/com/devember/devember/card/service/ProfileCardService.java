@@ -28,8 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -91,7 +89,8 @@ public class ProfileCardService {
 
 	@Transactional
 	public void saveField(ProfileCard pc, ProfileCardDto.updateRequest request) {
-		pc.setField(fieldRepository.findByName(request.getField()).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND)));
+		pc.setField(fieldRepository.findByName(request.getField())
+				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND)));
 	}
 
 	@Transactional
@@ -106,7 +105,6 @@ public class ProfileCardService {
 
 	@Transactional
 	public void saveTagSet(ProfileCard pc, ProfileCardDto.updateRequest request) {
-
 		tagRepository.deleteAllInBatch(pc.getTagList());
 		Set<String> requestTagSet = request.getTagSet();
 
@@ -118,9 +116,7 @@ public class ProfileCardService {
 	@Transactional
 	public void saveSkillSet(ProfileCard pc, ProfileCardDto.updateRequest request) {
 		profileCardSkillRepository.deleteAllInBatch(pc.getProfileCardSkillSet());
-
 		Set<String> sList = request.getSkillSet();
-		Set<ProfileCardSkill> profileCardSkillList = new HashSet<>();
 
 		for (String s : sList) {
 			Skill skill = skillRepository.findByName(s).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
@@ -137,16 +133,10 @@ public class ProfileCardService {
 	@Transactional
 	public void saveGithub(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
 		ProfileCard pc = profileCardRepository.findById(request.getProfileCardId()).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
-		Optional<Github> findGithub = githubRepository.findByProfileCard(pc);
-		if (findGithub.isPresent()) {
-			Github github = findGithub.get();
-			github.setAll(parsing(request.getGithubId()));
-		} else {
-			Github github = Github.from(parsing(request.getGithubId()));
-			github.setProfileCard(pc);
-//			githubRepository.save(github);
-			pc.setGithub(github);
-		}
+		Github github = Github.from(parsing(request.getGithubId()));
+		github.setProfileCard(pc);
+		Github savedGithub = githubRepository.save(github);
+		pc.setGithub(savedGithub);
 	}
 
 	public void deleteGithub(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
@@ -156,7 +146,6 @@ public class ProfileCardService {
 	}
 
 	public GithubDto parsing(String githubId) throws IOException, ParseException, java.text.ParseException {
-		System.out.println(githubId);
 		JSONParser parser = new JSONParser();
 
 		URL mainUrl = new URL("https://api.github.com/users/" + githubId);
@@ -164,9 +153,6 @@ public class ProfileCardService {
 		BufferedReader br = new BufferedReader(new InputStreamReader(mainUrl.openStream(), StandardCharsets.UTF_8));
 		String result = br.readLine();
 		JSONObject o1 = (JSONObject) parser.parse(result);
-
-		System.out.println(o1.toString());
-
 
 		URL subUrl = new URL("https://api.github.com/users/" + githubId + "/events");
 		BufferedReader subBr = new BufferedReader(new InputStreamReader(subUrl.openStream(), StandardCharsets.UTF_8));

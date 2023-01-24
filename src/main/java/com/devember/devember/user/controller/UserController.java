@@ -70,7 +70,6 @@ public class UserController {
 		return ResponseEntity.ok().body(res);
 	}
 
-
 	@PostMapping("/exist")
 	public ResponseEntity<?> existUserByEmail(String email){
 		return new ResponseEntity<>(userService.checkUser(email), HttpStatus.OK);
