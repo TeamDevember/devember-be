@@ -1,0 +1,81 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/pipeline
+    username: root
+    password: bell1234
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+  redis:
+    host: localhost
+    port: 6379
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${mail.username}
+    password: ${mail.password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          starttls:
+            enable: true
+
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          google:
+#            client-id: 397539299114-hvi7akarfkbb79f8rbob13su0sss687q.apps.googleusercontent.com
+#            client-secret: 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
+#            redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
+#            scope:
+#              - email
+#              - profile
+#          github:
+#            client-id: 799bb47ceefadcf780f9
+#            client-secret: 5fa8956b64081193e7d4d2fa6ee5caae6ddaf99e
+#            redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
+#            scope:
+#              - user:email
+#              - read:user
+#          kakao:
+#            client-id: 7ceff803e4813f5ff2b01edf7167f4e9
+#            client-secret: zuqg2rv9YlKp45P3qoHWe8KaoQzfaOrv
+#            client-name: Kakao
+#            authorizationGrantType: authorization_code
+#            redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
+#            clientAuthenticationMethod: post
+#            scope: account_email, profile_nickname
+#        provider:
+#          kakao:
+#            authorization-uri: https://kauth.kakao.com/oauth/authorize
+#            token-uri: https://kauth.kakao.com/oauth/token
+#            user-info-uri: https://kapi.kakao.com/v2/user/me
+#            user-name-attribute: id
+
+
+jwt:
+  token-name: poly-token
+  secret: bXktcHJvamVjdC1uYW1lLXBvbHltb3JwaC1hbmQtdGhpcy1pcy1qd3QtYXV0aGVudGljYXRpb24tc2VjcmV0LWtleS1mb3ItSFM1MTItc2lnbldpdGg=
+  access-token-expire-time: 1800000
+  refresh-token-expire-time: 604800000
+
+test:
+  email: qwejklasd@naver.com
+
+server:
+  port: 8000
+
+kakao:
+  client-id: ${kakao.clientId}
+  redirect-uri: ${kakao.redirectURI}
+
+github:
+  client-id: ${github.clientId}
+  client-secret: ${github.clientSecret}
