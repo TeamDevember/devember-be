@@ -45,8 +45,8 @@ public class ProfileCardService {
 	private final ProfileCardSkillRepository profileCardSkillRepository;
 
 	@Transactional
-	public void createProfileCard(String email) {
-
+	public ProfileCard createProfileCard(String email) {
+		log.info("hello world");
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
@@ -55,7 +55,8 @@ public class ProfileCardService {
 		}
 		ProfileCard pc = new ProfileCard();
 		pc.setUser(user);
-		profileCardRepository.save(pc);
+		log.info("hello {}", pc.getStatusMessage());
+		return profileCardRepository.save(pc);
 	}
 
 	@Transactional

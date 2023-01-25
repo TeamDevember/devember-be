@@ -2,6 +2,7 @@ package com.devember.devember.utils;
 
 import com.devember.devember.config.security.service.CustomUserDetailsService;
 import com.devember.devember.config.security.userdetail.JwtUserDetails;
+import com.devember.devember.user.entity.User;
 import com.devember.devember.user.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -76,6 +78,24 @@ public class JwtUtils {
 
     public String createAccessToken(Authentication authentication){
         return createToken(authentication, ACCESS_TOKEN_EXPIRE_TIME);
+    }
+
+    public String createAccessToken(JwtUserDetails userDetails) {
+        String role = userDetails.getAuthorities().toString();
+
+        Claims claims = Jwts.claims();
+        claims.setSubject(userDetails.getUserId());
+        claims.put("email", userDetails.getEmail());
+        claims.put("role", role);
+        claims.put("name", userDetails.getName());
+
+        Date now = new Date();
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME))
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
     }
 
     public String createRefreshToken(Authentication authentication) {
