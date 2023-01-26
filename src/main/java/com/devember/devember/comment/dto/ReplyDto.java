@@ -1,18 +1,17 @@
 package com.devember.devember.comment.dto;
 
 
-import com.devember.devember.comment.entity.Comment;
+import com.devember.devember.comment.entity.Reply;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.time.LocalDate;
 
-public class CommentDto {
+public class ReplyDto {
 
 	@Getter
 	@Setter
-	@NoArgsConstructor
-	@AllArgsConstructor
+
 	public static class CreateRequest {
 
 		private String contents;
@@ -22,22 +21,18 @@ public class CommentDto {
 
 	@Getter
 	@Setter
-	@NoArgsConstructor
-	@AllArgsConstructor
 	public static class UpdateRequest {
 
 		private String contents;
-		private Long commentId;
+		private Long replyId;
 
 	}
 
 	@Getter
 	@Setter
-	@NoArgsConstructor
-	@AllArgsConstructor
 	public static class DeleteRequest {
 
-		private Long commentId;
+		private Long replyId;
 
 	}
 
@@ -50,15 +45,18 @@ public class CommentDto {
 
 		private String contents;
 		private LocalDate createdAt;
+		private Long replyId;
 		private Long commentId;
 
-		public static Response from(Comment comment){
+		public static ReplyDto.Response from(Reply reply){
 
 			return Response.builder()
-					.createdAt(comment.getCreatedAt().toLocalDate())
-					.contents(comment.getContent())
-					.commentId(comment.getId())
+					.createdAt(reply.getCreatedAt().toLocalDate())
+					.contents(reply.getContent())
+					.replyId(reply.getId())
+					.commentId(reply.getId())
 					.build();
 		}
 	}
+
 }

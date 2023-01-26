@@ -1,11 +1,14 @@
 package com.devember.devember.card.entity;
 
+import com.devember.devember.comment.entity.Comment;
 import com.devember.devember.entity.BaseEntity;
 import com.devember.devember.user.entity.User;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static javax.persistence.FetchType.LAZY;
@@ -24,6 +27,9 @@ public class ProfileCard extends BaseEntity {
 
 	@OneToOne(fetch = LAZY)
 	private User user;
+
+	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
+	private List<Comment> commentList = new ArrayList<>();
 
 	@OneToMany(mappedBy = "profileCard",cascade = CascadeType.ALL)
 	private Set<Sns> snsSet = new HashSet<>();
@@ -53,6 +59,11 @@ public class ProfileCard extends BaseEntity {
 	public void addSns(Sns sns) {
 		sns.setProfileCard(this);
 		snsSet.add(sns);
+	}
+
+	public void addComment(Comment comment) {
+		comment.setProfileCard(this);
+		commentList.add(comment);
 	}
 
 	public void addTag(Tag tag){

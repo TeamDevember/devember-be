@@ -2,39 +2,78 @@ package com.devember.devember.comment.controller;
 
 
 import com.devember.devember.comment.dto.CommentDto;
+import com.devember.devember.comment.dto.ReplyDto;
 import com.devember.devember.comment.service.CommentService;
+import com.devember.devember.comment.service.ReplyService;
+import com.devember.devember.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/comment")
+@RequestMapping("/cards/{id}/comments")
 @RestController
 @RequiredArgsConstructor
 public class CommentController {
 
 	private final CommentService commentService;
+	private final ReplyService replyService;
+	private final JwtUtils jwtUtils;
+
+	// 댓글
 
 	@PostMapping
-	public ResponseEntity<?> write(@RequestBody CommentDto.Request request){
-		commentService.write(request);
+	public ResponseEntity<?> writeComment(@PathVariable Long id, @RequestBody CommentDto.CreateRequest request, @RequestHeader(name = "Authorization") String token) {
+		String email = jwtUtils.getUserEmailFromToken(token);
+		commentService.write(id, request, email);
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<?> read(@PathVariable Long id){
+	@GetMapping
+	public ResponseEntity<?> readComment(@PathVariable Long id) {
 		return new ResponseEntity(commentService.read(id), HttpStatus.OK);
 	}
 
-	@PutMapping("/{id}")
-	public ResponseEntity<?> update(@PathVariable Long id, @RequestBody CommentDto.Request request){
-		commentService.update(id, request);
+	@PutMapping
+	public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody CommentDto.UpdateRequest request, @RequestHeader(name = "Authorization") String token){
+		String email = jwtUtils.getUserEmailFromToken(token);
+		commentService.update(id, request, email);
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> delete(@PathVariable Long id){
-		commentService.delete(id);
+	@DeleteMapping
+	public ResponseEntity<?> deleteComment(@PathVariable Long id, @RequestBody CommentDto.DeleteRequest request, @RequestHeader(name = "Authorization") String token) {
+		String email = jwtUtils.getUserEmailFromToken(token);
+		commentService.delete(id, request, email);
 		return ResponseEntity.ok().build();
 	}
+
+	// 답글
+
+	@PostMapping("/{commentId}")
+	public ResponseEntity<?> writeReply(@PathVariable Long commentId, @RequestBody ReplyDto.CreateRequest request, @RequestHeader(name = "Authorization") String token) {
+		String email = jwtUtils.getUserEmailFromToken(token);
+		replyService.write(commentId, request, email);
+		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping("/{commentId}")
+	public ResponseEntity<?> readReply(@PathVariable Long commentId) {
+		return new ResponseEntity(replyService.read(commentId), HttpStatus.OK);
+	}
+
+	@PutMapping("/{commentId}")
+	public ResponseEntity<?> updateReply(@PathVariable Long commentId, @RequestBody ReplyDto.UpdateRequest request, @RequestHeader(name = "Authorization") String token){
+		String email = jwtUtils.getUserEmailFromToken(token);
+		replyService.update(commentId, request, email);
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping("/{commentId}")
+	public ResponseEntity<?> deleteReply(@PathVariable Long commentId, @RequestBody ReplyDto.DeleteRequest request, @RequestHeader(name = "Authorization") String token) {
+		String email = jwtUtils.getUserEmailFromToken(token);
+		replyService.delete(commentId, request, email);
+		return ResponseEntity.ok().build();
+	}
+
 }
