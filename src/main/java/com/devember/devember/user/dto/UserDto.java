@@ -12,23 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 public class UserDto {
-
-	private UUID id;
-
-	private String email;
-	private String name;
-	private String nickname;
-	private String password;
-
-	private LocalDateTime createdAt;
-	private LocalDateTime modifiedAt;
-
-	private UserStatus userStatus;
-
-
 	@Builder
 	@Getter
 	public static class JoinResponse{
@@ -42,6 +26,29 @@ public class UserDto {
 					.nickname(user.getName())
 					.createdAt(user.getCreatedAt())
 					.build();
+		}
+	}
+
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class Request {
+		private String nickname;
+		private String password;
+
+
+	}
+
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class Response {
+		private String result;
+
+		public static Response PasswordNotMatch() {
+			return Response.builder().result("fail").build();
 		}
 	}
 }

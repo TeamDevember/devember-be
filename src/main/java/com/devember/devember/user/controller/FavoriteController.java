@@ -26,10 +26,11 @@ public class FavoriteController {
     @Secured("ROLE_USER")
     public ResponseEntity<?> create(
             @RequestBody FavoriteDto.Request favoriteDto
-            ) {
-        JwtUserDetails user = getUser();
+    ) {
+        String userEmail = getUserEmail();
         String email = favoriteDto.getEmail();
-        userService.addFavorite(user.getEmail(), email);
+
+        userService.addFavorite(userEmail, email);
         return ResponseEntity.ok().build();
     }
 
@@ -38,14 +39,16 @@ public class FavoriteController {
     public ResponseEntity<?> delete(
             @RequestBody FavoriteDto.Request favoriteDto
     ) {
-        JwtUserDetails user = getUser();
+        String userEmail = getUserEmail();
         String email = favoriteDto.getEmail();
-        userService.deleteFavorite(user.getEmail(), email);
+
+        userService.deleteFavorite(userEmail, email);
         return ResponseEntity.ok().build();
     }
 
-    private JwtUserDetails getUser() {
+    private String getUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (JwtUserDetails) authentication.getPrincipal();
+        JwtUserDetails jwtUserDetails = (JwtUserDetails) authentication.getPrincipal();
+        return jwtUserDetails.getEmail();
     }
 }

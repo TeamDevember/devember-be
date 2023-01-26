@@ -5,9 +5,7 @@ import lombok.Getter;
 @Getter
 public enum CreateType {
     EMAIL("EMAIL"),
-    GOOGLE("GOOGLE"),
     GITHUB("GITHUB"),
-    KAKAO("KAKAO")
     ;
 
     public String name;

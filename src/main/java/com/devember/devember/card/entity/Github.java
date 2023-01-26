@@ -3,6 +3,7 @@ package com.devember.devember.card.entity;
 
 import com.devember.devember.card.dto.GithubDto;
 import com.devember.devember.entity.BaseEntity;
+import com.devember.devember.user.entity.User;
 import lombok.*;
 
 import javax.persistence.*;
@@ -32,6 +33,7 @@ public class Github extends BaseEntity {
 
 	@OneToOne(mappedBy = "github", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
+
 
 	private LocalDate recentCommitAt;
 	private String recentCommitMessage;

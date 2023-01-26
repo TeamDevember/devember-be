@@ -59,6 +59,9 @@ public class User extends BaseEntity {
 	@OneToMany(mappedBy = "user", fetch = LAZY)
 	private Set<Favorite> favorites = new HashSet<>();
 
+	@Column(unique = true)
+	private Long githubNumberId;
+
 	public static User from(JoinDto.Request request){
 		return User.builder().email(request.getEmail())
 				.name(request.getNickname())

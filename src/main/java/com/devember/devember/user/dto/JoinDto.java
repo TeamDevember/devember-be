@@ -3,6 +3,8 @@ package com.devember.devember.user.dto;
 import com.devember.devember.user.entity.User;
 import lombok.*;
 
+import javax.validation.constraints.NotNull;
+
 @Getter
 public class JoinDto {
 
@@ -15,6 +17,7 @@ public class JoinDto {
 		private String email;
 		private String nickname;
 		private String password;
+		private Long githubNumberId;
 	}
 
 	@Builder

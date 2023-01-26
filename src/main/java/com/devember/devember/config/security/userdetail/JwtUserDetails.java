@@ -10,11 +10,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class JwtUserDetails implements UserDetails, OAuth2User {
+public class JwtUserDetails implements UserDetails {
 
     private User user;
     private Collection<? extends GrantedAuthority> authorities;
-    private Map<String, Object> attributes;
 
     public JwtUserDetails(User user) {
         super();
@@ -26,12 +25,6 @@ public class JwtUserDetails implements UserDetails, OAuth2User {
         return new JwtUserDetails(user);
     }
 
-    public static JwtUserDetails create(User user, Map<String, Object> attributes){
-        JwtUserDetails jwtUserDetails = new JwtUserDetails(user);
-        jwtUserDetails.setAttributes(attributes);
-
-        return jwtUserDetails;
-    }
 
     public String getUserId() {
         return user.getId().toString();
@@ -41,19 +34,6 @@ public class JwtUserDetails implements UserDetails, OAuth2User {
         return user.getEmail();
     }
 
-    public void setAttributes(Map<String, Object> attributes){
-        this.attributes = attributes;
-    }
-
-    @Override
-    public String getName() {
-        return user.getName();
-    }
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return attributes;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
