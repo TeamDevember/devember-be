@@ -2,6 +2,7 @@ package com.devember.devember.user.entity;
 
 
 import com.devember.devember.card.entity.ProfileCard;
+import com.devember.devember.comment.entity.Comment;
 import com.devember.devember.entity.BaseEntity;
 import com.devember.devember.user.dto.JoinDto;
 import com.devember.devember.user.type.UserStatus;
@@ -13,6 +14,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static javax.persistence.FetchType.LAZY;
@@ -50,8 +53,14 @@ public class User extends BaseEntity {
 	@OneToOne(mappedBy = "user", fetch = LAZY)
 	private ProfileCard profileCard;
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private List<Comment> commentList = new ArrayList<>();
 
 
+	public void addComment(Comment comment){
+		comment.setUser(this);
+		commentList.add(comment);
+	}
 
 	public static User from(JoinDto.Request request){
 		return User.builder().email(request.getEmail())

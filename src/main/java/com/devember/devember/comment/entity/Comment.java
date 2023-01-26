@@ -1,13 +1,15 @@
 package com.devember.devember.comment.entity;
 
+import com.devember.devember.card.entity.ProfileCard;
 import com.devember.devember.comment.dto.CommentDto;
-import com.devember.devember.user.entity.User;
 import com.devember.devember.entity.BaseEntity;
+import com.devember.devember.user.entity.User;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -15,30 +17,43 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 public class Comment extends BaseEntity implements Serializable {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_card_id")
+    private ProfileCard profileCard;
 
-    @Column(name = "content")
     private String content;
 
-    public static Comment from(CommentDto.Request request){
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
+    List<Reply> replyList = new ArrayList<>();
+
+
+    public void addReply(Reply reply){
+        reply.setComment(this);
+        replyList.add(reply);
+    }
+
+
+    public static Comment from(CommentDto.CreateRequest createRequest){
         return Comment.builder()
-                .content(request.getContents())
-                .user(request.getUser())
+                .content(createRequest.getContents())
                 .build();
     }
 
-    public void update (CommentDto.Request request){
-        this.content = request.getContents();
-        this.user = request.getUser();
+    public static Comment from(CommentDto.UpdateRequest updateRequest){
+        return Comment.builder()
+                .content(updateRequest.getContents())
+                .build();
     }
+
 }
