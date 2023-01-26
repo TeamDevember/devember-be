@@ -51,6 +51,7 @@ public class CommentDto {
 		private String contents;
 		private LocalDate createdAt;
 		private Long commentId;
+		private String nickname;
 
 		public static Response from(Comment comment){
 
@@ -58,6 +59,7 @@ public class CommentDto {
 					.createdAt(comment.getCreatedAt().toLocalDate())
 					.contents(comment.getContent())
 					.commentId(comment.getId())
+					.nickname(comment.getUser().getNickname())
 					.build();
 		}
 	}
