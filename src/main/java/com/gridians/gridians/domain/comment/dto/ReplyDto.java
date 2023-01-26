@@ -44,6 +44,7 @@ public class ReplyDto {
 	public static class Response  {
 
 		private String contents;
+		private String nickname;
 		private LocalDate createdAt;
 		private Long replyId;
 		private Long commentId;
@@ -53,8 +54,9 @@ public class ReplyDto {
 			return Response.builder()
 					.createdAt(reply.getCreatedAt().toLocalDate())
 					.contents(reply.getContent())
+					.nickname(reply.getUser().getNickname())
 					.replyId(reply.getId())
-					.commentId(reply.getId())
+					.commentId(reply.getComment().getId())
 					.build();
 		}
 	}

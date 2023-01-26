@@ -1,8 +1,8 @@
 package com.gridians.gridians.domain.card.dto;
 
 
-import com.gridians.gridians.card.entity.*;
 import com.gridians.gridians.domain.card.entity.*;
+import com.gridians.gridians.domain.comment.dto.CommentDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ProfileCardDto {
@@ -44,7 +45,9 @@ public class ProfileCardDto {
 		private Set<String> skillSet;
 		private Set<SnsDto> snsSet;
 
-		public static ReadResponse from(String statusMessage, Field field, Set<ProfileCardSkill> profileCardSkillSet, Set<Sns> snsSet, Set<Tag> tagSet) {
+		private List<CommentDto.Response> commentList;
+
+		public static ReadResponse from(String statusMessage, Field field, Set<ProfileCardSkill> profileCardSkillSet, Set<Sns> snsSet, Set<Tag> tagSet, List<CommentDto.Response> commentDtoList) {
 
 			Set<String> skills = new HashSet<>();
 			Set<SnsDto> snss = new HashSet<>();
@@ -63,6 +66,7 @@ public class ProfileCardDto {
 			}
 
 			return ReadResponse.builder()
+					.commentList(commentDtoList)
 					.statusMessage(statusMessage)
 					.field(field.getName())
 					.skillSet(skills)

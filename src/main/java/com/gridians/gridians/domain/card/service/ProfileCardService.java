@@ -3,12 +3,14 @@ package com.gridians.gridians.domain.card.service;
 import com.gridians.gridians.domain.card.dto.GithubDto;
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.domain.card.dto.ProfileCardDto.SnsDto;
-import com.gridians.gridians.card.entity.*;
 import com.gridians.gridians.domain.card.entity.*;
 import com.gridians.gridians.domain.card.exception.CardException;
-import com.gridians.gridians.card.repository.*;
 import com.gridians.gridians.domain.card.repository.*;
 import com.gridians.gridians.domain.card.type.CardErrorCode;
+import com.gridians.gridians.domain.comment.dto.CommentDto;
+import com.gridians.gridians.domain.comment.entity.Comment;
+import com.gridians.gridians.domain.comment.repository.CommentRepository;
+import com.gridians.gridians.domain.comment.repository.ReplyRepository;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
@@ -30,6 +32,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -41,6 +45,8 @@ public class ProfileCardService {
 	private final UserRepository userRepository;
 	private final GithubRepository githubRepository;
 	private final SkillRepository skillRepository;
+	private final CommentRepository commentRepository;
+	private final ReplyRepository replyRepository;
 	private final SnsRepository snsRepository;
 	private final TagRepository tagRepository;
 	private final FieldRepository fieldRepository;
@@ -80,12 +86,22 @@ public class ProfileCardService {
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
+		List<Comment> commentList = commentRepository.findAllByProfileCard(pc);
+		List<CommentDto.Response> commentDtoList = new ArrayList<>();
+
+		for (Comment comment : commentList) {
+			commentDtoList.add(CommentDto.Response.from(comment));
+		}
+
+
+
 		return ProfileCardDto.ReadResponse.from(
 				pc.getStatusMessage(),
 				pc.getField(),
 				pc.getProfileCardSkillSet(),
 				pc.getSnsSet(),
-				pc.getTagList()
+				pc.getTagList(),
+				commentDtoList
 		);
 	}
 
