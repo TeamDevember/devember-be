@@ -47,6 +47,8 @@ public class ProfileCardDto {
 
 		private List<CommentDto.Response> commentList;
 
+		private String imageSrc;
+
 		public static ReadResponse from(String statusMessage, Field field, Set<ProfileCardSkill> profileCardSkillSet, Set<Sns> snsSet, Set<Tag> tagSet, List<CommentDto.Response> commentDtoList) {
 
 			Set<String> skills = new HashSet<>();

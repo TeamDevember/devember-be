@@ -8,7 +8,10 @@ import com.gridians.gridians.global.utils.CookieUtils;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +19,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Slf4j
 @RequestMapping("/user")
@@ -26,6 +33,17 @@ public class UserController {
 	private final UserService userService;
 	private final JwtUtils jwtUtils;
 	private final AuthenticationManager authenticationManager;
+
+	// Get요청은 처음과 나중에 다르게 적용해도 됨
+	@GetMapping("/images/{id}")
+	public ResponseEntity<Resource> getImage(@PathVariable String id) throws IOException {
+		// 실제 주소가 되어야 함
+		String file = "/Users/j/j/images/" + id + ".png";
+		Path path = new File(file).toPath();
+		FileSystemResource resource = new FileSystemResource(path);
+
+		return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(path))).body(resource);
+	}
 
 	@PostMapping("/signup")
 	public ResponseEntity<?> signUp(@RequestBody JoinDto.Request request) {

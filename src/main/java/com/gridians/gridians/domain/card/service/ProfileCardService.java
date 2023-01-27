@@ -22,9 +22,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -67,10 +69,11 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public void input(Long id, ProfileCardDto.updateRequest request) {
+	public void input(Long id, ProfileCardDto.updateRequest request, MultipartFile multipartFile) throws IOException {
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
+		saveFile(pc.getUser(), multipartFile);
 		saveField(pc, request);
 		saveSnsSet(pc, request);
 		saveSkillSet(pc, request);
@@ -215,5 +218,18 @@ public class ProfileCardService {
 				.recentCommitAt(realDate)
 				.recentCommitMessage(message)
 				.build();
+	}
+
+
+	public void saveFile(User user, MultipartFile multipartFile) throws IOException {
+
+		String originalName = multipartFile.getOriginalFilename();
+		String uuid = user.getId().toString();
+		String extension = originalName.substring(originalName.lastIndexOf("."));
+		String saveName = uuid + extension;
+		String savePath = "/Users/j/j/images/" + saveName;
+
+		multipartFile.transferTo(new File(savePath));
+
 	}
 }

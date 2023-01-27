@@ -125,6 +125,11 @@ public class UserService {
 		}
 	}
 
+	public void getProfileImage(String id) {
+		UUID uuid = UUID.fromString(id);
+
+	}
+
 
 //
 //	@Transactional
