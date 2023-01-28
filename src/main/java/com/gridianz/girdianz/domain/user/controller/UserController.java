@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 @Slf4j
 @RequestMapping("/user")
@@ -32,13 +33,8 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody JoinDto.Request request) {
-        User user;
-        try {
-            user = userService.signUp(request);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+    public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
+        User user = userService.signUp(request);
 
         return new ResponseEntity(JoinDto.Response.from(user), HttpStatus.OK);
     }
@@ -121,11 +117,32 @@ public class UserController {
 
     @Secured("ROLE_USER")
     @PutMapping("update-nickname")
-    public ResponseEntity updateEmail(
+    public ResponseEntity updateNickname(
             @RequestBody UserDto.Request userDto
     ) {
         String userEmail = getUserEmail();
         userService.updateNickname(userEmail, userDto.getNickname());
+        return ResponseEntity.ok().build();
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping("update-email")
+    public ResponseEntity sendEmailVerify(
+            @RequestBody UserDto.Request userDto
+    ) {
+        String userEmail = getUserEmail();
+        userService.sendUpdateEmail(userEmail, userDto.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    @Secured("ROLE_USER")
+    @PutMapping("update-email")
+    public ResponseEntity updateEmail(
+            @RequestBody UserDto.Request userDto
+    ) {
+        String userEmail = getUserEmail();
+        userService.verifyUserPassword(userEmail, userDto.getPassword());
+        userService.updateEmail(userEmail, userDto.getEmail());
         return ResponseEntity.ok().build();
     }
 

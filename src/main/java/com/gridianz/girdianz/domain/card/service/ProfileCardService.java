@@ -2,10 +2,8 @@ package com.gridianz.girdianz.domain.card.service;
 
 import com.gridianz.girdianz.domain.card.dto.GithubDto;
 import com.gridianz.girdianz.domain.card.dto.ProfileCardDto;
-import com.gridianz.girdianz.card.entity.*;
 import com.gridianz.girdianz.domain.card.entity.*;
 import com.gridianz.girdianz.domain.card.exception.CardException;
-import com.gridianz.girdianz.card.repository.*;
 import com.gridianz.girdianz.domain.card.repository.*;
 import com.gridianz.girdianz.domain.card.type.CardErrorCode;
 import com.gridianz.girdianz.domain.user.entity.User;

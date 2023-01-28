@@ -162,7 +162,7 @@ public class UserService {
         Long githubId = Long.valueOf(socialRequest.githubRequest(token));
 
         User user = userRepository.findByGithubNumberId(githubId)
-                .orElseThrow(() -> new EntityNotFoundException("user not found"));
+                .orElseThrow(() -> new GithubIdNotFoundException("user not found", githubId.toString()));
 
         if (user.getUserStatus() == UserStatus.UNACTIVE) {
             throw new EmailNotVerifiedException("email not verified");
@@ -184,7 +184,7 @@ public class UserService {
         String uuid = UUID.randomUUID().toString();
         updatePassword(email, uuid);
 
-        mailComponent.sendMail(email, MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
+        mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
     }
 
     @Transactional
@@ -209,5 +209,15 @@ public class UserService {
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException(email + "not found"));
+    }
+
+    public void updateEmail(String userEmail, String updateEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException(userEmail + "not found"));
+        user.setEmail(updateEmail);
+    }
+
+    public void sendUpdateEmail(String userEmail, String updateEmail) {
+        mailComponent.sendUpdateEmail(updateEmail, MailMessage.EMAIL_EMAIL_UPDATE, updateEmail);
     }
 }

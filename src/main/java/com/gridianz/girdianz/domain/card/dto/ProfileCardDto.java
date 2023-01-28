@@ -1,7 +1,6 @@
 package com.gridianz.girdianz.domain.card.dto;
 
 
-import com.gridianz.girdianz.card.entity.*;
 import com.gridianz.girdianz.domain.card.entity.*;
 import lombok.Builder;
 import lombok.Getter;
