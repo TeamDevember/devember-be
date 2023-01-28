@@ -173,31 +173,7 @@ public class UserService {
 
     public void verifyUserPassword(String email, String password) {
         User user = getUserByEmail(email);
-
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new PasswordNotMatchException("password not match");
-        }
-    }
-
-    @Transactional
-    public void findPassword(String email) {
-        String uuid = UUID.randomUUID().toString();
-        updatePassword(email, uuid);
-
-        mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
-    }
-
-    @Transactional
-    public void updatePassword(String email, String password) {
-        User user = getUserByEmail(email);
-
-        user.setPassword(passwordEncoder.encode(password));
-    }
-
-    @Transactional
-    public void updateNickname(String userEmail, String nickname) {
-        User user = getUserByEmail(userEmail);
-        user.setNickname(nickname);
+        verifyPassword(password, user.getPassword());
     }
 
     @Transactional
@@ -206,18 +182,51 @@ public class UserService {
         user.setUserStatus(UserStatus.DELETED);
     }
 
+    @Transactional
+    public void updateEmail(String userEmail, String updateEmail) {
+        User user = getUserByEmail(userEmail);
+        user.setEmail(updateEmail);
+    }
+
+    @Transactional
+    public void updateUser(String userEmail, UserDto.Request userDto) {
+        User user = getUserByEmail(userEmail);
+
+        user.setNickname(userDto.getNickname());
+
+        if(!userDto.getPassword().isEmpty() && verifyPassword(userDto.getPassword(), user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
+        }
+    }
+
+    public void findPassword(String email) {
+        String uuid = UUID.randomUUID().toString();
+        User user = getUserByEmail(email);
+        updatePassword(user, uuid);
+
+        mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
+    }
+
+    public void sendUpdateEmail(String userEmail, String updateEmail) {
+        mailComponent.sendUpdateEmail(updateEmail, MailMessage.EMAIL_EMAIL_UPDATE, updateEmail);
+    }
+
+
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException(email + "not found"));
     }
 
-    public void updateEmail(String userEmail, String updateEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new EntityNotFoundException(userEmail + "not found"));
-        user.setEmail(updateEmail);
+    @Transactional
+    private void updatePassword(User user, String password) {
+        user.setPassword(passwordEncoder.encode(password));
     }
 
-    public void sendUpdateEmail(String userEmail, String updateEmail) {
-        mailComponent.sendUpdateEmail(updateEmail, MailMessage.EMAIL_EMAIL_UPDATE, updateEmail);
+    private boolean verifyPassword(String rawPassword, String cryptPassword) {
+        if (!passwordEncoder.matches(rawPassword, cryptPassword)) {
+            throw new PasswordNotMatchException("password not match");
+        }
+
+        return true;
     }
 }

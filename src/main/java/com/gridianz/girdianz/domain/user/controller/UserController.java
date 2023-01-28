@@ -94,44 +94,22 @@ public class UserController {
     }
 
     @Secured("ROLE_USER")
-    @PostMapping("verify-password")
-    public ResponseEntity resetPassword(
-            @RequestBody UserDto.Request userDto
-    ) {
-        String email = getUserEmail();
-        userService.verifyUserPassword(email, userDto.getPassword());
-
-        return ResponseEntity.ok().build();
-    }
-
-    @Secured("ROLE_USER")
-    @PutMapping("update-password")
-    public ResponseEntity changePassword(
-            @RequestBody UserDto.Request userDto
-    ) {
-        String email = getUserEmail();
-        userService.updatePassword(email, userDto.getPassword());
-
-        return ResponseEntity.ok().build();
-    }
-
-    @Secured("ROLE_USER")
-    @PutMapping("update-nickname")
-    public ResponseEntity updateNickname(
-            @RequestBody UserDto.Request userDto
-    ) {
-        String userEmail = getUserEmail();
-        userService.updateNickname(userEmail, userDto.getNickname());
-        return ResponseEntity.ok().build();
-    }
-
-    @Secured("ROLE_USER")
     @PostMapping("update-email")
     public ResponseEntity sendEmailVerify(
             @RequestBody UserDto.Request userDto
     ) {
         String userEmail = getUserEmail();
         userService.sendUpdateEmail(userEmail, userDto.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping("update-user")
+    public ResponseEntity  updateUser(
+            @RequestBody UserDto.Request userDto
+    ) {
+        String userEmail = getUserEmail();
+        userService.updateUser(userEmail, userDto);
         return ResponseEntity.ok().build();
     }
 

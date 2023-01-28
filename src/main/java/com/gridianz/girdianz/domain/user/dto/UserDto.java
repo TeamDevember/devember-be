@@ -34,6 +34,7 @@ public class UserDto {
 	public static class Request {
 		private String nickname;
 		private String password;
+		private String updatePassword;
 		private String email;
 	}
 }
