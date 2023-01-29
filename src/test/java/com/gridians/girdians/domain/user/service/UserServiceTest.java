@@ -6,6 +6,8 @@ import com.gridians.girdians.domain.user.entity.Favorite;
 import com.gridians.girdians.domain.user.entity.User;
 import com.gridians.girdians.domain.user.repository.FavoriteRepository;
 import com.gridians.girdians.domain.user.repository.UserRepository;
+
+import com.gridians.girdians.domain.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
