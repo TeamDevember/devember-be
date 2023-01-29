@@ -1,11 +1,11 @@
-package com.gridianz.girdianz.card.service;
+package com.gridians.girdians.card.service;
 
-import com.gridianz.girdianz.domain.card.entity.Sns;
-import com.gridianz.girdianz.domain.card.service.ProfileCardService;
-import com.gridianz.girdianz.domain.user.entity.User;
-import com.gridianz.girdianz.domain.user.exception.UserException;
-import com.gridianz.girdianz.domain.user.repository.UserRepository;
-import com.gridianz.girdianz.domain.user.type.UserErrorCode;
+import com.gridians.girdians.domain.card.entity.Sns;
+import com.gridians.girdians.domain.card.service.ProfileCardService;
+import com.gridians.girdians.domain.user.entity.User;
+import com.gridians.girdians.domain.user.exception.UserException;
+import com.gridians.girdians.domain.user.repository.UserRepository;
+import com.gridians.girdians.domain.user.type.UserErrorCode;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

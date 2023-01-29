@@ -1,15 +1,15 @@
-package com.gridianz.girdianz.domain.user.controller;
+package com.gridians.girdians.domain.user.controller;
 
-import com.gridianz.girdianz.domain.card.entity.ProfileCard;
-import com.gridianz.girdianz.domain.card.repository.ProfileCardRepository;
-import com.gridianz.girdianz.global.config.security.service.CustomUserDetailsService;
-import com.gridianz.girdianz.global.config.security.userdetail.JwtUserDetails;
-import com.gridianz.girdianz.domain.user.dto.FavoriteDto;
-import com.gridianz.girdianz.domain.user.entity.Favorite;
-import com.gridianz.girdianz.domain.user.entity.User;
-import com.gridianz.girdianz.domain.user.repository.UserRepository;
-import com.gridianz.girdianz.domain.user.service.UserService;
-import com.gridianz.girdianz.global.utils.JwtUtils;
+import com.gridians.girdians.domain.card.entity.ProfileCard;
+import com.gridians.girdians.domain.card.repository.ProfileCardRepository;
+import com.gridians.girdians.global.config.security.service.CustomUserDetailsService;
+import com.gridians.girdians.global.config.security.userdetail.JwtUserDetails;
+import com.gridians.girdians.domain.user.dto.FavoriteDto;
+import com.gridians.girdians.domain.user.entity.Favorite;
+import com.gridians.girdians.domain.user.entity.User;
+import com.gridians.girdians.domain.user.repository.UserRepository;
+import com.gridians.girdians.domain.user.service.UserService;
+import com.gridians.girdians.global.utils.JwtUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
