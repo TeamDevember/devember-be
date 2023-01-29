@@ -125,12 +125,6 @@ public class UserService {
 		}
 	}
 
-	public void getProfileImage(String id) {
-		UUID uuid = UUID.fromString(id);
-
-	}
-
-
 //
 //	@Transactional
 //	public Authentication socialLogin(String token, String status) throws Exception {
