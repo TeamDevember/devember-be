@@ -1,8 +1,9 @@
 package com.gridians.gridians.global.config.security.service;
 
-import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
+
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.repository.UserRepository;
+import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -134,7 +135,6 @@ public class ProfileCardService {
 	public void saveTagSet(ProfileCard pc, ProfileCardDto.Request request) {
 		tagRepository.deleteAllInBatch(pc.getTagList());
 		Set<String> requestTagSet = request.getTagSet();
-
 		for (String s : requestTagSet) {
 			pc.addTag(Tag.from(s));
 		}
@@ -149,7 +149,6 @@ public class ProfileCardService {
 			Skill skill = skillRepository.findByName(s).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 			pc.addProfileCardSkill(ProfileCardSkill.from(pc, skill));
 		}
-		profileCardRepository.save(pc);
 	}
 
 	@Transactional

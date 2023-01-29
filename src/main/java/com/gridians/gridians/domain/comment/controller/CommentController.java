@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RequestMapping("/cards/{id}/comments")
 @RestController
 @RequiredArgsConstructor
@@ -75,5 +76,4 @@ public class CommentController {
 		replyService.delete(commentId, request, email);
 		return ResponseEntity.ok().build();
 	}
-
 }

@@ -1,4 +1,4 @@
-package com.gridians.girdians.domain.user.controller;
+package com.gridians.gridians.domain.user.controller;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

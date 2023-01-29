@@ -14,9 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static javax.persistence.FetchType.LAZY;
 
@@ -53,14 +51,15 @@ public class User extends BaseEntity {
 	@OneToOne(mappedBy = "user", fetch = LAZY)
 	private ProfileCard profileCard;
 
+	@Builder.Default
+	@OneToMany(mappedBy = "user", fetch = LAZY)
+	private Set<Favorite> favorites = new HashSet<>();
+
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Comment> commentList = new ArrayList<>();
 
-
-	public void addComment(Comment comment){
-		comment.setUser(this);
-		commentList.add(comment);
-	}
+	@Column(unique = true)
+	private Long githubNumberId;
 
 	public static User from(JoinDto.Request request){
 		return User.builder().email(request.getEmail())
@@ -68,5 +67,12 @@ public class User extends BaseEntity {
 				.userStatus(UserStatus.ACTIVE)
 				.password(request.getPassword())
 				.build();
+	}
+
+	public void addFavorite(Favorite favorite) {
+		favorites.add(favorite);
+	}
+	public void deleteFavorite(Favorite favorite) {
+		favorites.remove(favorite);
 	}
 }

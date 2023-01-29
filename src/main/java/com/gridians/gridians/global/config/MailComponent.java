@@ -40,7 +40,52 @@ public class MailComponent {
 		}
 
 		return result;
+	}
 
+	public boolean sendPasswordMail(String mail, MailMessage message, String text) {
+		boolean result = false;
+
+		//HTML로 메세지 보내는 로직
+		MimeMessagePreparator msg = new MimeMessagePreparator() {
+			@Override
+			public void prepare(MimeMessage mimeMessage) throws Exception {
+				MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+				mimeMessageHelper.setTo(mail);
+				mimeMessageHelper.setSubject(message.getValue());
+				mimeMessageHelper.setText(text, true);
+			}
+		};
+		try {
+			javaMailSender.send(msg);
+			result = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+
+	public boolean sendUpdateEmail(String mail, MailMessage message, String text) {
+		boolean result = false;
+
+		//HTML로 메세지 보내는 로직
+		MimeMessagePreparator msg = new MimeMessagePreparator() {
+			@Override
+			public void prepare(MimeMessage mimeMessage) throws Exception {
+				MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+				mimeMessageHelper.setTo(mail);
+				mimeMessageHelper.setSubject(message.getValue());
+				mimeMessageHelper.setText(text, true);
+			}
+		};
+		try {
+			javaMailSender.send(msg);
+			result = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return result;
 	}
 }
 

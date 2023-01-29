@@ -1,6 +1,7 @@
 package com.gridians.gridians.domain.card.controller;
 
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
+
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
 import com.gridians.gridians.global.utils.JwtUtils;
@@ -29,17 +30,19 @@ public class ProfileCardController {
 	private final JwtUtils jwtUtils;
 	private final ProfileCardService profileCardService;
 
+
 	@Value("${custom.path.skill-dir}")
 	private String path;
 	@Value("${custom.extension.skill}")
 	private String extension;
+
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> read(@PathVariable Long id) {
 		return new ResponseEntity<>(profileCardService.readProfileCard(id), HttpStatus.OK);
 	}
 
-	@GetMapping()
+	@GetMapping
 	public ResponseEntity<?> cardList(){
 		log.info("readAll 실행");
 		return new ResponseEntity<>(profileCardService.allProfileCardList(), HttpStatus.OK);

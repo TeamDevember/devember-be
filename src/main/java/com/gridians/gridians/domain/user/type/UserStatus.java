@@ -1,8 +1,8 @@
 package com.gridians.gridians.domain.user.type;
 
 public enum UserStatus {
-	ACTIVE("active"), UNACTIVE("unactive"), BLOCKED("block"), DELETED("deleted");
 
+	ACTIVE("active"), UNACTIVE("unactive"), DELETED("deleted"), BLOCKED("block");
 
 	private String value;
 

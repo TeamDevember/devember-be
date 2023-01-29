@@ -4,17 +4,14 @@ import com.gridians.gridians.domain.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-public class JwtUserDetails implements UserDetails, OAuth2User {
+public class JwtUserDetails implements UserDetails {
 
     private User user;
     private Collection<? extends GrantedAuthority> authorities;
-    private Map<String, Object> attributes;
 
     public JwtUserDetails(User user) {
         super();
@@ -26,11 +23,8 @@ public class JwtUserDetails implements UserDetails, OAuth2User {
         return new JwtUserDetails(user);
     }
 
-    public static JwtUserDetails create(User user, Map<String, Object> attributes){
-        JwtUserDetails jwtUserDetails = new JwtUserDetails(user);
-        jwtUserDetails.setAttributes(attributes);
-
-        return jwtUserDetails;
+    public User getUser() {
+        return user;
     }
 
     public String getUserId() {
@@ -39,20 +33,6 @@ public class JwtUserDetails implements UserDetails, OAuth2User {
 
     public String getEmail() {
         return user.getEmail();
-    }
-
-    public void setAttributes(Map<String, Object> attributes){
-        this.attributes = attributes;
-    }
-
-    @Override
-    public String getName() {
-        return user.getNickname();
-    }
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return attributes;
     }
 
     @Override

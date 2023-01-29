@@ -1,17 +1,21 @@
 package com.gridians.gridians.domain.user.service;
 
+import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
-import com.gridians.gridians.domain.user.exception.UserException;
+import com.gridians.gridians.domain.user.entity.Favorite;
+import com.gridians.gridians.domain.user.entity.Role;
+import com.gridians.gridians.domain.user.entity.User;
+import com.gridians.gridians.domain.user.exception.*;
+import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.TokenRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.type.MailMessage;
-import com.gridians.gridians.global.config.MailComponent;
-import com.gridians.gridians.domain.user.entity.CreateType;
-import com.gridians.gridians.domain.user.entity.Role;
-import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
 import com.gridians.gridians.domain.user.type.UserStatus;
+import com.gridians.gridians.global.config.MailComponent;
+import com.gridians.gridians.global.error.exception.EntityNotFoundException;
 import com.gridians.gridians.global.utils.JwtUtils;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
@@ -31,132 +35,198 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
 
-	private final UserRepository userRepository;
-	private final MailComponent mailComponent;
-	private final PasswordEncoder passwordEncoder;
-	private final JwtUtils jwtUtils;
-	private final TokenRepository tokenRepository;
-//	private final SocialRequest socialRequest;
+    private final UserRepository userRepository;
+    private final ProfileCardRepository profileCardRepository;
+    private final FavoriteRepository favoriteRepository;
+    private final MailComponent mailComponent;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
+    private final TokenRepository tokenRepository;
+    private final SocialRequest socialRequest;
 
-	@Transactional
-	public User signUp(JoinDto.Request request) {
-		User user = User.from(request);
-		Optional<User> optionalUser = userRepository.findByEmail(user.getEmail());
-		User savedUser;
+    @Transactional
+    public User signUp(JoinDto.Request request) throws RuntimeException {
+        User user = User.from(request);
 
-		if(optionalUser.isPresent()) {
-			savedUser = optionalUser.get();
-			if(savedUser.getCreateType() != CreateType.EMAIL){
-				savedUser.setUserStatus(UserStatus.ACTIVE);
-				savedUser.setNickname(user.getNickname());
-			}
-			else if(savedUser.getCreateType() == CreateType.EMAIL) {
-				return null;
-			}
-		}
-		else {
-			user.setUserStatus(UserStatus.UNACTIVE);
-			user.setCreateType(CreateType.EMAIL);
-			user.setRole(Role.USER);
-			user.setPassword(passwordEncoder.encode(user.getPassword()));
-			savedUser = userRepository.save(user);
-			mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
-		}
+        Optional<User> optionalUser = userRepository.findByEmail(user.getEmail());
+        User savedUser;
 
-		return savedUser;
-	}
+        if (optionalUser.isPresent()) { //중복 이메일
+            savedUser = optionalUser.get();
+            throw new DuplicateEmailException(savedUser.getEmail());
+        } else {
+            user.setUserStatus(UserStatus.UNACTIVE);
+            user.setRole(Role.ANONYMOUS);
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setNickname(user.getNickname());
+            savedUser = userRepository.save(user);
+            mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
 
-	@Transactional
-	public UserDto.JoinResponse joinAuth(String id){
-		User user = userRepository.findById(UUID.fromString(id)).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-		user.setUserStatus(UserStatus.ACTIVE);
+            return savedUser;
+        }
+    }
 
-		return UserDto.JoinResponse.from(userRepository.save(user));
-	}
+    @Transactional
+    public UserDto.JoinResponse joinAuth(String id) {
+        User user = userRepository.findById(UUID.fromString(id)).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        user.setRole(Role.USER);
+        user.setUserStatus(UserStatus.ACTIVE);
 
-	public int verifyUser(String email, String password) {
-		Optional<User> optionalUser = userRepository.findByEmail(email);
-		if(optionalUser.isEmpty()){
-			return 1;
-		}
-		User user = optionalUser.get();
+        return UserDto.JoinResponse.from(userRepository.save(user));
+    }
 
-		if(!passwordEncoder.matches(password, user.getPassword())){
-			return 2;
-		}
+    public void verifyUser(String email, String password) {
+        User user = getUserByEmail(email);
 
-		return 3;
-	}
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new PasswordNotMatchException("password not match");
+        }
+        if (user.getUserStatus() == UserStatus.UNACTIVE) {
+            throw new EmailNotVerifiedException("email not verified");
+        }
+        if(user.getUserStatus() == UserStatus.DELETED) {
+            throw new UserDeleteException("deleted user");
+        }
+    }
 
-	public String issueAccessToken(String refreshToken) {
-		String issuedAccessToken = "";
-		try {
-			if(StringUtils.hasText(refreshToken) && jwtUtils.validateToken(refreshToken)){
-				Authentication authentication = jwtUtils.getAuthenticationByToken(refreshToken);
-				issuedAccessToken = jwtUtils.createAccessToken(authentication);
-				String email = jwtUtils.getUserEmailFromToken(issuedAccessToken);
-			}
-		} catch (Exception e) {
-			throw new JwtException("Refresh Token Exception");
-		}
+    public String issueAccessToken(String refreshToken) {
+        String issuedAccessToken = "";
+        try {
+            if (StringUtils.hasText(refreshToken) && jwtUtils.validateToken(refreshToken)) {
+                Authentication authentication = jwtUtils.getAuthenticationByToken(refreshToken);
+                issuedAccessToken = jwtUtils.createAccessToken(authentication);
+            }
+        } catch (Exception e) {
+            throw new JwtException("Refresh Token Exception");
+        }
 
-		return issuedAccessToken;
-	}
+        return issuedAccessToken;
+    }
 
-	public String createAccessToken(Authentication authentication) {
-		return jwtUtils.createAccessToken(authentication);
-	}
+    public String createAccessToken(Authentication authentication) {
+        return jwtUtils.createAccessToken(authentication);
+    }
 
-	public String createRefreshToken(Authentication authentication) {
-		return jwtUtils.createRefreshToken(authentication);
-	}
+    public String createRefreshToken(Authentication authentication) {
+        return jwtUtils.createRefreshToken(authentication);
+    }
 
-	public void logout(String accessToken, String refreshToken) {
-		String email = jwtUtils.getUserEmailFromToken(refreshToken);
-		tokenRepository.saveBlackList(accessToken, email, jwtUtils.ACCESS_TOKEN_EXPIRE_TIME.intValue());
-		tokenRepository.saveBlackList(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
-	}
+    public void logout(String accessToken, String refreshToken) {
+        String email = jwtUtils.getUserEmailFromToken(refreshToken);
+        tokenRepository.saveBlackList(accessToken, email, jwtUtils.ACCESS_TOKEN_EXPIRE_TIME.intValue());
+        tokenRepository.saveBlackList(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
+    }
 
-	public boolean checkUser(String email){
-		if(userRepository.findByEmail(email).isPresent()){
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public boolean checkUser(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-//
-//	@Transactional
-//	public Authentication socialLogin(String token, String status) throws Exception {
-//		String email = "";
-//		if(CreateType.KAKAO.getName().equals(status)) {
-//			email = socialRequest.kakaoRequest(token);
+    @Transactional
+    public void addFavorite(String email, String favorUserEmail) {
+        User user = getUserByEmail(email);
+        User favorUser = getUserByEmail(favorUserEmail);
+
+        ProfileCard profileCard = profileCardRepository.findByUser(favorUser)
+                .orElseThrow(() -> new RuntimeException("profile card not found"));
+
+//		if(user.getProfileCard() == null) {
+//			throw new RuntimeException("no pofilecard");
 //		}
-//		else if(CreateType.GOOGLE.getName().equals(status)){
-//			email = socialRequest.googleRequest(token);
-//		}
-//		else if(CreateType.GITHUB.getName().equals(status)){
-//			email = socialRequest.githubRequest(token);
-//		}
-//		else {
-//			throw new RuntimeException("Not Found Login Type");
-//		}
-//
-//		log.info("email = {}", email);
-//		Optional<User> optionalUser = userRepository.findByEmail(email);
-//
-//		if(optionalUser.isEmpty()){
-//			userRepository.save(User.builder()
-//					.email(email)
-//					.role(Role.ANONYMOUS)
-//					.createType(CreateType.valueOf(status))
-//					.userStatus(CardStatus.UNACTIVE)
-//					.build()
-//			);
-//		}
-//
-//		Authentication authentication = jwtUtils.getAuthenticationByEmail(email);
-//
-//		return authentication;
-//	}
+
+        Favorite favorite = Favorite.builder()
+                .user(favorUser)
+                .build();
+        favoriteRepository.save(favorite);
+        user.addFavorite(favorite);
+    }
+
+    @Transactional
+    public void deleteFavorite(String email, String favorUserEmail) {
+        User user = getUserByEmail(email);
+        User favorUser = getUserByEmail(favorUserEmail);
+
+        Favorite favorite = favoriteRepository.findByUser(favorUser)
+                .orElseThrow(() -> new EntityNotFoundException("Favorite not found"));
+
+        user.deleteFavorite(favorite);
+        favoriteRepository.deleteById(favorite.getId());
+    }
+
+
+    @Transactional
+    public Authentication socialLogin(String token) throws Exception {
+        Long githubId = Long.valueOf(socialRequest.githubRequest(token));
+
+        User user = userRepository.findByGithubNumberId(githubId)
+                .orElseThrow(() -> new GithubIdNotFoundException("user not found", githubId.toString()));
+
+        if (user.getUserStatus() == UserStatus.UNACTIVE) {
+            throw new EmailNotVerifiedException("email not verified");
+        }
+
+        return jwtUtils.getAuthenticationByEmail(user.getEmail());
+    }
+
+    public void verifyUserPassword(String email, String password) {
+        User user = getUserByEmail(email);
+        verifyPassword(password, user.getPassword());
+    }
+
+    @Transactional
+    public void deleteUser(String userEmail) {
+        User user = getUserByEmail(userEmail);
+        user.setUserStatus(UserStatus.DELETED);
+    }
+
+    @Transactional
+    public void updateEmail(String userEmail, String updateEmail) {
+        User user = getUserByEmail(userEmail);
+        user.setEmail(updateEmail);
+    }
+
+    @Transactional
+    public void updateUser(String userEmail, UserDto.Request userDto) {
+        User user = getUserByEmail(userEmail);
+
+        user.setNickname(userDto.getNickname());
+
+        if(!userDto.getPassword().isEmpty() && verifyPassword(userDto.getPassword(), user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
+        }
+    }
+
+    public void findPassword(String email) {
+        String uuid = UUID.randomUUID().toString();
+        User user = getUserByEmail(email);
+        updatePassword(user, uuid);
+
+        mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
+    }
+
+    public void sendUpdateEmail(String userEmail, String updateEmail) {
+        mailComponent.sendUpdateEmail(updateEmail, MailMessage.EMAIL_EMAIL_UPDATE, updateEmail);
+    }
+
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException(email + "not found"));
+    }
+
+    @Transactional
+    private void updatePassword(User user, String password) {
+        user.setPassword(passwordEncoder.encode(password));
+    }
+
+    private boolean verifyPassword(String rawPassword, String cryptPassword) {
+        if (!passwordEncoder.matches(rawPassword, cryptPassword)) {
+            throw new PasswordNotMatchException("password not match");
+        }
+
+        return true;
+    }
 }
