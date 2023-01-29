@@ -23,7 +23,6 @@ public class GithubDto {
 	private LocalDate recentCommitAt;
 	private String recentCommitMessage;
 
-
 	@Getter
 	@Setter
 	public static class Request {

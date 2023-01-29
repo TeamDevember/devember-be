@@ -29,11 +29,6 @@ public class ProfileCardSkill {
 	public void setProfileCard(ProfileCard profileCard) {
 		this.profileCard = profileCard;
 	}
-
-	public void setSkill(Skill skill){
-		this.skill = skill;
-	}
-
 	public static ProfileCardSkill from(ProfileCard profileCard, Skill skill){
 		return ProfileCardSkill.builder()
 				.profileCard(profileCard)

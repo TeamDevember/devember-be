@@ -11,5 +11,4 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
 	List<Reply> findAllByComment_Id(Long commentId);
 	List<Reply> findAllByComment(Comment comment);
 
-
 }
