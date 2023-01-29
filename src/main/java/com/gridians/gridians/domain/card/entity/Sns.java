@@ -19,7 +19,7 @@ public class Sns extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne(fetch = LAZY)
+	@ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "profile_card_id")
 	private ProfileCard profileCard;
 

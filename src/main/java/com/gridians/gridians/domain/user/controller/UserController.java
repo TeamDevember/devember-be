@@ -1,6 +1,7 @@
 package com.gridians.gridians.domain.user.controller;
 
 import com.gridians.gridians.domain.user.dto.JoinDto;
+
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.service.UserService;
@@ -10,7 +11,11 @@ import com.gridians.gridians.global.utils.CookieUtils;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +26,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Slf4j
 @RequestMapping("/user")
@@ -31,6 +40,39 @@ public class UserController {
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+
+    @Value("${custom.path.user-dir}")
+    private String path;
+
+    // Get요청은 처음과 나중에 다르게 적용해도 됨
+    @GetMapping("/images/{id}")
+    public ResponseEntity<Resource> getProfileImage(@PathVariable String id) throws IOException {
+        // 실제 주소가 되어야 함
+
+        File dir = new File(this.path);
+
+        String[] list = dir.list();
+        String extension = "";
+
+        boolean isEmtpty = true;
+
+        for (String s : list) {
+            if(s.contains(id)){
+                extension = s.substring(s.lastIndexOf("."));
+                isEmtpty = false;
+            }
+        }
+
+        if(isEmtpty){
+          throw new RuntimeException("프로필 이미지를 찾을 수 없음");
+        }
+
+        String filePath = path + id + extension;
+        Path realPath = new File(filePath).toPath();
+        FileSystemResource resource = new FileSystemResource(realPath);
+
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(realPath))).body(resource);
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {

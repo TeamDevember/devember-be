@@ -33,7 +33,6 @@ public class Github extends BaseEntity {
 	@OneToOne(mappedBy = "github", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
 
-
 	private LocalDate recentCommitAt;
 	private String recentCommitMessage;
 

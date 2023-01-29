@@ -11,17 +11,16 @@ import java.time.LocalDateTime;
 
 @Getter
 public class UserDto {
+
 	@Builder
 	@Getter
 	public static class JoinResponse{
-		private String name;
 		private String nickname;
 		private LocalDateTime createdAt;
 
 		public static JoinResponse from(User user){
 			return JoinResponse.builder()
-					.name(user.getName())
-					.nickname(user.getName())
+					.nickname(user.getNickname())
 					.createdAt(user.getCreatedAt())
 					.build();
 		}

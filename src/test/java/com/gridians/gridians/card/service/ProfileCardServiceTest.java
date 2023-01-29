@@ -1,3 +1,4 @@
+<<<<<<<< HEAD:src/test/java/com/gridians/gridians/card/service/ProfileCardServiceTest.java
 package com.gridians.gridians.card.service;
 
 import com.gridians.gridians.domain.card.entity.Sns;
@@ -6,6 +7,16 @@ import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
+========
+package com.gridians.girdians.card.service;
+
+import com.gridians.girdians.domain.card.entity.Sns;
+import com.gridians.girdians.domain.card.service.ProfileCardService;
+import com.gridians.girdians.domain.user.entity.User;
+import com.gridians.girdians.domain.user.exception.UserException;
+import com.gridians.girdians.domain.user.repository.UserRepository;
+import com.gridians.girdians.domain.user.type.UserErrorCode;
+>>>>>>>> develop:src/test/java/com/gridians/girdians/card/service/ProfileCardServiceTest.java
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

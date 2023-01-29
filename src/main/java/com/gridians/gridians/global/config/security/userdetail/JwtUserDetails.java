@@ -35,7 +35,6 @@ public class JwtUserDetails implements UserDetails {
         return user.getEmail();
     }
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;

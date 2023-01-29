@@ -8,6 +8,7 @@ import java.util.UUID;
 @Getter
 public enum MailMessage {
 	EMAIL_AUTH_MESSAGE("인증 메일이 전송되었습니다."),
+
 	EMAIL_CONTENT_MESSAGE_FRONT("<p>아래 링크를 클릭하셔서 가입을 완료하세요</p><div><a href=\"http://localhost:3000/certification?id="),
 	EMAIL_CONTENT_MESSAGE_BACK("\">인증</a></div>"),
 
@@ -37,5 +38,4 @@ public enum MailMessage {
 	public static String setEmailUpdateMessage(String email) {
 		return EMAIL_CONTENT_MESSAGE_FRONT.getValue() + email + EMAIL_CONTENT_MESSAGE_EMAIL_BACK.getValue();
 	}
-
 }

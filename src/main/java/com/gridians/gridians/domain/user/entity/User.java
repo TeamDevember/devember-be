@@ -2,6 +2,7 @@ package com.gridians.gridians.domain.user.entity;
 
 
 import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.entity.BaseEntity;
@@ -13,9 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static javax.persistence.FetchType.LAZY;
 
@@ -35,7 +34,6 @@ public class User extends BaseEntity {
 
 	private String email;
 	private String nickname;
-	private String name;
 	private String password;
 
 	@Enumerated(EnumType.STRING)
@@ -57,14 +55,16 @@ public class User extends BaseEntity {
 	@OneToMany(mappedBy = "user", fetch = LAZY)
 	private Set<Favorite> favorites = new HashSet<>();
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private List<Comment> commentList = new ArrayList<>();
+
 	@Column(unique = true)
 	private Long githubNumberId;
 
 	public static User from(JoinDto.Request request){
 		return User.builder().email(request.getEmail())
-				.name(request.getNickname())
-				.userStatus(UserStatus.ACTIVE)
 				.nickname(request.getNickname())
+				.userStatus(UserStatus.ACTIVE)
 				.password(request.getPassword())
 				.build();
 	}

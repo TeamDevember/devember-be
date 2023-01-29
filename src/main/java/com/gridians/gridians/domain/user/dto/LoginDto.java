@@ -42,6 +42,7 @@ public class LoginDto {
                     .token(token)
                     .build();
         }
+
     }
 
     @Getter
