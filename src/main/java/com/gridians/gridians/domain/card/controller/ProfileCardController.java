@@ -46,6 +46,13 @@ public class ProfileCardController {
 		return new ResponseEntity<>(profileCardService.allProfileCardList(page, size), HttpStatus.OK);
 	}
 
+	@GetMapping("/favorites")
+	public ResponseEntity<?> favoriteCardList(@RequestHeader(name = "Authorization") String token, int page, int size) {
+		String email = jwtUtils.getUserEmailFromToken(token);
+		log.info("Favorite CardList Read");
+		return new ResponseEntity<>(profileCardService.favoriteCardList(email, page, size), HttpStatus.OK);
+	}
+
 	@PostMapping
 	public ResponseEntity<?> create(@RequestHeader(name = "Authorization") String token) {
 		String email = jwtUtils.getUserEmailFromToken(token);

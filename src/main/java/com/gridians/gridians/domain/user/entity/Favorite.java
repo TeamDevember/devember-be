@@ -22,4 +22,8 @@ public class Favorite {
     @ManyToOne
     @JoinColumn(name = "id")
     private User user;
+
+    public void setUser(User user){
+        this.user = user;
+    }
 }

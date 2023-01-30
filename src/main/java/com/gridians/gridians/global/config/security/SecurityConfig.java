@@ -71,7 +71,7 @@ public class SecurityConfig {
                 .httpBasic()
                     .disable()
                 .authorizeRequests()
-                .antMatchers("/user/email-auth", "/user/signup", "/user/login", "/oauth2/**").permitAll()
+                .antMatchers("/user/email-auth", "/user/auth/**").permitAll()
                 .and()
                 .exceptionHandling()
                     .accessDeniedHandler(jwtAccessDeniedHandler)
