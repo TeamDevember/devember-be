@@ -16,36 +16,36 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class FavoriteController {
 
-    private final UserService userService;
-    private final JwtUtils jwtUtils;
+	private final UserService userService;
+	private final JwtUtils jwtUtils;
 
-    @PostMapping
-    @Secured("ROLE_USER")
-    public ResponseEntity<?> create(@RequestHeader(name = "Authorization") String token,
-            @RequestBody FavoriteDto.Request favoriteDto
-    ) {
-        String userEmail = jwtUtils.getUserEmailFromToken(token);
-        String email = favoriteDto.getEmail();
+	@PostMapping
+	@Secured("ROLE_USER")
+	public ResponseEntity<?> create(@RequestHeader(name = "Authorization") String token,
+	                                @RequestBody FavoriteDto.Request favoriteDto
+	) {
+		String userEmail = jwtUtils.getUserEmailFromToken(token);
+		String email = favoriteDto.getEmail();
 
-        userService.addFavorite(userEmail, email);
-        return ResponseEntity.ok().build();
-    }
+		userService.addFavorite(userEmail, email);
+		return ResponseEntity.ok().build();
+	}
 
-    @DeleteMapping
-    @Secured("ROLE_USER")
-    public ResponseEntity<?> delete(
-            @RequestBody FavoriteDto.Request favoriteDto
-    ) {
-        String userEmail = getUserEmail();
-        String email = favoriteDto.getEmail();
+	@DeleteMapping
+	@Secured("ROLE_USER")
+	public ResponseEntity<?> delete(
+			@RequestBody FavoriteDto.Request favoriteDto
+	) {
+		String userEmail = getUserEmail();
+		String email = favoriteDto.getEmail();
 
-        userService.deleteFavorite(userEmail, email);
-        return ResponseEntity.ok().build();
-    }
+		userService.deleteFavorite(userEmail, email);
+		return ResponseEntity.ok().build();
+	}
 
-    private String getUserEmail() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
-        return userDetails.getEmail();
-    }
+	private String getUserEmail() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
+		return userDetails.getEmail();
+	}
 }

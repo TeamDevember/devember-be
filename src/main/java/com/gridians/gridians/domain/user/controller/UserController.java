@@ -74,14 +74,14 @@ public class UserController {
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(realPath))).body(resource);
     }
 
-    @PostMapping("/signup")
+    @PostMapping("/auth/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
         User user = userService.signUp(request);
 
         return new ResponseEntity(JoinDto.Response.from(user), HttpStatus.OK);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity login(
             @RequestBody LoginDto.Request loginDto,
             HttpServletResponse response
@@ -102,7 +102,7 @@ public class UserController {
         return new ResponseEntity<>(userService.checkUser(email), HttpStatus.OK);
     }
 
-    @PostMapping("/social-login")
+    @PostMapping("/auth/social-login")
     public ResponseEntity socialLogin(
             HttpServletResponse response,
             @RequestBody LoginDto.SocialRequest loginDto
@@ -115,7 +115,7 @@ public class UserController {
         return ResponseEntity.ok().body(LoginDto.Response.socialFrom(accessToken));
     }
 
-    @GetMapping("/email-auth")
+    @GetMapping("/auth/email-auth")
     public ResponseEntity<?> auth(String id) {
         return new ResponseEntity(userService.joinAuth(id), HttpStatus.OK);
     }
