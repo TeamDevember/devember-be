@@ -110,8 +110,6 @@ public class ProfileCardDto {
 				skillName = profileCardSkill.getSkill().getName();
 			}
 
-
-
 			return SimpleResponse.builder()
 					.field(pc.getField() == null ? "" : pc.getField().getName())
 					.nickname(pc.getUser() == null ? "" : pc.getUser().getNickname())
@@ -121,7 +119,6 @@ public class ProfileCardDto {
 					.build();
 		}
 	}
-
 
 	@Builder
 	@Setter

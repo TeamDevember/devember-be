@@ -43,7 +43,7 @@ public class ProfileCard extends BaseEntity {
 	@JoinColumn(name = "field_id")
 	private Field field;
 
-	@OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "github_id", unique = true)
 	private Github github;
 

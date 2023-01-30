@@ -30,12 +30,10 @@ public class ProfileCardController {
 	private final JwtUtils jwtUtils;
 	private final ProfileCardService profileCardService;
 
-
 	@Value("${custom.path.skill}")
 	private String path;
 	@Value("${custom.extension}")
 	private String extension;
-
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> read(@PathVariable Long id) {
@@ -43,8 +41,8 @@ public class ProfileCardController {
 	}
 
 	@GetMapping
-	public ResponseEntity<?> cardList(int page, int size){
-		log.info("readAll 실행");
+	public ResponseEntity<?> cardList(int page, int size) {
+		log.info("CardList Read");
 		return new ResponseEntity<>(profileCardService.allProfileCardList(page, size), HttpStatus.OK);
 	}
 

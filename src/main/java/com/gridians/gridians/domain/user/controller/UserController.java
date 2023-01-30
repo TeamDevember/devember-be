@@ -184,7 +184,6 @@ public class UserController {
             String refreshToken
     ) {
         String issueAccessToken = userService.issueAccessToken(refreshToken);
-
         return null;
     }
 
