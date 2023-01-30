@@ -21,6 +21,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -101,9 +104,11 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public List<ProfileCardDto.SimpleResponse> allProfileCardList() {
+	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) {
 
-		List<ProfileCard> pcList = profileCardRepository.findAll();
+		PageRequest pageRequest = PageRequest.of(page, size);
+
+		Page<ProfileCard> pcList = profileCardRepository.findAll(pageRequest);
 
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {

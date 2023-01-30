@@ -31,9 +31,9 @@ public class ProfileCardController {
 	private final ProfileCardService profileCardService;
 
 
-	@Value("${custom.path.skill-dir}")
+	@Value("${custom.path.skill}")
 	private String path;
-	@Value("${custom.extension.skill}")
+	@Value("${custom.extension}")
 	private String extension;
 
 
@@ -43,9 +43,9 @@ public class ProfileCardController {
 	}
 
 	@GetMapping
-	public ResponseEntity<?> cardList(){
+	public ResponseEntity<?> cardList(int page, int size){
 		log.info("readAll 실행");
-		return new ResponseEntity<>(profileCardService.allProfileCardList(), HttpStatus.OK);
+		return new ResponseEntity<>(profileCardService.allProfileCardList(page, size), HttpStatus.OK);
 	}
 
 	@PostMapping
