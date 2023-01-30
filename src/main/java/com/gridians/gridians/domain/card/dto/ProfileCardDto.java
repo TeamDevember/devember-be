@@ -103,15 +103,20 @@ public class ProfileCardDto {
 		public static SimpleResponse from(ProfileCard pc) {
 
 			Set<ProfileCardSkill> pcSkillSet = pc.getProfileCardSkillSet();
-			Object[] objects = pcSkillSet.toArray();
-			ProfileCardSkill profileCardSkill = (ProfileCardSkill) objects[0];
-			String skillName = profileCardSkill.getSkill().getName();
+			String skillName = "";
+			if(!pcSkillSet.isEmpty()){
+				Object[] objects = pcSkillSet.toArray();
+				ProfileCardSkill profileCardSkill = (ProfileCardSkill) objects[0];
+				skillName = profileCardSkill.getSkill().getName();
+			}
+
+
 
 			return SimpleResponse.builder()
-					.field(pc.getField().getName())
-					.nickname(pc.getUser().getNickname())
-					.skillSrc("http://175.215.143.189:8080/cards/images/skills/" + skillName)
-					.imageSrc("http://175.215.143.189:8080/user/images/" + pc.getUser().getId())
+					.field(pc.getField() == null ? "" : pc.getField().getName())
+					.nickname(pc.getUser() == null ? "" : pc.getUser().getNickname())
+					.skillSrc(skillName == null ? "" : "http://175.215.143.189:8080/cards/images/skills/" + skillName)
+					.imageSrc(pc.getUser() == null ? "" : "http://175.215.143.189:8080/user/images/" + pc.getUser().getId())
 					.profileCardId(pc.getId())
 					.build();
 		}

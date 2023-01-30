@@ -41,7 +41,7 @@ public class UserController {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
 
-    @Value("${custom.path.user-dir}")
+    @Value("${custom.path.profile}")
     private String path;
 
     // Get요청은 처음과 나중에 다르게 적용해도 됨
