@@ -10,8 +10,10 @@ import com.gridians.gridians.domain.card.type.CardErrorCode;
 import com.gridians.gridians.domain.comment.dto.CommentDto;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.comment.repository.CommentRepository;
+import com.gridians.gridians.domain.user.entity.Favorite;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
+import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
@@ -37,10 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -54,6 +53,7 @@ public class ProfileCardService {
 	private final SnsRepository snsRepository;
 	private final TagRepository tagRepository;
 	private final FieldRepository fieldRepository;
+	private final FavoriteRepository favoriteRepository;
 	private final ProfileCardSkillRepository profileCardSkillRepository;
 	private final ProfileCardRepository profileCardRepository;
 	private final UserService userService;
@@ -112,10 +112,22 @@ public class ProfileCardService {
 
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
-			List<Comment> commentList = commentRepository.findAllByProfileCard(pc);
-			List<CommentDto.Response> commentDtoList = new ArrayList<>();
-
 			profileCardList.add(ProfileCardDto.SimpleResponse.from(pc));
+		}
+		return profileCardList;
+	}
+
+	@Transactional
+	public List<ProfileCardDto.SimpleResponse> favoriteCardList(String email, int page, int size) {
+
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		PageRequest pageRequest = PageRequest.of(page, size);
+		Page<Favorite> favorites = favoriteRepository.findAllByUser(user, pageRequest);
+
+		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
+
+		for (Favorite favorite : favorites) {
+			profileCardList.add(ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard()));
 		}
 		return profileCardList;
 	}

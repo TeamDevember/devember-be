@@ -26,7 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService customUserDetailsService;
 
-    private RequestMatcher requestMatcher = new AntPathRequestMatcher("/user/**");
+    private RequestMatcher requestMatcher = new AntPathRequestMatcher("/user/auth/**");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

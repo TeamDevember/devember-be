@@ -52,7 +52,7 @@ public class User extends BaseEntity {
 	private ProfileCard profileCard;
 
 	@Builder.Default
-	@OneToMany(mappedBy = "user", fetch = LAZY)
+	@OneToMany(mappedBy = "user", fetch = LAZY, cascade = CascadeType.ALL)
 	private Set<Favorite> favorites = new HashSet<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -70,6 +70,7 @@ public class User extends BaseEntity {
 	}
 
 	public void addFavorite(Favorite favorite) {
+		favorite.setUser(this);
 		favorites.add(favorite);
 	}
 	public void deleteFavorite(Favorite favorite) {

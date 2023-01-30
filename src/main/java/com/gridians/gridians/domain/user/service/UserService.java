@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -130,18 +131,14 @@ public class UserService {
         User user = getUserByEmail(email);
         User favorUser = getUserByEmail(favorUserEmail);
 
-        ProfileCard profileCard = profileCardRepository.findByUser(favorUser)
+        profileCardRepository.findByUser(favorUser)
                 .orElseThrow(() -> new RuntimeException("profile card not found"));
-
-//		if(user.getProfileCard() == null) {
-//			throw new RuntimeException("no pofilecard");
-//		}
 
         Favorite favorite = Favorite.builder()
                 .user(favorUser)
                 .build();
-        favoriteRepository.save(favorite);
         user.addFavorite(favorite);
+        User savedUser = userRepository.save(user);
     }
 
     @Transactional
@@ -218,7 +215,7 @@ public class UserService {
     }
 
     @Transactional
-    private void updatePassword(User user, String password) {
+    void updatePassword(User user, String password) {
         user.setPassword(passwordEncoder.encode(password));
     }
 
