@@ -4,6 +4,7 @@ import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
+import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -47,16 +50,18 @@ public class ProfileCardController {
 	}
 
 	@GetMapping("/favorites")
-	public ResponseEntity<?> favoriteCardList(@RequestHeader(name = "Authorization") String token, int page, int size) {
-		String email = jwtUtils.getUserEmailFromToken(token);
+	public ResponseEntity<?> favoriteCardList(int page, int size) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtUserDetails jwtUserDetails = (JwtUserDetails)authentication.getPrincipal();
 		log.info("Favorite CardList Read");
-		return new ResponseEntity<>(profileCardService.favoriteCardList(email, page, size), HttpStatus.OK);
+		return new ResponseEntity<>(profileCardService.favoriteCardList(jwtUserDetails.getEmail(), page, size), HttpStatus.OK);
 	}
 
 	@PostMapping
-	public ResponseEntity<?> create(@RequestHeader(name = "Authorization") String token) {
-		String email = jwtUtils.getUserEmailFromToken(token);
-		ProfileCard pc = profileCardService.createProfileCard(email);
+	public ResponseEntity<?> create() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtUserDetails jwtUserDetails = (JwtUserDetails)authentication.getPrincipal();
+		ProfileCard pc = profileCardService.createProfileCard(jwtUserDetails.getEmail());
 		log.info("[" + pc.getUser().getNickname() + "] Create Profile Card");
 		return ResponseEntity.ok().build();
 	}

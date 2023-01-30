@@ -8,48 +8,63 @@ import lombok.NoArgsConstructor;
 @Getter
 public class LoginDto {
 
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Request {
-        private String email;
-        private String password;
-    }
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class Request {
+		private String email;
+		private String password;
+	}
 
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Response {
-        private String token;
-        private String nickname;
-        private int passwordLength;
-        private String githubId;
-        private String email;
 
-        public static Response from(String token, String nickname, String email, int passwordLength) {
-            return Response.builder()
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class ValidResponse {
+
+		private String nickname;
+		private int passwordLength;
+		private String githubId;
+		private String email;
+
+		public static ValidResponse from(String nickname, int passwordLength, String email) {
+			return ValidResponse.builder()
                     .nickname(nickname)
-                    .email(email)
                     .passwordLength(passwordLength)
-                    .token(token)
-                    .build();
-        }
+                    .email(email)
+					.build();
+		}
 
-        public static Response socialFrom(String token) {
-            return Response.builder()
-                    .token(token)
-                    .build();
-        }
+	}
 
-    }
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class Response {
+		private String token;
 
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class SocialRequest {
-        private String token;
-    }
+		public static Response from(String token) {
+			return Response.builder()
+					.token(token)
+					.build();
+		}
+
+		public static Response socialFrom(String token) {
+			return Response.builder()
+					.token(token)
+					.build();
+		}
+
+	}
+
+	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class SocialRequest {
+		private String token;
+	}
 }

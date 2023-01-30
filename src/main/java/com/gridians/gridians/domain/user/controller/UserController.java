@@ -44,6 +44,16 @@ public class UserController {
     @Value("${custom.path.profile}")
     private String path;
 
+    @GetMapping("/valid")
+    public ResponseEntity<?> validLogin(){
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        JwtUserDetails user = (JwtUserDetails) authentication.getPrincipal();
+        String email = user.getEmail();
+
+        return new ResponseEntity<>(userService.nowLoginData(email), HttpStatus.OK);
+    }
+
     // Get요청은 처음과 나중에 다르게 적용해도 됨
     @GetMapping("/images/{id}")
     public ResponseEntity<Resource> getProfileImage(@PathVariable String id) throws IOException {
@@ -81,6 +91,8 @@ public class UserController {
         return new ResponseEntity(JoinDto.Response.from(user), HttpStatus.OK);
     }
 
+
+
     @PostMapping("/auth/login")
     public ResponseEntity login(
             @RequestBody LoginDto.Request loginDto,
@@ -92,10 +104,9 @@ public class UserController {
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
         String accessToken = generateToken(response, authentication);
-        User user = ((JwtUserDetails) authentication.getPrincipal()).getUser();
-
-        return ResponseEntity.ok().body(LoginDto.Response.from(accessToken, user.getNickname(), user.getEmail(), loginDto.getPassword().length()));
+        return ResponseEntity.ok().body(LoginDto.Response.from(accessToken));
     }
+
 
     @PostMapping("/exist")
     public ResponseEntity<?> existUserByEmail(String email) {
@@ -201,7 +212,8 @@ public class UserController {
 
     private String getUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        JwtUserDetails jwtUserDetails = (JwtUserDetails) authentication.getPrincipal();
-        return jwtUserDetails.getEmail();
+        JwtUserDetails jwtUserDetails = (JwtUserDetails)authentication.getPrincipal();
+        String email = jwtUserDetails.getEmail();
+        return email;
     }
 }

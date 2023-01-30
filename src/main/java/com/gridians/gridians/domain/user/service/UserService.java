@@ -226,4 +226,14 @@ public class UserService {
 
         return true;
     }
+
+    public UserDto.NowDataResponse nowLoginData(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        String password = user.getPassword();
+        String nickname = user.getNickname();
+        System.out.println(password);
+
+        return UserDto.NowDataResponse.from(nickname,email);
+    }
 }
