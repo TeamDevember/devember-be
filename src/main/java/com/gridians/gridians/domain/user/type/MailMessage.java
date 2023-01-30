@@ -9,7 +9,7 @@ import java.util.UUID;
 public enum MailMessage {
 	EMAIL_AUTH_MESSAGE("인증 메일이 전송되었습니다."),
 
-	EMAIL_CONTENT_MESSAGE_FRONT("<p>아래 링크를 클릭하셔서 가입을 완료하세요</p><div><a href=\"http://localhost:8080/user/email-auth?id="),
+	EMAIL_CONTENT_MESSAGE_FRONT("<p>아래 링크를 클릭하셔서 가입을 완료하세요</p><div><a href=\"http://localhost:8080/user/auth/email-auth?id="),
 	EMAIL_CONTENT_MESSAGE_BACK("\">인증</a></div>"),
 
 	EMAIL_PASSWORD_MESSAGE("패스워드 변경 이메일"),
