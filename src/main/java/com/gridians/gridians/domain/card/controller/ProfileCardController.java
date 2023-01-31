@@ -33,9 +33,9 @@ public class ProfileCardController {
 	private final JwtUtils jwtUtils;
 	private final ProfileCardService profileCardService;
 
-	@Value("${custom.path.skill}")
+	@Value("${skillSrc}")
 	private String path;
-	@Value("${custom.extension}")
+	@Value("${imageExtension}")
 	private String extension;
 
 	@GetMapping("/{id}")
@@ -88,8 +88,7 @@ public class ProfileCardController {
 	@GetMapping("/images/skills/{skill}")
 	public ResponseEntity<Resource> getImage(@PathVariable String skill) throws IOException {
 		// 실제 주소가 되어야 함
-
-		String file = this.path + skill + extension;
+		String file = path + skill + extension;
 		Path path = new File(file).toPath();
 		FileSystemResource resource = new FileSystemResource(path);
 		return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(path))).body(resource);

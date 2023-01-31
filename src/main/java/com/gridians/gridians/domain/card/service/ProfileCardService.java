@@ -57,6 +57,7 @@ public class ProfileCardService {
 	private final ProfileCardSkillRepository profileCardSkillRepository;
 	private final ProfileCardRepository profileCardRepository;
 	private final UserService userService;
+
 	@Transactional
 	public ProfileCard createProfileCard(String email) {
 
@@ -67,8 +68,10 @@ public class ProfileCardService {
 			throw new UserException(UserErrorCode.DUPLICATED_USER);
 		}
 		ProfileCard pc = new ProfileCard();
+		user.setProfileCard(pc);
 		pc.setUser(user);
-		return profileCardRepository.save(pc);
+		userRepository.save(user);
+		return pc;
 
 	}
 
@@ -82,6 +85,7 @@ public class ProfileCardService {
 		saveSnsSet(pc, request);
 		saveSkillSet(pc, request);
 		saveTagSet(pc, request);
+		pc.setIntroduction(request.getIntroduction());
 		pc.setStatusMessage(request.getStatusMessage());
 
 		profileCardRepository.save(pc);
