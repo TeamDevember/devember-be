@@ -36,6 +36,6 @@ public enum MailMessage {
 	}
 
 	public static String setEmailUpdateMessage(String email) {
-		return EMAIL_CONTENT_MESSAGE_FRONT.getValue() + email + EMAIL_CONTENT_MESSAGE_EMAIL_BACK.getValue();
+		return EMAIL_CONTENT_MESSAGE_EMAIL_FRONT.getValue() + email + EMAIL_CONTENT_MESSAGE_EMAIL_BACK.getValue();
 	}
 }

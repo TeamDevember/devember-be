@@ -21,9 +21,12 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.File;
@@ -74,14 +77,14 @@ public class UserController {
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(realPath))).body(resource);
     }
 
-    @PostMapping("/signup")
+    @PostMapping("/auth/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
         User user = userService.signUp(request);
 
         return new ResponseEntity(JoinDto.Response.from(user), HttpStatus.OK);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity login(
             @RequestBody LoginDto.Request loginDto,
             HttpServletResponse response
@@ -102,7 +105,7 @@ public class UserController {
         return new ResponseEntity<>(userService.checkUser(email), HttpStatus.OK);
     }
 
-    @PostMapping("/social-login")
+    @PostMapping("/auth/social-login")
     public ResponseEntity socialLogin(
             HttpServletResponse response,
             @RequestBody LoginDto.SocialRequest loginDto
@@ -115,7 +118,7 @@ public class UserController {
         return ResponseEntity.ok().body(LoginDto.Response.socialFrom(accessToken));
     }
 
-    @GetMapping("/email-auth")
+    @GetMapping("/auth/email-auth")
     public ResponseEntity<?> auth(String id) {
         return new ResponseEntity(userService.joinAuth(id), HttpStatus.OK);
     }
@@ -124,17 +127,25 @@ public class UserController {
         String accessToken = userService.createAccessToken(authentication);
         String refreshToken = userService.createRefreshToken(authentication);
 
-        CookieUtils.addCookie(response, "re-token", refreshToken, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
-//		String reCookie = "re-token=" + refreshToken;
-//		response.addHeader("Set-Cookie", reCookie +"; Secure; SameSite=None");
+        CookieUtils.addHttpOnlyCookie(response, "re-token", refreshToken, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
         return accessToken;
     }
 
     @Secured("ROLE_USER")
-    @GetMapping("find-password")
-    public ResponseEntity findPassword() {
-        String email = getUserEmail();
-        userService.findPassword(email);
+    @GetMapping("/valid")
+    public ResponseEntity getUser(
+            HttpServletRequest request
+    ) {
+        String userEmail = getUserEmail();
+        User user = userService.getUserInfo(userEmail);
+        return ResponseEntity.ok().body(UserDto.Response.from(user));
+    }
+
+    @GetMapping("/auth/find-password")
+    public ResponseEntity findPassword(
+            @RequestBody UserDto.Request userDto
+    ) {
+        userService.findPassword(userDto.getEmail());
         return ResponseEntity.ok().build();
     }
 
@@ -149,7 +160,7 @@ public class UserController {
     }
 
     @Secured("ROLE_USER")
-    @PostMapping("update-user")
+    @PutMapping("update-user")
     public ResponseEntity  updateUser(
             @RequestBody UserDto.Request userDto
     ) {
@@ -164,20 +175,23 @@ public class UserController {
             @RequestBody UserDto.Request userDto
     ) {
         String userEmail = getUserEmail();
-        userService.verifyUserPassword(userEmail, userDto.getPassword());
+        log.info("user email = {}, update email = {}", userEmail, userDto.getEmail());
         userService.updateEmail(userEmail, userDto.getEmail());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("ROLE_USER")
+    @Secured("ROLE_USER")
     @DeleteMapping("/delete")
-    public ResponseEntity deleteUser() {
+    public ResponseEntity deleteUser(
+//            @RequestBody UserDto.deleteRequest userDto
+    ) {
         String userEmail = getUserEmail();
+//        userService.deleteUser(userEmail, userDto.getPassword());
         userService.deleteUser(userEmail);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/reissue")
+    @PostMapping("/auth/reissue")
     public ResponseEntity reissue(
             @RequestHeader(value = "AUTH-TOKEN") String accessToken,
             @RequestHeader(value = "re-token")
@@ -188,13 +202,25 @@ public class UserController {
         return null;
     }
 
-    @DeleteMapping("/logout")
+    @Secured("ROLE_USER")
+    @DeleteMapping("/auth/logout")
     public ResponseEntity logout(
-            @RequestHeader(value = "AUTH-TOKEN") String accessToken,
-            @RequestHeader(value = "re-token") String refreshToken,
+            HttpServletRequest request,
             HttpServletResponse response
     ) {
-        userService.logout(accessToken, refreshToken);
+        Cookie[] cookies = request.getCookies();
+        String refreshToken = "";
+        for(Cookie cookie : cookies) {
+            if(cookie.getName().equals("re-token")) {
+                refreshToken = cookie.getValue();
+            }
+        }
+        if(refreshToken.isEmpty()) {
+            throw new RuntimeException("empty refresh token");
+        }
+
+        String userEmail = getUserEmail();
+        userService.logout(userEmail, refreshToken);
 
         CookieUtils.addHttpOnlyCookie(response, "re-token", "", 0);
         return ResponseEntity.ok().build();
@@ -202,7 +228,7 @@ public class UserController {
 
     private String getUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        JwtUserDetails jwtUserDetails = (JwtUserDetails) authentication.getPrincipal();
-        return jwtUserDetails.getEmail();
+        JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
+        return userDetails.getEmail();
     }
 }

@@ -1,10 +1,10 @@
 package com.gridians.gridians.domain.user.controller;
 
+import com.gridians.gridians.domain.user.dto.PhotoDto;
+import com.gridians.gridians.domain.user.service.PhotoService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
-import com.gridians.gridians.domain.user.dto.FavoriteDto;
-import com.gridians.gridians.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
@@ -12,35 +12,28 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
-@RequiredArgsConstructor
-@RequestMapping("/fav")
 @Controller
-public class FavoriteController {
+@RequiredArgsConstructor
+public class PhotoController {
 
-    private final UserService userService;
+    private final PhotoService photoService;
 
-    @PostMapping
-    @Secured("ROLE_USER")
-    public ResponseEntity<?> create(
-            @RequestBody FavoriteDto.Request favoriteDto
+    @ResponseBody
+    @GetMapping(value = "/image/{email}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
+    public byte[] getUserProfile(
+            @PathVariable String email
     ) {
-        String userEmail = getUserEmail();
-        String email = favoriteDto.getEmail();
-
-        userService.addFavorite(userEmail, email);
-        return ResponseEntity.ok().build();
+        return photoService.getProfileImage(email);
     }
 
-    @DeleteMapping
     @Secured("ROLE_USER")
-    public ResponseEntity<?> delete(
-            @RequestBody FavoriteDto.Request favoriteDto
+    @PutMapping("/user/profile")
+    public ResponseEntity updateProfileImage(
+            @RequestBody PhotoDto photoDto
     ) {
         String userEmail = getUserEmail();
-        String email = favoriteDto.getEmail();
+        photoService.updateProfileImage(userEmail, photoDto.getBase64Image());
 
-        userService.deleteFavorite(userEmail, email);
         return ResponseEntity.ok().build();
     }
 

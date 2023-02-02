@@ -1,11 +1,13 @@
 package com.gridians.gridians.global.config.security.filter;
 
 import com.gridians.gridians.global.config.security.service.CustomUserDetailsService;
+import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -26,17 +28,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService customUserDetailsService;
 
-    private RequestMatcher requestMatcher = new AntPathRequestMatcher("/user/**");
+    private RequestMatcher requestMatcherUser = new AntPathRequestMatcher("/user/auth/**");
+    private RequestMatcher requestMatcherImage = new AntPathRequestMatcher("/image/**");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(!requestMatcher.matches(request)) {
+        if(!requestMatcherUser.matches(request)) {
             try {
                 String jwt = getResolveAuthHeader(request);
+                log.info("request uri = {}", request.getRequestURI());
+                log.info("jwt = {}", jwt);
 
                 if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)) {
                     String email = jwtUtils.getUserEmailFromToken(jwt);
 
+                    log.info("filter email = {}", email);
                     UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

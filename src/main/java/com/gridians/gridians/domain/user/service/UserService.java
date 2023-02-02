@@ -179,6 +179,10 @@ public class UserService {
     @Transactional
     public void deleteUser(String userEmail) {
         User user = getUserByEmail(userEmail);
+//        if(!verifyPassword(password, user.getPassword())){
+//            throw new PasswordNotMatchException("password not match");
+//        }
+
         user.setUserStatus(UserStatus.DELETED);
     }
 
@@ -194,8 +198,12 @@ public class UserService {
 
         user.setNickname(userDto.getNickname());
 
-        if(!userDto.getPassword().isEmpty() && verifyPassword(userDto.getPassword(), user.getPassword())) {
-            user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
+        if(!userDto.getPassword().isEmpty()){
+            log.info("password = {}", userDto.getPassword());
+            log.info("password is not empty");
+            if(verifyPassword(userDto.getPassword(), user.getPassword())) {
+                user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
+            }
         }
     }
 
@@ -208,7 +216,7 @@ public class UserService {
     }
 
     public void sendUpdateEmail(String userEmail, String updateEmail) {
-        mailComponent.sendUpdateEmail(updateEmail, MailMessage.EMAIL_EMAIL_UPDATE, updateEmail);
+        mailComponent.sendUpdateEmail(updateEmail, MailMessage.EMAIL_EMAIL_UPDATE, MailMessage.setEmailUpdateMessage(updateEmail));
     }
 
 
@@ -228,5 +236,9 @@ public class UserService {
         }
 
         return true;
+    }
+
+    public User getUserInfo(String userEmail) {
+        return getUserByEmail(userEmail);
     }
 }

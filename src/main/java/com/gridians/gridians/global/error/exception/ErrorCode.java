@@ -12,7 +12,8 @@ public enum ErrorCode {
     PASSWORD_NOT_MATCH(400, "A002", "Password Not Match"),
     EMAIL_NOT_VERIFIED(200, "A003", "email not verified"),
     DELETE_USER_ACCESS(400, "A004", "delete user access"),
-    GIT_ID_NOT_FOUND(400, "A005", "git id not found");
+    GIT_ID_NOT_FOUND(400, "A005", "git id not found"),
+    IMAGE_NOT_FOUND(400, "A006", "image not found");
     private int status;
     private String code;
     private String message;

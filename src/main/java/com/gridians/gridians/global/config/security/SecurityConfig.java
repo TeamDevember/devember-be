@@ -8,6 +8,7 @@ import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -70,8 +71,13 @@ public class SecurityConfig {
                     .disable()
                 .httpBasic()
                     .disable()
+                .cors()
+
+                .and()
                 .authorizeRequests()
-                .antMatchers("/user/email-auth", "/user/signup", "/user/login", "/oauth2/**").permitAll()
+                .antMatchers("/user/auth/**", "image/**").permitAll()
+                .antMatchers("/user/**").hasRole("USER")
+                .antMatchers("/fav").hasRole("USER")
                 .and()
                 .exceptionHandling()
                     .accessDeniedHandler(jwtAccessDeniedHandler)
