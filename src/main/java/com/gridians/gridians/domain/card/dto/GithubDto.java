@@ -1,5 +1,6 @@
 package com.gridians.gridians.domain.card.dto;
 
+import com.gridians.gridians.domain.card.entity.Github;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +30,41 @@ public class GithubDto {
 
 		private String githubId;
 		private Long profileCardId;
+	}
+
+	@Builder
+	@Setter
+	@Getter
+	public static class Response {
+
+		private String githubName;
+		private String githubAccount;
+
+		private String githubProfileImageUrl;
+		private String githubUrl;
+
+		private LocalDate recentCommitAt;
+		private String recentCommitMessage;
+
+		private Long follower;
+		private Long following;
+
+		private String location;
+		private String company;
+
+		public static Response from(Github github) {
+			return Response.builder()
+					.githubName(github.getName())
+					.githubAccount(github.getLogin())
+					.githubProfileImageUrl(github.getProfileImageUrl())
+					.recentCommitAt(github.getRecentCommitAt())
+					.recentCommitMessage(github.getRecentCommitMessage())
+					.follower(github.getFollowers())
+					.following(github.getFollowing())
+					.location(github.getLocation())
+					.company(github.getCompany())
+					.build();
+		}
 	}
 }
 

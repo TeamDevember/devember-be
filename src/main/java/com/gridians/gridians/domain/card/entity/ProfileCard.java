@@ -37,8 +37,9 @@ public class ProfileCard extends BaseEntity {
 	private String statusMessage;
 	private String introduction;
 
-	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
-	private Set<ProfileCardSkill> profileCardSkillSet = new HashSet<>();
+	@ManyToOne(fetch = LAZY)
+	@JoinColumn(name = "skill_id")
+	private Skill skill;
 
 	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "field_id")
@@ -89,10 +90,8 @@ public class ProfileCard extends BaseEntity {
 	public void setGithub(Github github) {
 		this.github = github;
 	}
-
-
-	public void addProfileCardSkill(ProfileCardSkill profileCardSkill){
-		profileCardSkill.setProfileCard(this);
-		profileCardSkillSet.add(profileCardSkill);
+	public void setSkill(Skill skill){
+		this.skill = skill;
 	}
+
 }

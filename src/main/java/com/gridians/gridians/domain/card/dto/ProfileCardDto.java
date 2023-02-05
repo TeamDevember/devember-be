@@ -17,6 +17,12 @@ import java.util.Set;
 
 public class ProfileCardDto {
 
+	public static String imagePath;
+	public static String skillPath;
+	public static String extension;
+
+
+
 	@Getter
 	@Setter
 	public static class Request {
@@ -24,7 +30,7 @@ public class ProfileCardDto {
 		private String statusMessage;
 		private String introduction;
 		private String field;
-		private Set<String> skillSet;
+		private String skill;
 		private Set<SnsResponse> snsSet;
 		private Set<String> tagSet;
 
@@ -38,9 +44,9 @@ public class ProfileCardDto {
 		private String statusMessage;
 		private String introduction;
 		private String field;
+		private String skill;
 
 		private Set<String> tagSet;
-		private Set<String> skillSet;
 		private Set<SnsResponse> snsSet;
 
 		private List<CommentDto.Response> commentList;
@@ -48,18 +54,11 @@ public class ProfileCardDto {
 
 		public static DetailResponse from(ProfileCard pc, List<CommentDto.Response> commentDtoList) {
 
-			Set<String> skills = new HashSet<>();
 			Set<SnsResponse> snss = new HashSet<>();
 			Set<String> tags = new HashSet<>();
 
-			Set<ProfileCardSkill> pcSkillSet = pc.getProfileCardSkillSet();
 			Set<Sns> pcSnsSet = pc.getSnsSet();
 			Set<Tag> pcTagSet = pc.getTagList();
-
-
-			for (ProfileCardSkill s : pcSkillSet) {
-				skills.add(s.getSkill().getName());
-			}
 
 			for (Sns s : pcSnsSet) {
 				snss.add(SnsResponse.from(s));
@@ -74,7 +73,7 @@ public class ProfileCardDto {
 					.commentList(commentDtoList)
 					.statusMessage(pc.getStatusMessage() == null ? "" : pc.getStatusMessage())
 					.field(pc.getField() == null ? "" : pc.getField().getName())
-					.skillSet(skills == null ? new HashSet<>() : skills)
+					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
 					.tagSet(tags == null ? new HashSet<>() : tags)
 					.snsSet(snss == null ? new HashSet<>() : snss)
 					.imageSrc(pc.getUser() == null ? "" : "http://175.215.143.189:8080/user/images/" + pc.getUser().getId())
@@ -96,18 +95,10 @@ public class ProfileCardDto {
 
 		public static SimpleResponse from(ProfileCard pc) {
 
-			Set<ProfileCardSkill> pcSkillSet = pc.getProfileCardSkillSet();
-			String skillName = "";
-			if (!pcSkillSet.isEmpty()) {
-				Object[] objects = pcSkillSet.toArray();
-				ProfileCardSkill profileCardSkill = (ProfileCardSkill) objects[0];
-				skillName = profileCardSkill.getSkill().getName();
-			}
-
 			return SimpleResponse.builder()
 					.field(pc.getField() == null ? "" : pc.getField().getName())
 					.nickname(pc.getUser() == null ? "" : pc.getUser().getNickname())
-					.skillSrc(skillName == null ? "" : "http://175.215.143.189:8080/cards/images/skills/" + skillName)
+					.skillSrc(pc.getSkill() == null ? "" : "http://175.215.143.189:8080/cards/images/skills/" + pc.getSkill().getName())
 					.imageSrc(pc.getUser() == null ? "" : "http://175.215.143.189:8080/user/images/" + pc.getUser().getId())
 					.profileCardId(pc.getId())
 					.build();

@@ -4,7 +4,9 @@ import com.gridians.gridians.domain.user.dto.JoinDto;
 
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.User;
+import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.service.UserService;
+import com.gridians.gridians.domain.user.type.UserErrorCode;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.global.utils.CookieUtils;
@@ -59,7 +61,6 @@ public class UserController {
     public ResponseEntity<Resource> getProfileImage(@PathVariable String id) throws IOException {
         // 실제 주소가 되어야 함
         File dir = new File(path);
-
         String[] list = dir.list();
         String extension = "";
 
@@ -73,10 +74,10 @@ public class UserController {
         }
 
         if(isEmtpty){
-          throw new RuntimeException("프로필 이미지를 찾을 수 없음");
+          throw new UserException(UserErrorCode.NOT_FOUND_USER_IMAGE);
         }
 
-        String filePath = "/Users/j/j/images/" + id + extension;
+        String filePath = path + id + extension;
         Path realPath = new File(filePath).toPath();
         FileSystemResource resource = new FileSystemResource(realPath);
 
