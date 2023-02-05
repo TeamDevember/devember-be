@@ -48,7 +48,8 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
-	@OneToOne(mappedBy = "user", fetch = LAZY)
+	@OneToOne(fetch = LAZY)
+	@JoinColumn(name = "profile_card_id")
 	private ProfileCard profileCard;
 
 	@Builder.Default

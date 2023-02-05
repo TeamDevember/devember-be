@@ -25,7 +25,7 @@ public class ProfileCard extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne(fetch = LAZY)
+	@OneToOne(mappedBy = "profileCard", fetch = LAZY)
 	private User user;
 
 	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
@@ -35,6 +35,7 @@ public class ProfileCard extends BaseEntity {
 	private Set<Sns> snsSet = new HashSet<>();
 
 	private String statusMessage;
+	private String introduction;
 
 	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
 	private Set<ProfileCardSkill> profileCardSkillSet = new HashSet<>();

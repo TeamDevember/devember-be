@@ -9,8 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -22,15 +21,11 @@ public class ProfileCardDto {
 	@Setter
 	public static class Request {
 
-		@NotBlank
 		private String statusMessage;
-		@NotBlank
+		private String introduction;
 		private String field;
-		@NotNull
 		private Set<String> skillSet;
-		@NotNull
 		private Set<SnsResponse> snsSet;
-		@NotNull
 		private Set<String> tagSet;
 
 	}
@@ -41,6 +36,7 @@ public class ProfileCardDto {
 	public static class DetailResponse {
 
 		private String statusMessage;
+		private String introduction;
 		private String field;
 
 		private Set<String> tagSet;
@@ -49,9 +45,6 @@ public class ProfileCardDto {
 
 		private List<CommentDto.Response> commentList;
 		private String imageSrc;
-
-		@Value("${custom.path.user-dir}")
-		static private String path;
 
 		public static DetailResponse from(ProfileCard pc, List<CommentDto.Response> commentDtoList) {
 
@@ -77,13 +70,14 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
+					.introduction(pc.getIntroduction())
 					.commentList(commentDtoList)
-					.statusMessage(pc.getStatusMessage())
-					.field(pc.getField().getName())
-					.skillSet(skills)
-					.tagSet(tags)
-					.snsSet(snss)
-					.imageSrc(path + pc.getUser().getId())
+					.statusMessage(pc.getStatusMessage() == null ? "" : pc.getStatusMessage())
+					.field(pc.getField() == null ? "" : pc.getField().getName())
+					.skillSet(skills == null ? new HashSet<>() : skills)
+					.tagSet(tags == null ? new HashSet<>() : tags)
+					.snsSet(snss == null ? new HashSet<>() : snss)
+					.imageSrc(pc.getUser() == null ? "" : "http://175.215.143.189:8080/user/images/" + pc.getUser().getId())
 					.build();
 		}
 	}
@@ -104,7 +98,7 @@ public class ProfileCardDto {
 
 			Set<ProfileCardSkill> pcSkillSet = pc.getProfileCardSkillSet();
 			String skillName = "";
-			if(!pcSkillSet.isEmpty()){
+			if (!pcSkillSet.isEmpty()) {
 				Object[] objects = pcSkillSet.toArray();
 				ProfileCardSkill profileCardSkill = (ProfileCardSkill) objects[0];
 				skillName = profileCardSkill.getSkill().getName();
