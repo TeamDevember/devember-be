@@ -3,10 +3,7 @@ package com.gridians.gridians.global.utils;
 import com.gridians.gridians.global.config.security.service.CustomUserDetailsService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.domain.user.repository.TokenRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +68,8 @@ public class JwtUtils {
                 .parseClaimsJws(token)
                 .getBody();
 
-        return (String) claims.get("email");
+        String email = (String) claims.get("email");
+        return email;
     }
 
     public String createAccessToken(Authentication authentication){
@@ -113,15 +111,18 @@ public class JwtUtils {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(key).build().parse(token);
             if(tokenRepository.hasKeyBlackList(token)){
                 throw new RuntimeException("이미 탈퇴한 회원 입니다.");
             }
             return true;
         } catch (ExpiredJwtException exception) {
-            return false;
-        } catch (Exception ex) {
-            return false;
+            throw exception;
+        } catch (JwtException exception) {
+            throw exception;
+        }
+        catch (Exception exception) {
+            throw exception;
         }
     }
 }

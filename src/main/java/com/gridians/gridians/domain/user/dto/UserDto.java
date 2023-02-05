@@ -2,10 +2,7 @@ package com.gridians.gridians.domain.user.dto;
 
 
 import com.gridians.gridians.domain.user.entity.User;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -38,19 +35,45 @@ public class UserDto {
 	}
 
 	@Getter
+	@NoArgsConstructor
+	public static class deleteRequest {
+		private String password;
+	}
+
+	@Getter
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class NowDataResponse {
-		private String nickname;
+	public static class Response {
 		private String email;
+		private String nickname;
 
-		public static NowDataResponse from(String nickname, String email) {
-			return NowDataResponse.builder()
-					.nickname(nickname)
-					.email(email)
+		public static Response from(User user) {
+			return Response.builder()
+					.nickname(user.getNickname())
+					.email(user.getEmail())
 					.build();
 		}
 	}
 
+	@Getter
+	@NoArgsConstructor
+	@Builder
+	@AllArgsConstructor
+	public static class RequestToken {
+		private String refreshToken;
+	}
+
+	@Getter
+	@NoArgsConstructor
+	@Builder
+	@AllArgsConstructor
+	public static class ResponseToken {
+		private String accessToken;
+		public static ResponseToken from(String accessToken) {
+			return ResponseToken.builder()
+					.accessToken(accessToken)
+					.build();
+		}
+	}
 }

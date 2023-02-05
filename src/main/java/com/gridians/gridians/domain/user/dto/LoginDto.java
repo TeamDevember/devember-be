@@ -17,47 +17,31 @@ public class LoginDto {
 		private String password;
 	}
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Response {
+        private String token;
+        private String accessToken;
+        private String refreshToken;
+        private String nickname;
+        private int passwordLength;
+        private String githubId;
+        private String email;
 
-	@Getter
-	@Builder
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class ValidResponse {
-
-		private String nickname;
-		private int passwordLength;
-		private String githubId;
-		private String email;
-
-		public static ValidResponse from(String nickname, int passwordLength, String email) {
-			return ValidResponse.builder()
-                    .nickname(nickname)
-                    .passwordLength(passwordLength)
-                    .email(email)
-					.build();
-		}
-
-	}
-
-	@Getter
-	@Builder
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class Response {
-		private String token;
-
-		public static Response from(String token) {
-			return Response.builder()
-					.token(token)
-					.build();
-		}
+        public static Response from(String accessToken, String refreshToken) {
+            return Response.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build();
+        }
 
 		public static Response socialFrom(String token) {
 			return Response.builder()
 					.token(token)
 					.build();
 		}
-
 	}
 
 	@Getter

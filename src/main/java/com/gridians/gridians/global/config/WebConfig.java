@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
 				.addMapping("/**")
 				.allowedOriginPatterns("*")
 				.allowedOrigins("http://localhost:3000")
-				.allowedMethods("GET", "POST", "DELETE", "UPDATE")
+				.allowedMethods("GET", "POST", "DELETE", "PUT", "UPDATE")
 				.allowedHeaders("*")
 				.allowCredentials(true)
 				.maxAge(3600)

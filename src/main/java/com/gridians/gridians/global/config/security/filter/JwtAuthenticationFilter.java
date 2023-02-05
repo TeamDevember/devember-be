@@ -1,11 +1,16 @@
 package com.gridians.gridians.global.config.security.filter;
 
 import com.gridians.gridians.global.config.security.service.CustomUserDetailsService;
+import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.utils.JwtUtils;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -26,11 +31,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService customUserDetailsService;
 
-    private RequestMatcher requestMatcher = new AntPathRequestMatcher("/user/auth/**");
+    private RequestMatcher requestMatcherUser = new AntPathRequestMatcher("/user/auth/**");
+    private RequestMatcher requestMatcherImage = new AntPathRequestMatcher("/image/**");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(!requestMatcher.matches(request)) {
+        if (!requestMatcherImage.matches(request) && !requestMatcherUser.matches(request)) {
             try {
                 String jwt = getResolveAuthHeader(request);
 
@@ -43,8 +49,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
+            } catch (ExpiredJwtException exception) {
+                throw exception;
+            } catch (JwtException exception) {
+                throw exception;
             } catch (Exception exception) {
-                throw new RuntimeException("jwt token error");
+                throw exception;
             }
         }
 

@@ -1,5 +1,6 @@
 package com.gridians.gridians.global.config.security;
 
+import com.gridians.gridians.global.config.security.filter.ExceptionHandlerFilter;
 import com.gridians.gridians.global.config.security.filter.JwtAuthenticationFilter;
 import com.gridians.gridians.global.config.security.handler.JwtAccessDeniedHandler;
 import com.gridians.gridians.global.config.security.handler.JwtAuthenticationEntryPoint;
@@ -8,6 +9,7 @@ import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -70,8 +72,14 @@ public class SecurityConfig {
                     .disable()
                 .httpBasic()
                     .disable()
+                .cors()
+
+                .and()
                 .authorizeRequests()
-                .antMatchers("/user/email-auth", "/user/auth/**").permitAll()
+                .antMatchers("/user/auth/**", "image/**").permitAll()
+                .antMatchers("/user/**").hasRole("USER")
+                .antMatchers("/fav").hasRole("USER")
+
                 .and()
                 .exceptionHandling()
                     .accessDeniedHandler(jwtAccessDeniedHandler)
@@ -79,6 +87,7 @@ public class SecurityConfig {
                     .and()
                 ;
 
+        http.addFilterBefore(new ExceptionHandlerFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
