@@ -44,39 +44,6 @@ public class UserController {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
 
-    @Value("${custom.path.user-dir}")
-    private String path;
-
-    // Get요청은 처음과 나중에 다르게 적용해도 됨
-    @GetMapping("/images/{id}")
-    public ResponseEntity<Resource> getProfileImage(@PathVariable String id) throws IOException {
-        // 실제 주소가 되어야 함
-
-        File dir = new File(this.path);
-
-        String[] list = dir.list();
-        String extension = "";
-
-        boolean isEmtpty = true;
-
-        for (String s : list) {
-            if(s.contains(id)){
-                extension = s.substring(s.lastIndexOf("."));
-                isEmtpty = false;
-            }
-        }
-
-        if(isEmtpty){
-          throw new RuntimeException("프로필 이미지를 찾을 수 없음");
-        }
-
-        String filePath = path + id + extension;
-        Path realPath = new File(filePath).toPath();
-        FileSystemResource resource = new FileSystemResource(realPath);
-
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(realPath))).body(resource);
-    }
-
     @PostMapping("/auth/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
         User user = userService.signUp(request);
@@ -94,10 +61,9 @@ public class UserController {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword());
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
-        String accessToken = generateToken(response, authentication);
-        User user = ((JwtUserDetails) authentication.getPrincipal()).getUser();
+        LoginDto.Response res = userService.login(authentication);
 
-        return ResponseEntity.ok().body(LoginDto.Response.from(accessToken, user.getNickname(), user.getEmail(), loginDto.getPassword().length()));
+        return ResponseEntity.ok().body(res);
     }
 
     @PostMapping("/exist")
@@ -113,14 +79,7 @@ public class UserController {
         Authentication authentication = userService.socialLogin(loginDto.getToken());
         String accessToken = generateToken(response, authentication);
 
-        User user = ((JwtUserDetails) authentication.getPrincipal()).getUser();
-
         return ResponseEntity.ok().body(LoginDto.Response.socialFrom(accessToken));
-    }
-
-    @GetMapping("/auth/email-auth")
-    public ResponseEntity<?> auth(String id) {
-        return new ResponseEntity(userService.joinAuth(id), HttpStatus.OK);
     }
 
     private String generateToken(HttpServletResponse response, Authentication authentication) {
@@ -129,6 +88,11 @@ public class UserController {
 
         CookieUtils.addHttpOnlyCookie(response, "re-token", refreshToken, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
         return accessToken;
+    }
+
+    @GetMapping("/auth/email-auth")
+    public ResponseEntity<?> auth(String id) {
+        return new ResponseEntity(userService.joinAuth(id), HttpStatus.OK);
     }
 
     @Secured("ROLE_USER")
@@ -141,7 +105,7 @@ public class UserController {
         return ResponseEntity.ok().body(UserDto.Response.from(user));
     }
 
-    @GetMapping("/auth/find-password")
+    @PostMapping("/auth/find-password")
     public ResponseEntity findPassword(
             @RequestBody UserDto.Request userDto
     ) {
@@ -150,7 +114,7 @@ public class UserController {
     }
 
     @Secured("ROLE_USER")
-    @PostMapping("update-email")
+    @PostMapping("/update-email")
     public ResponseEntity sendEmailVerify(
             @RequestBody UserDto.Request userDto
     ) {
@@ -160,7 +124,7 @@ public class UserController {
     }
 
     @Secured("ROLE_USER")
-    @PutMapping("update-user")
+    @PutMapping("/update-user")
     public ResponseEntity  updateUser(
             @RequestBody UserDto.Request userDto
     ) {
@@ -170,7 +134,7 @@ public class UserController {
     }
 
     @Secured("ROLE_USER")
-    @PutMapping("update-email")
+    @PutMapping("/update-email")
     public ResponseEntity updateEmail(
             @RequestBody UserDto.Request userDto
     ) {
@@ -183,23 +147,22 @@ public class UserController {
     @Secured("ROLE_USER")
     @DeleteMapping("/delete")
     public ResponseEntity deleteUser(
-//            @RequestBody UserDto.deleteRequest userDto
+            @RequestBody UserDto.deleteRequest userDto
     ) {
         String userEmail = getUserEmail();
-//        userService.deleteUser(userEmail, userDto.getPassword());
-        userService.deleteUser(userEmail);
+        userService.deleteUser(userEmail, userDto.getPassword());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/auth/reissue")
     public ResponseEntity reissue(
-            @RequestHeader(value = "AUTH-TOKEN") String accessToken,
-            @RequestHeader(value = "re-token")
-            String refreshToken
+            @RequestBody UserDto.RequestToken req
     ) {
-        String issueAccessToken = userService.issueAccessToken(refreshToken);
+        log.info("refreshtoken = {}", req.getRefreshToken());
+        String issueAccessToken = userService.issueAccessToken(req.getRefreshToken());
 
-        return null;
+        log.info("issue access token = {}", issueAccessToken);
+        return ResponseEntity.ok().body(UserDto.ResponseToken.from(issueAccessToken));
     }
 
     @Secured("ROLE_USER")

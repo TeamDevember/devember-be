@@ -1,5 +1,6 @@
 package com.gridians.gridians.global.config.security;
 
+import com.gridians.gridians.global.config.security.filter.ExceptionHandlerFilter;
 import com.gridians.gridians.global.config.security.filter.JwtAuthenticationFilter;
 import com.gridians.gridians.global.config.security.handler.JwtAccessDeniedHandler;
 import com.gridians.gridians.global.config.security.handler.JwtAuthenticationEntryPoint;
@@ -85,6 +86,7 @@ public class SecurityConfig {
                     .and()
                 ;
 
+        http.addFilterBefore(new ExceptionHandlerFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

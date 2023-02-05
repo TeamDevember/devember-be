@@ -3,9 +3,12 @@ package com.gridians.gridians.global.config.security.filter;
 import com.gridians.gridians.global.config.security.service.CustomUserDetailsService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.utils.JwtUtils;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,24 +36,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(!requestMatcherUser.matches(request)) {
+        if (!requestMatcherImage.matches(request) && !requestMatcherUser.matches(request)) {
             try {
                 String jwt = getResolveAuthHeader(request);
-                log.info("request uri = {}", request.getRequestURI());
-                log.info("jwt = {}", jwt);
 
                 if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)) {
                     String email = jwtUtils.getUserEmailFromToken(jwt);
 
-                    log.info("filter email = {}", email);
                     UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
+            } catch (ExpiredJwtException exception) {
+                throw exception;
+            } catch (JwtException exception) {
+                throw exception;
             } catch (Exception exception) {
-                throw new RuntimeException("jwt token error");
+                throw exception;
             }
         }
 

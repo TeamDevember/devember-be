@@ -55,4 +55,25 @@ public class UserDto {
 					.build();
 		}
 	}
+
+	@Getter
+	@NoArgsConstructor
+	@Builder
+	@AllArgsConstructor
+	public static class RequestToken {
+		private String refreshToken;
+	}
+
+	@Getter
+	@NoArgsConstructor
+	@Builder
+	@AllArgsConstructor
+	public static class ResponseToken {
+		private String accessToken;
+		public static ResponseToken from(String accessToken) {
+			return ResponseToken.builder()
+					.accessToken(accessToken)
+					.build();
+		}
+	}
 }

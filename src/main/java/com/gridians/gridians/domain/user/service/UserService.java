@@ -3,6 +3,7 @@ package com.gridians.gridians.domain.user.service;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.user.dto.JoinDto;
+import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.Favorite;
 import com.gridians.gridians.domain.user.entity.Role;
@@ -15,6 +16,8 @@ import com.gridians.gridians.domain.user.type.MailMessage;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
 import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.config.MailComponent;
+import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
+import com.gridians.gridians.global.error.exception.CustomJwtException;
 import com.gridians.gridians.global.error.exception.EntityNotFoundException;
 import com.gridians.gridians.global.utils.JwtUtils;
 import io.jsonwebtoken.JwtException;
@@ -89,15 +92,25 @@ public class UserService {
         }
     }
 
+    public LoginDto.Response login(Authentication authentication) {
+        String accessToken = createAccessToken(authentication);
+        String refreshToken = createRefreshToken(authentication);
+
+        String email = ((JwtUserDetails) authentication.getPrincipal()).getEmail();
+        tokenRepository.save(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
+
+        return LoginDto.Response.from(accessToken, refreshToken);
+    }
+
     public String issueAccessToken(String refreshToken) {
         String issuedAccessToken = "";
         try {
-            if (StringUtils.hasText(refreshToken) && jwtUtils.validateToken(refreshToken)) {
+            if(StringUtils.hasText(refreshToken) && tokenRepository.hasKeyToken(refreshToken)) {
                 Authentication authentication = jwtUtils.getAuthenticationByToken(refreshToken);
                 issuedAccessToken = jwtUtils.createAccessToken(authentication);
             }
         } catch (Exception e) {
-            throw new JwtException("Refresh Token Exception");
+            throw new CustomJwtException("no refresh key");
         }
 
         return issuedAccessToken;
@@ -177,11 +190,12 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(String userEmail) {
+    public void deleteUser(String userEmail, String password) {
         User user = getUserByEmail(userEmail);
-//        if(!verifyPassword(password, user.getPassword())){
-//            throw new PasswordNotMatchException("password not match");
-//        }
+        if(!verifyPassword(password, user.getPassword())){
+            log.info("password not match");
+            throw new PasswordNotMatchException("password not match");
+        }
 
         user.setUserStatus(UserStatus.DELETED);
     }
@@ -199,18 +213,17 @@ public class UserService {
         user.setNickname(userDto.getNickname());
 
         if(!userDto.getPassword().isEmpty()){
-            log.info("password = {}", userDto.getPassword());
-            log.info("password is not empty");
             if(verifyPassword(userDto.getPassword(), user.getPassword())) {
                 user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
             }
         }
     }
 
+    @Transactional
     public void findPassword(String email) {
         String uuid = UUID.randomUUID().toString();
         User user = getUserByEmail(email);
-        updatePassword(user, uuid);
+        user.setPassword(passwordEncoder.encode(uuid));
 
         mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
     }
@@ -225,10 +238,6 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException(email + "not found"));
     }
 
-    @Transactional
-    private void updatePassword(User user, String password) {
-        user.setPassword(passwordEncoder.encode(password));
-    }
 
     private boolean verifyPassword(String rawPassword, String cryptPassword) {
         if (!passwordEncoder.matches(rawPassword, cryptPassword)) {
