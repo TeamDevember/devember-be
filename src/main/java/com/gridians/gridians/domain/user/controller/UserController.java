@@ -21,7 +21,6 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,40 +42,7 @@ public class UserController {
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
-
-    @Value("${profileSrc}")
-    private String path;
     
-
-    // Get요청은 처음과 나중에 다르게 적용해도 됨
-    @GetMapping("/images/{id}")
-    public ResponseEntity<Resource> getProfileImage(@PathVariable String id) throws IOException {
-        // 실제 주소가 되어야 함
-        File dir = new File(path);
-
-        String[] list = dir.list();
-        String extension = "";
-
-        boolean isEmtpty = true;
-
-        for (String s : list) {
-            if(s.contains(id)){
-                extension = s.substring(s.lastIndexOf("."));
-                isEmtpty = false;
-            }
-        }
-
-        if(isEmtpty){
-          throw new RuntimeException("프로필 이미지를 찾을 수 없음");
-        }
-
-        String filePath = "/Users/j/j/images/" + id + extension;
-        Path realPath = new File(filePath).toPath();
-        FileSystemResource resource = new FileSystemResource(realPath);
-
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(realPath))).body(resource);
-    }
-
     @PostMapping("/auth/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
         User user = userService.signUp(request);
