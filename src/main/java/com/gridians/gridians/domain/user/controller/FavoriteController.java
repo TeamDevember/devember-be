@@ -5,12 +5,14 @@ import com.gridians.gridians.domain.user.dto.FavoriteDto;
 import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/fav")
 @RestController

@@ -1,5 +1,6 @@
 package com.gridians.gridians.global.utils;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
 
 import javax.servlet.http.Cookie;
@@ -26,7 +27,7 @@ public class CookieUtils {
 
     public static void addHttpOnlyCookie(HttpServletResponse response, String name, String value, int maxAge){
         Cookie cookie = new Cookie(name, value);
-        cookie.setSecure(true);
+        cookie.setSecure(false);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(maxAge);
