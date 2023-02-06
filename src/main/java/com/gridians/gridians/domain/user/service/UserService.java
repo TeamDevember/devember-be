@@ -1,7 +1,12 @@
 package com.gridians.gridians.domain.user.service;
 
+import com.gridians.gridians.domain.card.dto.GithubDto;
+import com.gridians.gridians.domain.card.entity.Github;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.card.exception.CardException;
+import com.gridians.gridians.domain.card.repository.GithubRepository;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
+import com.gridians.gridians.domain.card.type.CardErrorCode;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
@@ -23,12 +28,24 @@ import com.gridians.gridians.global.utils.JwtUtils;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -46,6 +63,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final TokenRepository tokenRepository;
+    private final GithubRepository githubRepository;
     private final SocialRequest socialRequest;
 
     @Transactional
@@ -247,4 +265,74 @@ public class UserService {
     public User getUserInfo(String userEmail) {
         return getUserByEmail(userEmail);
     }
+
+    @Transactional
+    public void saveGithub(String email, GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        Github github = Github.from(parsing(request.getGithubId()));
+        github.setUser(user);
+        Github savedGithub = githubRepository.save(github);
+        user.setGithub(savedGithub);
+    }
+
+    public void deleteGithub(String email, GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        Github github = githubRepository.findByUser(user).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        githubRepository.delete(github);
+    }
+
+    public GithubDto parsing(String githubId) throws IOException, ParseException, java.text.ParseException {
+        JSONParser parser = new JSONParser();
+
+        URL mainUrl = new URL("https://api.github.com/users/" + githubId);
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(mainUrl.openStream(), StandardCharsets.UTF_8));
+        String result = br.readLine();
+        JSONObject o1 = (JSONObject) parser.parse(result);
+
+        URL subUrl = new URL("https://api.github.com/users/" + githubId + "/events");
+        BufferedReader subBr = new BufferedReader(new InputStreamReader(subUrl.openStream(), StandardCharsets.UTF_8));
+        String subResult = subBr.readLine();
+
+        JSONArray jsonArray = (JSONArray) parser.parse(subResult);
+        String message = "";
+        String date = "";
+
+
+        for (Object o : jsonArray) {
+            JSONObject o2 = (JSONObject) o;
+
+            if (o2.get("type").equals("PushEvent")) {
+                date = (String) o2.get("created_at");
+                Object payload = o2.get("payload");
+                JSONObject payload1 = (JSONObject) payload;
+                Object commits = payload1.get("commits");
+                JSONArray commits1 = (JSONArray) commits;
+
+                if (commits1.size() > 0) {
+                    Object o3 = commits1.get(0);
+                    JSONObject o31 = (JSONObject) o3;
+                    message = (String) o31.get("message");
+                    break;
+                }
+            }
+        }
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        LocalDate realDate = simpleDateFormat.parse(date).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        return GithubDto.builder()
+                .name((String) o1.get("name"))
+                .login((String) o1.get("login"))
+                .githubId((Long) o1.get("id"))
+                .githubUrl((String) o1.get("url"))
+                .following((Long) o1.get("following"))
+                .followers((Long) o1.get("followers"))
+                .location((String) o1.get("location"))
+                .imageUrl((String) o1.get("avatar_url"))
+                .recentCommitAt(realDate)
+                .recentCommitMessage(message)
+                .build();
+    }
+
 }

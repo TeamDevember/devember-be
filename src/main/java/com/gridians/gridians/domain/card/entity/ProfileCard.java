@@ -45,10 +45,6 @@ public class ProfileCard extends BaseEntity {
 	@JoinColumn(name = "field_id")
 	private Field field;
 
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "github_id", unique = true)
-	private Github github;
-
 	@OneToMany(mappedBy = "profileCard",cascade = CascadeType.ALL)
 	private Set<Tag> tagList = new HashSet<>();
 
@@ -87,9 +83,7 @@ public class ProfileCard extends BaseEntity {
 		this.user = user;
 	}
 
-	public void setGithub(Github github) {
-		this.github = github;
-	}
+
 	public void setSkill(Skill skill){
 		this.skill = skill;
 	}
