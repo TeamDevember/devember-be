@@ -84,8 +84,7 @@ class ProfileCardControllerTest {
 	public void update() throws Exception {
 
 		mockMvc.perform(post("/cards")
-						.contentType(MediaType.APPLICATION_JSON)
-						.header("Authorization", token))
+						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 	}
 }

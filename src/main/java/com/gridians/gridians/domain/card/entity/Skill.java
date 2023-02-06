@@ -18,8 +18,8 @@ public class Skill {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToMany(mappedBy = "skill", cascade = CascadeType.ALL)
-	private List<ProfileCardSkill> profileCardSkillList = new ArrayList<>();
+	@OneToMany(mappedBy = "skill", fetch = FetchType.LAZY)
+	private List<ProfileCard> profileCardList;
 
 	private String  name;
 
@@ -28,4 +28,10 @@ public class Skill {
 				.name(name)
 				.build();
 	}
+
+	public void addProfileCard(ProfileCard profileCard){
+		profileCard.setSkill(this);
+		profileCardList.add(profileCard);
+	}
+
 }
