@@ -71,12 +71,12 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto.JoinResponse joinAuth(String id) {
+    public JoinDto.Response joinAuth(String id) {
         User user = userRepository.findById(UUID.fromString(id)).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
         user.setRole(Role.USER);
         user.setUserStatus(UserStatus.ACTIVE);
 
-        return UserDto.JoinResponse.from(userRepository.save(user));
+        return JoinDto.Response.from(userRepository.save(user));
     }
 
     public void verifyUser(String email, String password) {

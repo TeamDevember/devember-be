@@ -9,20 +9,6 @@ import java.time.LocalDateTime;
 @Getter
 public class UserDto {
 
-	@Builder
-	@Getter
-	public static class JoinResponse {
-		private String nickname;
-		private LocalDateTime createdAt;
-
-		public static JoinResponse from(User user) {
-			return JoinResponse.builder()
-					.nickname(user.getNickname())
-					.createdAt(user.getCreatedAt())
-					.build();
-		}
-	}
-
 	@Getter
 	@Builder
 	@NoArgsConstructor
@@ -35,6 +21,7 @@ public class UserDto {
 	}
 
 	@Getter
+	@Setter
 	@NoArgsConstructor
 	public static class deleteRequest {
 		private String password;

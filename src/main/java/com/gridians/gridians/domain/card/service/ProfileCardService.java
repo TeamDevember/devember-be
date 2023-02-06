@@ -58,6 +58,8 @@ public class ProfileCardService {
 	private final ProfileCardRepository profileCardRepository;
 	private final UserService userService;
 
+	//프로필 카드 생성
+
 	@Transactional
 	public ProfileCard createProfileCard(String email) {
 
@@ -74,6 +76,8 @@ public class ProfileCardService {
 		return pc;
 
 	}
+
+	// 프로필 카드 기입
 
 	@Transactional
 	public void input(Long id, ProfileCardDto.Request request) throws IOException {

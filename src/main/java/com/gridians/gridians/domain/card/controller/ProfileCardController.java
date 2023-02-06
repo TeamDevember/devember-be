@@ -33,7 +33,7 @@ public class ProfileCardController {
 	private final JwtUtils jwtUtils;
 	private final ProfileCardService profileCardService;
 
-	@Value("${skillSrc}")
+	@Value("${custom.path.skill-dir}")
 	private String path;
 	@Value("${imageExtension}")
 	private String extension;
