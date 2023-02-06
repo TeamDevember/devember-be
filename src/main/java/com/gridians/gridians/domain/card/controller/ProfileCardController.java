@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,15 +67,24 @@ public class ProfileCardController {
 		return ResponseEntity.ok().build();
 	}
 
+	//TODO: 중복 제거?
+
 	@PostMapping("/{id}")
 	public ResponseEntity<?> input(@PathVariable Long id, @RequestBody @Valid ProfileCardDto.Request request) throws IOException {
-		profileCardService.input(id, request);
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtUserDetails jwtUserDetails = (JwtUserDetails)authentication.getPrincipal();
+		String email = jwtUserDetails.getEmail();
+		profileCardService.input(email, id, request);
 		return ResponseEntity.ok().build();
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> update(@PathVariable Long id, @RequestBody @Valid ProfileCardDto.Request request) throws IOException {
-		profileCardService.input(id, request);
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtUserDetails jwtUserDetails = (JwtUserDetails) authentication.getPrincipal();
+		String email = jwtUserDetails.getEmail();
+		profileCardService.input(email, id, request);
 		return ResponseEntity.ok().build();
 	}
 

@@ -15,7 +15,6 @@ import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
-import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +24,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -39,7 +38,10 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -54,39 +56,35 @@ public class ProfileCardService {
 	private final TagRepository tagRepository;
 	private final FieldRepository fieldRepository;
 	private final FavoriteRepository favoriteRepository;
-	private final ProfileCardSkillRepository profileCardSkillRepository;
 	private final ProfileCardRepository profileCardRepository;
-	private final UserService userService;
 
 	@Transactional
 	public ProfileCard createProfileCard(String email) {
-
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-		if (profileCardRepository.findByUser(user).isPresent()) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		if(profileCardRepository.findByUser(user).isPresent()){
 			throw new UserException(UserErrorCode.DUPLICATED_USER);
 		}
-		ProfileCard pc = new ProfileCard();
-		user.setProfileCard(pc);
+		ProfileCard pc = ProfileCard.from();
 		pc.setUser(user);
+		ProfileCard saveProfileCard = profileCardRepository.save(pc);
 		userRepository.save(user);
-		return pc;
-
+		return saveProfileCard;
 	}
 
 	@Transactional
-	public void input(Long id, ProfileCardDto.Request request) throws IOException {
+	public void input(String email, Long id, ProfileCardDto.Request request) throws IOException {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
 //		saveFile(pc.getUser(), multipartFile);
 		saveField(pc, request);
 		saveSnsSet(pc, request);
-		saveSkillSet(pc, request);
+		saveSkill(pc, request);
 		saveTagSet(pc, request);
 		pc.setIntroduction(request.getIntroduction());
 		pc.setStatusMessage(request.getStatusMessage());
+		pc.setUser(user);
 
 		profileCardRepository.save(pc);
 	}
@@ -96,6 +94,11 @@ public class ProfileCardService {
 
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+
+//		if(pc.getUser().getGithubNumberId() != null){
+//			Optional<Github> findGithub = githubRepository.findByProfileCard(pc);
+//			Github github = findGithub.get();
+//		}
 
 		List<Comment> commentList = commentRepository.findAllByProfileCard(pc);
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
@@ -111,7 +114,6 @@ public class ProfileCardService {
 	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) {
 
 		PageRequest pageRequest = PageRequest.of(page, size);
-
 		Page<ProfileCard> pcList = profileCardRepository.findAll(pageRequest);
 
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
@@ -162,14 +164,10 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public void saveSkillSet(ProfileCard pc, ProfileCardDto.Request request) {
-		profileCardSkillRepository.deleteAllInBatch(pc.getProfileCardSkillSet());
-		Set<String> sList = request.getSkillSet();
-
-		for (String s : sList) {
-			Skill skill = skillRepository.findByName(s).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
-			pc.addProfileCardSkill(ProfileCardSkill.from(pc, skill));
-		}
+	public void saveSkill(ProfileCard pc, ProfileCardDto.Request request) {
+		Skill skill = skillRepository.findByName(request.getSkill())
+				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+		skill.addProfileCard(pc);
 	}
 
 	@Transactional
