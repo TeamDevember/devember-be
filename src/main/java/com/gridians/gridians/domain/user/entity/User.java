@@ -1,6 +1,7 @@
 package com.gridians.gridians.domain.user.entity;
 
 
+import com.gridians.gridians.domain.card.entity.Github;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.user.dto.JoinDto;
@@ -48,6 +49,10 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "github_id", unique = true)
+	private Github github;
+
 	@OneToOne(fetch = LAZY, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "profile_card_id")
 	private ProfileCard profileCard;
@@ -76,5 +81,9 @@ public class User extends BaseEntity {
 	}
 	public void deleteFavorite(Favorite favorite) {
 		favorites.remove(favorite);
+	}
+
+	public void setGithub(Github github) {
+		this.github = github;
 	}
 }

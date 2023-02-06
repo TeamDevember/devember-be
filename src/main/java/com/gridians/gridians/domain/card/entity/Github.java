@@ -2,6 +2,7 @@ package com.gridians.gridians.domain.card.entity;
 
 
 import com.gridians.gridians.domain.card.dto.GithubDto;
+import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.global.entity.BaseEntity;
 import lombok.*;
 
@@ -31,7 +32,7 @@ public class Github extends BaseEntity {
 	private String url;
 
 	@OneToOne(mappedBy = "github", fetch = FetchType.LAZY)
-	private ProfileCard profileCard;
+	private User user;
 
 	private LocalDate recentCommitAt;
 	private String recentCommitMessage;

@@ -27,9 +27,7 @@ public class GithubDto {
 	@Getter
 	@Setter
 	public static class Request {
-
 		private String githubId;
-		private Long profileCardId;
 	}
 
 	@Builder
