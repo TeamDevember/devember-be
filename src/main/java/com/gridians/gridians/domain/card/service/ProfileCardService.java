@@ -1,9 +1,11 @@
 package com.gridians.gridians.domain.card.service;
 
-import com.gridians.gridians.domain.card.dto.GithubDto;
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.domain.card.dto.ProfileCardDto.SnsResponse;
-import com.gridians.gridians.domain.card.entity.*;
+import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.card.entity.Skill;
+import com.gridians.gridians.domain.card.entity.Sns;
+import com.gridians.gridians.domain.card.entity.Tag;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.*;
 import com.gridians.gridians.domain.card.type.CardErrorCode;
@@ -15,32 +17,20 @@ import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
+import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -49,7 +39,6 @@ import java.util.Set;
 public class ProfileCardService {
 
 	private final UserRepository userRepository;
-	private final GithubRepository githubRepository;
 	private final SkillRepository skillRepository;
 	private final CommentRepository commentRepository;
 	private final SnsRepository snsRepository;
@@ -57,9 +46,10 @@ public class ProfileCardService {
 	private final FieldRepository fieldRepository;
 	private final FavoriteRepository favoriteRepository;
 	private final ProfileCardRepository profileCardRepository;
+	private final S3Service s3Service;
+
 
 	//프로필 카드 생성
-
 	@Transactional
 	public ProfileCard createProfileCard(String email) {
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -94,7 +84,8 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public ProfileCardDto.DetailResponse readProfileCard(Long id) {
+	public ProfileCardDto.DetailResponse readProfileCard(String email, Long id) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
@@ -111,7 +102,10 @@ public class ProfileCardService {
 			commentDtoList.add(CommentDto.Response.from(comment));
 		}
 
-		return ProfileCardDto.DetailResponse.from(pc, commentDtoList);
+		ProfileCardDto.DetailResponse detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
+		detailResponse.setImageSrc(s3Service.getUrl(user.getId().toString()));
+
+		return detailResponse;
 	}
 
 	@Transactional
@@ -122,7 +116,9 @@ public class ProfileCardService {
 
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
-			profileCardList.add(ProfileCardDto.SimpleResponse.from(pc));
+			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
+			simpleResponse.setImageSrc(s3Service.getUrl(pc.getUser().getId().toString()));
+			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
 	}
@@ -137,7 +133,9 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 
 		for (Favorite favorite : favorites) {
-			profileCardList.add(ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard()));
+			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
+			simpleResponse.setImageSrc(s3Service.getUrl(favorite.getUser().getId().toString()));
+			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
 	}

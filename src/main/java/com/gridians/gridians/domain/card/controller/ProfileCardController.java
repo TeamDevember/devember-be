@@ -31,7 +31,6 @@ import java.nio.file.Path;
 @RequiredArgsConstructor
 public class ProfileCardController {
 
-	private final JwtUtils jwtUtils;
 	private final ProfileCardService profileCardService;
 
 	@Value("${custom.path.skill-dir}")
@@ -41,7 +40,8 @@ public class ProfileCardController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> read(@PathVariable Long id) {
-		return new ResponseEntity<>(profileCardService.readProfileCard(id), HttpStatus.OK);
+		String email = getUserEmail();
+		return new ResponseEntity<>(profileCardService.readProfileCard(email, id), HttpStatus.OK);
 	}
 
 	@GetMapping
@@ -52,38 +52,30 @@ public class ProfileCardController {
 
 	@GetMapping("/favorites")
 	public ResponseEntity<?> favoriteCardList(int page, int size) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		JwtUserDetails jwtUserDetails = (JwtUserDetails)authentication.getPrincipal();
+		String email = getUserEmail();
 		log.info("Favorite CardList Read");
-		return new ResponseEntity<>(profileCardService.favoriteCardList(jwtUserDetails.getEmail(), page, size), HttpStatus.OK);
+		return new ResponseEntity<>(profileCardService.favoriteCardList(email, page, size), HttpStatus.OK);
 	}
 
 	@PostMapping
 	public ResponseEntity<?> create() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		JwtUserDetails jwtUserDetails = (JwtUserDetails)authentication.getPrincipal();
-		ProfileCard pc = profileCardService.createProfileCard(jwtUserDetails.getEmail());
+		String email = getUserEmail();
+		ProfileCard pc = profileCardService.createProfileCard(email);
 		log.info("[" + pc.getUser().getNickname() + "] Create Profile Card");
 		return ResponseEntity.ok().build();
 	}
 
-	//TODO: 중복 제거?
 
 	@PostMapping("/{id}")
 	public ResponseEntity<?> input(@PathVariable Long id, @RequestBody @Valid ProfileCardDto.Request request) throws IOException {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		JwtUserDetails jwtUserDetails = (JwtUserDetails)authentication.getPrincipal();
-		String email = jwtUserDetails.getEmail();
+		String email = getUserEmail();
 		profileCardService.input(email, id, request);
 		return ResponseEntity.ok().build();
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> update(@PathVariable Long id, @RequestBody @Valid ProfileCardDto.Request request) throws IOException {
-
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		JwtUserDetails jwtUserDetails = (JwtUserDetails) authentication.getPrincipal();
-		String email = jwtUserDetails.getEmail();
+		String email = getUserEmail();
 		profileCardService.input(email, id, request);
 		return ResponseEntity.ok().build();
 	}
@@ -102,5 +94,11 @@ public class ProfileCardController {
 		Path path = new File(file).toPath();
 		FileSystemResource resource = new FileSystemResource(path);
 		return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(path))).body(resource);
+	}
+
+	private String getUserEmail() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
+		return userDetails.getEmail();
 	}
 }

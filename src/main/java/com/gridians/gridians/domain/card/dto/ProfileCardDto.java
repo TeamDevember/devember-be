@@ -2,26 +2,21 @@ package com.gridians.gridians.domain.card.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.gridians.gridians.domain.card.entity.*;
+import com.gridians.gridians.domain.card.entity.Github;
+import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.card.entity.Sns;
+import com.gridians.gridians.domain.card.entity.Tag;
 import com.gridians.gridians.domain.comment.dto.CommentDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class ProfileCardDto {
-
-	public static String imagePath;
-	public static String skillPath;
-	public static String extension;
-
-
 
 	@Getter
 	@Setter
@@ -76,7 +71,6 @@ public class ProfileCardDto {
 					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
 					.tagSet(tags == null ? new HashSet<>() : tags)
 					.snsSet(snss == null ? new HashSet<>() : snss)
-					.imageSrc(pc.getUser() == null ? "" : "http://175.215.143.189:8080/user/images/" + pc.getUser().getId())
 					.build();
 		}
 	}
@@ -98,8 +92,6 @@ public class ProfileCardDto {
 			return SimpleResponse.builder()
 					.field(pc.getField() == null ? "" : pc.getField().getName())
 					.nickname(pc.getUser() == null ? "" : pc.getUser().getNickname())
-					.skillSrc(pc.getSkill() == null ? "" : "http://175.215.143.189:8080/cards/images/skills/" + pc.getSkill().getName())
-					.imageSrc(pc.getUser() == null ? "" : "http://175.215.143.189:8080/user/images/" + pc.getUser().getId())
 					.profileCardId(pc.getId())
 					.build();
 		}
@@ -120,7 +112,6 @@ public class ProfileCardDto {
 					.build();
 		}
 	}
-
 
 	@Builder
 	@Setter

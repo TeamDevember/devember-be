@@ -43,7 +43,6 @@ public class Github extends BaseEntity {
 	private String location;
 	private String company;
 
-
 	public static Github from(GithubDto github) throws ParseException {
 
 		return Github.builder()
@@ -59,19 +58,5 @@ public class Github extends BaseEntity {
 				.followers(github.getFollowers())
 				.following(github.getFollowing())
 				.build();
-	}
-
-	public void setAll(GithubDto github){
-		this.githubNumberId = github.getGithubId();
-		this.name = github.getName();
-		this.login = github.getLogin();
-		this.profileImageUrl = github.getImageUrl();
-		this.url = github.getGithubUrl();
-		this.recentCommitAt = github.getRecentCommitAt();
-		this.recentCommitMessage = github.getRecentCommitMessage();
-		this.location = github.getLocation();
-		this.company = github.getCompany();
-		this.followers = github.getFollowers();
-		this.following = github.getFollowing();
 	}
 }

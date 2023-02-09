@@ -5,8 +5,7 @@ import lombok.Getter;
 @Getter
 public enum CreateType {
     EMAIL("EMAIL"),
-    GITHUB("GITHUB"),
-    ;
+    GITHUB("GITHUB");
 
     public String name;
     private CreateType(String name){
