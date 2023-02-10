@@ -1,6 +1,6 @@
-package com.gridians.gridians.domain.card.dto;
+package com.gridians.gridians.domain.user.dto;
 
-import com.gridians.gridians.domain.card.entity.Github;
+import com.gridians.gridians.domain.user.entity.Github;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

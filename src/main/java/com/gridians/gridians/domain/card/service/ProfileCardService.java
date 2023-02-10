@@ -1,6 +1,6 @@
 package com.gridians.gridians.domain.card.service;
 
-import com.gridians.gridians.domain.card.dto.GithubDto;
+import com.gridians.gridians.domain.user.dto.GithubDto;
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.domain.card.entity.*;
 import com.gridians.gridians.domain.card.exception.CardException;
@@ -10,9 +10,11 @@ import com.gridians.gridians.domain.comment.dto.CommentDto;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.comment.repository.CommentRepository;
 import com.gridians.gridians.domain.user.entity.Favorite;
+import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.FavoriteRepository;
+import com.gridians.gridians.domain.user.repository.GithubRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
