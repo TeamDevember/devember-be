@@ -2,6 +2,7 @@ package com.gridians.gridians.domain.card.entity;
 
 
 import com.gridians.gridians.domain.card.dto.GithubDto;
+import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.global.entity.BaseEntity;
 import lombok.*;
 
@@ -31,7 +32,7 @@ public class Github extends BaseEntity {
 	private String url;
 
 	@OneToOne(mappedBy = "github", fetch = FetchType.LAZY)
-	private ProfileCard profileCard;
+	private User user;
 
 	private LocalDate recentCommitAt;
 	private String recentCommitMessage;
@@ -41,7 +42,6 @@ public class Github extends BaseEntity {
 
 	private String location;
 	private String company;
-
 
 	public static Github from(GithubDto github) throws ParseException {
 
@@ -58,19 +58,5 @@ public class Github extends BaseEntity {
 				.followers(github.getFollowers())
 				.following(github.getFollowing())
 				.build();
-	}
-
-	public void setAll(GithubDto github){
-		this.githubNumberId = github.getGithubId();
-		this.name = github.getName();
-		this.login = github.getLogin();
-		this.profileImageUrl = github.getImageUrl();
-		this.url = github.getGithubUrl();
-		this.recentCommitAt = github.getRecentCommitAt();
-		this.recentCommitMessage = github.getRecentCommitMessage();
-		this.location = github.getLocation();
-		this.company = github.getCompany();
-		this.followers = github.getFollowers();
-		this.following = github.getFollowing();
 	}
 }

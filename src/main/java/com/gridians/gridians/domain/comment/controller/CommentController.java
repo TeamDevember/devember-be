@@ -1,16 +1,17 @@
 package com.gridians.gridians.domain.comment.controller;
 
-
 import com.gridians.gridians.domain.comment.dto.CommentDto;
 import com.gridians.gridians.domain.comment.dto.ReplyDto;
 import com.gridians.gridians.domain.comment.service.CommentService;
 import com.gridians.gridians.domain.comment.service.ReplyService;
+import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 
 @RequestMapping("/cards/{id}/comments")
 @RestController
@@ -19,13 +20,16 @@ public class CommentController {
 
 	private final CommentService commentService;
 	private final ReplyService replyService;
-	private final JwtUtils jwtUtils;
 
-	// 댓글
+	private String getUserEmail() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
+		return userDetails.getEmail();
+	}
 
 	@PostMapping
-	public ResponseEntity<?> writeComment(@PathVariable Long id, @RequestBody CommentDto.CreateRequest request, @RequestHeader(name = "Authorization") String token) {
-		String email = jwtUtils.getUserEmailFromToken(token);
+	public ResponseEntity<?> writeComment(@PathVariable Long id, @RequestBody CommentDto.CreateRequest request) {
+		String email = getUserEmail();
 		commentService.write(id, request, email);
 		return ResponseEntity.ok().build();
 	}
@@ -36,15 +40,15 @@ public class CommentController {
 	}
 
 	@PutMapping
-	public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody CommentDto.UpdateRequest request, @RequestHeader(name = "Authorization") String token){
-		String email = jwtUtils.getUserEmailFromToken(token);
+	public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody CommentDto.UpdateRequest request){
+		String email = getUserEmail();
 		commentService.update(id, request, email);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping
-	public ResponseEntity<?> deleteComment(@PathVariable Long id, @RequestBody CommentDto.DeleteRequest request, @RequestHeader(name = "Authorization") String token) {
-		String email = jwtUtils.getUserEmailFromToken(token);
+	public ResponseEntity<?> deleteComment(@PathVariable Long id, @RequestBody CommentDto.DeleteRequest request) {
+		String email = getUserEmail();
 		commentService.delete(id, request, email);
 		return ResponseEntity.ok().build();
 	}
@@ -52,8 +56,8 @@ public class CommentController {
 	// 답글
 
 	@PostMapping("/{commentId}")
-	public ResponseEntity<?> writeReply(@PathVariable Long commentId, @RequestBody ReplyDto.CreateRequest request, @RequestHeader(name = "Authorization") String token) {
-		String email = jwtUtils.getUserEmailFromToken(token);
+	public ResponseEntity<?> writeReply(@PathVariable Long commentId, @RequestBody ReplyDto.CreateRequest request) {
+		String email = getUserEmail();
 		replyService.write(commentId, request, email);
 		return ResponseEntity.ok().build();
 	}
@@ -64,15 +68,16 @@ public class CommentController {
 	}
 
 	@PutMapping("/{commentId}")
-	public ResponseEntity<?> updateReply(@PathVariable Long commentId, @RequestBody ReplyDto.UpdateRequest request, @RequestHeader(name = "Authorization") String token){
-		String email = jwtUtils.getUserEmailFromToken(token);
+	public ResponseEntity<?> updateReply(@PathVariable Long commentId, @RequestBody ReplyDto.UpdateRequest request) {
+		String email = getUserEmail();
+
 		replyService.update(commentId, request, email);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/{commentId}")
-	public ResponseEntity<?> deleteReply(@PathVariable Long commentId, @RequestBody ReplyDto.DeleteRequest request, @RequestHeader(name = "Authorization") String token) {
-		String email = jwtUtils.getUserEmailFromToken(token);
+	public ResponseEntity<?> deleteReply(@PathVariable Long commentId, @RequestBody ReplyDto.DeleteRequest request) {
+		String email = getUserEmail();
 		replyService.delete(commentId, request, email);
 		return ResponseEntity.ok().build();
 	}

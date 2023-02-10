@@ -19,7 +19,7 @@ import java.util.UUID;
 class ProfileCardServiceTest {
 
 	@Autowired
-    ProfileCardService profileCardService;
+	ProfileCardService profileCardService;
 
 	@Autowired
 	UserRepository userRepository;

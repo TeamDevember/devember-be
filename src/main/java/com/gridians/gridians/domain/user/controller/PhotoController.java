@@ -19,11 +19,11 @@ public class PhotoController {
     private final PhotoService photoService;
 
     @ResponseBody
-    @GetMapping(value = "/image/{id}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
+    @GetMapping(value = "/image/{email}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     public byte[] getUserProfile(
-            @PathVariable String id
+            @PathVariable String email
     ) {
-        return photoService.getProfileImage(id);
+        return photoService.getProfileImage(email);
     }
 
     @Secured("ROLE_USER")

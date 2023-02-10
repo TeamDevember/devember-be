@@ -1,26 +1,23 @@
 package com.gridians.gridians.domain.user.entity;
 
 
+import com.gridians.gridians.domain.card.entity.Github;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.entity.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.*;
 
-import static javax.persistence.FetchType.LAZY;
-
 @Entity
 @Builder
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
@@ -48,11 +45,15 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
-	@OneToOne(mappedBy = "user", fetch = LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "github_id", unique = true)
+	private Github github;
+
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
 
 	@Builder.Default
-	@OneToMany(mappedBy = "user", fetch = LAZY, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<Favorite> favorites = new HashSet<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -75,5 +76,9 @@ public class User extends BaseEntity {
 	}
 	public void deleteFavorite(Favorite favorite) {
 		favorites.remove(favorite);
+	}
+
+	public void setGithub(Github github) {
+		this.github = github;
 	}
 }

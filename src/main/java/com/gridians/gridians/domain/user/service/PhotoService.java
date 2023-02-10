@@ -57,9 +57,11 @@ public class PhotoService {
         }
     }
 
-    public byte[] getProfileImage(String id) {
+    public byte[] getProfileImage(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException(email + " not found"));
 
-        String filePath = path + "/" + id + ".jpg";
+        String filePath = path + "/" + user.getId() + ".jpg";
         return getImage(filePath);
     }
 

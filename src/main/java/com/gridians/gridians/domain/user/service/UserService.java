@@ -1,7 +1,8 @@
 package com.gridians.gridians.domain.user.service;
 
-import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
+import com.gridians.gridians.domain.card.type.CardErrorCode;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
@@ -20,7 +21,6 @@ import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.error.exception.CustomJwtException;
 import com.gridians.gridians.global.error.exception.EntityNotFoundException;
 import com.gridians.gridians.global.utils.JwtUtils;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -74,12 +73,12 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto.JoinResponse joinAuth(String id) {
+    public JoinDto.Response joinAuth(String id) {
         User user = userRepository.findById(UUID.fromString(id)).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
         user.setRole(Role.USER);
         user.setUserStatus(UserStatus.ACTIVE);
 
-        return UserDto.JoinResponse.from(userRepository.save(user));
+        return JoinDto.Response.from(userRepository.save(user));
     }
 
     public void verifyUser(String email, String password) {
@@ -151,7 +150,7 @@ public class UserService {
         User favorUser = getUserByEmail(favorUserEmail);
 
         profileCardRepository.findByUser(favorUser)
-                .orElseThrow(() -> new RuntimeException("profile card not found"));
+                .orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
         Favorite favorite = Favorite.builder()
                 .user(favorUser)
@@ -247,5 +246,18 @@ public class UserService {
 
     public User getUserInfo(String userEmail) {
         return getUserByEmail(userEmail);
+    }
+
+
+    @Transactional
+    public void dummyUser() {
+
+        for (int i = 0; i <= 99; i++) {
+            User user = User.builder().password("test1234").build();
+
+            user.setNickname("test" + i);
+            user.setEmail("test" + i + "@test.com");
+            userRepository.save(user);
+        }
     }
 }

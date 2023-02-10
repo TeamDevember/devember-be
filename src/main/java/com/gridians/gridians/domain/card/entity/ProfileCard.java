@@ -15,8 +15,8 @@ import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Builder
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProfileCard extends BaseEntity {
@@ -26,6 +26,7 @@ public class ProfileCard extends BaseEntity {
 	private Long id;
 
 	@OneToOne(fetch = LAZY)
+	@JoinColumn(name = "user_id")
 	private User user;
 
 	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
@@ -35,17 +36,15 @@ public class ProfileCard extends BaseEntity {
 	private Set<Sns> snsSet = new HashSet<>();
 
 	private String statusMessage;
+	private String introduction;
 
-	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
-	private Set<ProfileCardSkill> profileCardSkillSet = new HashSet<>();
+	@ManyToOne(fetch = LAZY)
+	@JoinColumn(name = "skill_id")
+	private Skill skill;
 
 	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "field_id")
 	private Field field;
-
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "github_id", unique = true)
-	private Github github;
 
 	@OneToMany(mappedBy = "profileCard",cascade = CascadeType.ALL)
 	private Set<Tag> tagList = new HashSet<>();
@@ -80,18 +79,8 @@ public class ProfileCard extends BaseEntity {
 		field.addProfileCard(this);
 	}
 
-	public void setUser(User user) {
-		user.setProfileCard(this);
-		this.user = user;
+	public void setSkill(Skill skill){
+		this.skill = skill;
 	}
 
-	public void setGithub(Github github) {
-		this.github = github;
-	}
-
-
-	public void addProfileCardSkill(ProfileCardSkill profileCardSkill){
-		profileCardSkill.setProfileCard(this);
-		profileCardSkillSet.add(profileCardSkill);
-	}
 }

@@ -1,27 +1,23 @@
 package com.gridians.gridians.domain.user.controller;
 
 import com.gridians.gridians.domain.user.dto.JoinDto;
-
+import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.User;
+import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.service.UserService;
+import com.gridians.gridians.domain.user.type.UserErrorCode;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
-import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.global.utils.CookieUtils;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,10 +25,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Slf4j
 @RequestMapping("/user")
@@ -43,6 +35,12 @@ public class UserController {
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+
+
+    @GetMapping("/dummy")
+    public void dummy(){
+        userService.dummyUser();
+    }
 
     @PostMapping("/auth/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
@@ -65,7 +63,6 @@ public class UserController {
 
         return ResponseEntity.ok().body(res);
     }
-
 
     @PostMapping("/exist")
     public ResponseEntity<?> existUserByEmail(String email) {
@@ -126,7 +123,7 @@ public class UserController {
 
     @Secured("ROLE_USER")
     @PutMapping("/update-user")
-    public ResponseEntity  updateUser(
+    public ResponseEntity updateUser(
             @RequestBody UserDto.Request userDto
     ) {
         String userEmail = getUserEmail();
@@ -172,12 +169,12 @@ public class UserController {
     ) {
         Cookie[] cookies = request.getCookies();
         String refreshToken = "";
-        for(Cookie cookie : cookies) {
-            if(cookie.getName().equals("re-token")) {
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("re-token")) {
                 refreshToken = cookie.getValue();
             }
         }
-        if(refreshToken.isEmpty()) {
+        if (refreshToken.isEmpty()) {
             throw new RuntimeException("empty refresh token");
         }
 

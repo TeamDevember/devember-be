@@ -2,7 +2,6 @@ package com.gridians.gridians.domain.card.service;
 
 import com.gridians.gridians.domain.card.dto.GithubDto;
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
-import com.gridians.gridians.domain.card.dto.ProfileCardDto.SnsResponse;
 import com.gridians.gridians.domain.card.entity.*;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.*;
@@ -15,7 +14,7 @@ import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
-import com.gridians.gridians.domain.user.service.UserService;
+import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +24,10 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -39,7 +35,10 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -47,48 +46,66 @@ import java.util.*;
 public class ProfileCardService {
 
 	private final UserRepository userRepository;
-	private final GithubRepository githubRepository;
 	private final SkillRepository skillRepository;
 	private final CommentRepository commentRepository;
 	private final SnsRepository snsRepository;
 	private final TagRepository tagRepository;
 	private final FieldRepository fieldRepository;
 	private final FavoriteRepository favoriteRepository;
-	private final ProfileCardSkillRepository profileCardSkillRepository;
 	private final ProfileCardRepository profileCardRepository;
-	private final UserService userService;
+	private final GithubRepository githubRepository;
+	private final S3Service s3Service;
+
+	//프로필 카드 생성
 	@Transactional
 	public ProfileCard createProfileCard(String email) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-		if (profileCardRepository.findByUser(user).isPresent()) {
-			throw new UserException(UserErrorCode.DUPLICATED_USER);
+		Optional<ProfileCard> findPc = profileCardRepository.findByUser(user);
+		if (findPc.isPresent()) {
+			throw new CardException(CardErrorCode.DUPLICATED_USER);
 		}
-		ProfileCard pc = new ProfileCard();
-		pc.setUser(user);
-		return profileCardRepository.save(pc);
 
+		ProfileCard pc = ProfileCard.from();
+		pc.setUser(user);
+		ProfileCard savedPc = profileCardRepository.save(pc);
+		user.setProfileCard(savedPc);
+		return savedPc;
+	}
+
+	// 프로필 카드 기입
+	@Transactional
+	public void dummy() {
+
+		List<User> all = userRepository.findAll();
+
+		for (User user : all) {
+			ProfileCard pc = ProfileCard.builder().build();
+			pc.setUser(user);
+			profileCardRepository.save(pc);
+		}
 	}
 
 	@Transactional
-	public void input(Long id, ProfileCardDto.Request request) throws IOException {
+	public void input(String email, Long id, ProfileCardDto.Request request) throws IOException {
+		userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
-//		saveFile(pc.getUser(), multipartFile);
 		saveField(pc, request);
 		saveSnsSet(pc, request);
-		saveSkillSet(pc, request);
+		saveSkill(pc, request);
 		saveTagSet(pc, request);
+		pc.setIntroduction(request.getIntroduction());
 		pc.setStatusMessage(request.getStatusMessage());
 
 		profileCardRepository.save(pc);
 	}
 
+	//카드 상세 정보
 	@Transactional
-	public ProfileCardDto.DetailResponse readProfileCard(Long id) {
+	public ProfileCardDto.DetailResponse readProfileCard(String email, Long id) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
@@ -99,20 +116,30 @@ public class ProfileCardService {
 		for (Comment comment : commentList) {
 			commentDtoList.add(CommentDto.Response.from(comment));
 		}
+		ProfileCardDto.DetailResponse detailResponse;
+		if(user.getGithub() != null){
+			Github github = user.getGithub();
+			detailResponse = ProfileCardDto.DetailResponse.from(github, pc, commentDtoList);
+		} else {
+			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
+		}
 
-		return ProfileCardDto.DetailResponse.from(pc, commentDtoList);
+		detailResponse.setImageSrc(s3Service.getProfileImage(user.getId().toString()));
+		return detailResponse;
 	}
 
+	//카드 리스트 조회
 	@Transactional
 	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) {
 
 		PageRequest pageRequest = PageRequest.of(page, size);
-
-		Page<ProfileCard> pcList = profileCardRepository.findAll(pageRequest);
+		Page<ProfileCard> pcList = profileCardRepository.findAllByOrderByCreatedAtDesc(pageRequest);
 
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
-			profileCardList.add(ProfileCardDto.SimpleResponse.from(pc));
+			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
+			simpleResponse.setImageSrc(s3Service.getProfileImage(pc.getUser().getId().toString()));
+			profileCardList.add(simpleResponse);
 		}
 		log.info("size = {}", profileCardList.size());
 		return profileCardList;
@@ -128,7 +155,9 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 
 		for (Favorite favorite : favorites) {
-			profileCardList.add(ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard()));
+			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
+			simpleResponse.setImageSrc(s3Service.getProfileImage(favorite.getUser().getId().toString()));
+			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
 	}
@@ -143,8 +172,8 @@ public class ProfileCardService {
 	public void saveSnsSet(ProfileCard pc, ProfileCardDto.Request request) {
 
 		snsRepository.deleteAllInBatch(pc.getSnsSet());
-		Set<SnsResponse> sSet = request.getSnsSet();
-		for (SnsResponse snsResponse : sSet) {
+		Set<ProfileCardDto.SnsResponse> sSet = request.getSnsSet();
+		for (ProfileCardDto.SnsResponse snsResponse : sSet) {
 			pc.addSns(Sns.from(pc, snsResponse.getName(), snsResponse.getAccount()));
 		}
 	}
@@ -159,14 +188,10 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public void saveSkillSet(ProfileCard pc, ProfileCardDto.Request request) {
-		profileCardSkillRepository.deleteAllInBatch(pc.getProfileCardSkillSet());
-		Set<String> sList = request.getSkillSet();
-
-		for (String s : sList) {
-			Skill skill = skillRepository.findByName(s).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
-			pc.addProfileCardSkill(ProfileCardSkill.from(pc, skill));
-		}
+	public void saveSkill(ProfileCard pc, ProfileCardDto.Request request) {
+		Skill skill = skillRepository.findByName(request.getSkill())
+				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+		skill.addProfileCard(pc);
 	}
 
 	@Transactional
@@ -177,17 +202,24 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public void saveGithub(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
-		ProfileCard pc = profileCardRepository.findById(request.getProfileCardId()).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
-		Github github = Github.from(parsing(request.getGithubId()));
-		github.setProfileCard(pc);
+	public void saveGithub(String email, String githubId) throws IOException, ParseException, java.text.ParseException {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		if(user.getGithub() != null){
+			Github github = user.getGithub();
+			user.setGithub(null);
+			githubRepository.delete(github);
+		}
+		Github github = Github.from(parsing(githubId));
+		github.setUser(user);
 		Github savedGithub = githubRepository.save(github);
-		pc.setGithub(savedGithub);
+		user.setGithub(savedGithub);
 	}
 
-	public void deleteGithub(GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
-		ProfileCard pc = profileCardRepository.findById(request.getProfileCardId()).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
-		Github github = pc.getGithub();
+	@Transactional
+	public void deleteGithub(String email) throws IOException, ParseException, java.text.ParseException {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		Github github = user.getGithub();
+		user.setGithub(null);
 		githubRepository.delete(github);
 	}
 
@@ -243,18 +275,5 @@ public class ProfileCardService {
 				.recentCommitAt(realDate)
 				.recentCommitMessage(message)
 				.build();
-	}
-
-
-	public void saveFile(User user, MultipartFile multipartFile) throws IOException {
-
-		String originalName = multipartFile.getOriginalFilename();
-		String uuid = user.getId().toString();
-		String extension = originalName.substring(originalName.lastIndexOf("."));
-		String saveName = uuid + extension;
-		String savePath = "/Users/j/j/images/" + saveName;
-
-		multipartFile.transferTo(new File(savePath));
-
 	}
 }
