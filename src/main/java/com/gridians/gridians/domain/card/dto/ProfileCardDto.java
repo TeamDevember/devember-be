@@ -10,6 +10,7 @@ import com.gridians.gridians.domain.comment.dto.CommentDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -20,6 +21,8 @@ public class ProfileCardDto {
 
 	@Getter
 	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class Request {
 
 		private String statusMessage;
@@ -34,6 +37,8 @@ public class ProfileCardDto {
 	@Getter
 	@Setter
 	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class DetailResponse {
 
 		private String statusMessage;
@@ -129,6 +134,8 @@ public class ProfileCardDto {
 	@Getter
 	@Setter
 	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class SimpleResponse {
 
@@ -151,6 +158,8 @@ public class ProfileCardDto {
 	@Builder
 	@Setter
 	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class SnsResponse {
 
 		private String name;
@@ -167,6 +176,8 @@ public class ProfileCardDto {
 	@Builder
 	@Setter
 	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class GithubResponse {
 
 		private String githubName;

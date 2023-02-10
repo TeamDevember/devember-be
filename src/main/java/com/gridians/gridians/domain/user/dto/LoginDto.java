@@ -23,15 +23,14 @@ public class LoginDto {
     @AllArgsConstructor
     public static class Response {
         private String token;
+		private String id;
         private String accessToken;
         private String refreshToken;
-        private String nickname;
-        private int passwordLength;
         private String githubId;
-        private String email;
 
-        public static Response from(String accessToken, String refreshToken) {
+        public static Response from(String accessToken, String refreshToken, String id) {
             return Response.builder()
+					.id(id)
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();
