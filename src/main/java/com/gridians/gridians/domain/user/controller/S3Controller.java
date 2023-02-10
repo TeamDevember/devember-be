@@ -1,4 +1,4 @@
-package com.gridians.gridians.domain.aws.controller;
+package com.gridians.gridians.domain.user.controller;
 
 import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
@@ -28,7 +28,7 @@ public class S3Controller {
 
 	@GetMapping("/imageUrl/{id}")
 	public ResponseEntity<?> getImage(@PathVariable String id){
-		return new ResponseEntity<>(s3Service.getUrl(id), HttpStatus.OK);
+		return new ResponseEntity<>(s3Service.getProfileImage(id), HttpStatus.OK);
 	}
 
 	private String getUserEmail() {

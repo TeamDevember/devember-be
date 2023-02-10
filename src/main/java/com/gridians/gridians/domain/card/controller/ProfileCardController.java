@@ -4,26 +4,18 @@ import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
+import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
-import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Slf4j
 @RequestMapping("/cards")
@@ -32,11 +24,7 @@ import java.nio.file.Path;
 public class ProfileCardController {
 
 	private final ProfileCardService profileCardService;
-
-	@Value("${custom.path.skill-dir}")
-	private String path;
-	@Value("${imageExtension}")
-	private String extension;
+	private final S3Service s3Service;
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> read(@PathVariable Long id) {
@@ -88,12 +76,9 @@ public class ProfileCardController {
 	}
 
 	@GetMapping("/images/skills/{skill}")
-	public ResponseEntity<Resource> getImage(@PathVariable String skill) throws IOException {
+	public ResponseEntity<?> getImage(@PathVariable String skill) throws IOException {
 		// 실제 주소가 되어야 함
-		String file = path + skill + extension;
-		Path path = new File(file).toPath();
-		FileSystemResource resource = new FileSystemResource(path);
-		return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(path))).body(resource);
+		return new ResponseEntity(s3Service.getSkillImage(skill), HttpStatus.OK);
 	}
 
 	private String getUserEmail() {

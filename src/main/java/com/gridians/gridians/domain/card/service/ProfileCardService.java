@@ -103,7 +103,7 @@ public class ProfileCardService {
 		}
 
 		ProfileCardDto.DetailResponse detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
-		detailResponse.setImageSrc(s3Service.getUrl(user.getId().toString()));
+		detailResponse.setImageSrc(s3Service.getProfileImage(user.getId().toString()));
 
 		return detailResponse;
 	}
@@ -117,7 +117,7 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
-			simpleResponse.setImageSrc(s3Service.getUrl(pc.getUser().getId().toString()));
+			simpleResponse.setImageSrc(s3Service.getProfileImage(pc.getUser().getId().toString()));
 			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
@@ -134,7 +134,7 @@ public class ProfileCardService {
 
 		for (Favorite favorite : favorites) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
-			simpleResponse.setImageSrc(s3Service.getUrl(favorite.getUser().getId().toString()));
+			simpleResponse.setImageSrc(s3Service.getProfileImage(favorite.getUser().getId().toString()));
 			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;

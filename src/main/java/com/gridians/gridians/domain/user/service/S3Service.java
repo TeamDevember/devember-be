@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -37,7 +36,11 @@ public class S3Service {
 		amazonS3.putObject(bucket, fileName, multipartFile.getInputStream(), objMeta);
 	}
 
-	public String getUrl(String id){
+	public String getProfileImage(String id){
 		return amazonS3.getUrl(bucket, id).toString();
+	}
+
+	public String getSkillImage(String skill){
+		return amazonS3.getUrl(bucket, skill).toString();
 	}
 }
