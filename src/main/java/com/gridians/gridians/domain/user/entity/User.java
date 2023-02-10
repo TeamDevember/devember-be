@@ -7,10 +7,7 @@ import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.entity.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -21,7 +18,8 @@ import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Builder
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
@@ -53,8 +51,7 @@ public class User extends BaseEntity {
 	@JoinColumn(name = "github_id", unique = true)
 	private Github github;
 
-	@OneToOne(fetch = LAZY, cascade = CascadeType.REMOVE)
-	@JoinColumn(name = "profile_card_id")
+	@OneToOne(mappedBy = "user", fetch = LAZY)
 	private ProfileCard profileCard;
 
 	@Builder.Default

@@ -1,7 +1,6 @@
 package com.gridians.gridians.domain.card.service;
 
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
-import com.gridians.gridians.domain.card.dto.ProfileCardDto.SnsResponse;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.entity.Skill;
 import com.gridians.gridians.domain.card.entity.Sns;
@@ -24,13 +23,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -48,37 +48,49 @@ public class ProfileCardService {
 	private final ProfileCardRepository profileCardRepository;
 	private final S3Service s3Service;
 
-
 	//프로필 카드 생성
 	@Transactional
 	public ProfileCard createProfileCard(String email) {
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-		if(profileCardRepository.findByUser(user).isPresent()){
-			throw new UserException(UserErrorCode.DUPLICATED_USER);
+
+		Optional<ProfileCard> findPc = profileCardRepository.findByUser(user);
+		if (findPc.isPresent()) {
+			throw new CardException(CardErrorCode.DUPLICATED_USER);
 		}
+
 		ProfileCard pc = ProfileCard.from();
 		pc.setUser(user);
-		ProfileCard saveProfileCard = profileCardRepository.save(pc);
-		userRepository.save(user);
-		return saveProfileCard;
+		ProfileCard savedPc = profileCardRepository.save(pc);
+		user.setProfileCard(savedPc);
+		return savedPc;
 	}
 
 	// 프로필 카드 기입
 
 	@Transactional
+	public void dummy() {
+
+		List<User> all = userRepository.findAll();
+
+		for (User user : all) {
+			ProfileCard pc = ProfileCard.builder().build();
+			pc.setUser(user);
+			profileCardRepository.save(pc);
+		}
+	}
+
+	@Transactional
 	public void input(String email, Long id, ProfileCardDto.Request request) throws IOException {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
-//		saveFile(pc.getUser(), multipartFile);
 		saveField(pc, request);
 		saveSnsSet(pc, request);
 		saveSkill(pc, request);
 		saveTagSet(pc, request);
 		pc.setIntroduction(request.getIntroduction());
 		pc.setStatusMessage(request.getStatusMessage());
-		pc.setUser(user);
 
 		profileCardRepository.save(pc);
 	}
@@ -150,8 +162,8 @@ public class ProfileCardService {
 	public void saveSnsSet(ProfileCard pc, ProfileCardDto.Request request) {
 
 		snsRepository.deleteAllInBatch(pc.getSnsSet());
-		Set<SnsResponse> sSet = request.getSnsSet();
-		for (SnsResponse snsResponse : sSet) {
+		Set<ProfileCardDto.SnsResponse> sSet = request.getSnsSet();
+		for (ProfileCardDto.SnsResponse snsResponse : sSet) {
 			pc.addSns(Sns.from(pc, snsResponse.getName(), snsResponse.getAccount()));
 		}
 	}

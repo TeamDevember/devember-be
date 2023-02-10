@@ -15,8 +15,8 @@ import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
-@Builder
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProfileCard extends BaseEntity {
@@ -25,7 +25,8 @@ public class ProfileCard extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne(mappedBy = "profileCard", fetch = LAZY)
+	@OneToOne(fetch = LAZY)
+	@JoinColumn(name = "user_id")
 	private User user;
 
 	@OneToMany(mappedBy = "profileCard", cascade = CascadeType.ALL)
@@ -77,12 +78,6 @@ public class ProfileCard extends BaseEntity {
 		this.field = field;
 		field.addProfileCard(this);
 	}
-
-	public void setUser(User user) {
-		user.setProfileCard(this);
-		this.user = user;
-	}
-
 
 	public void setSkill(Skill skill){
 		this.skill = skill;

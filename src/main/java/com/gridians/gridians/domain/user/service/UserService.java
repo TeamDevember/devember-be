@@ -248,4 +248,15 @@ public class UserService {
     }
 
 
+    @Transactional
+    public void dummyUser() {
+
+        for (int i = 0; i <= 99; i++) {
+            User user = User.builder().password("test1234").build();
+
+            user.setNickname("test" + i);
+            user.setEmail("test" + i + "@test.com");
+            userRepository.save(user);
+        }
+    }
 }

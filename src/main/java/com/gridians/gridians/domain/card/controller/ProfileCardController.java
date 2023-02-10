@@ -26,6 +26,11 @@ public class ProfileCardController {
 	private final ProfileCardService profileCardService;
 	private final S3Service s3Service;
 
+	@GetMapping("/dummy")
+	public void dummy(){
+		profileCardService.dummy();
+	}
+
 	@GetMapping("/{id}")
 	public ResponseEntity<?> read(@PathVariable Long id) {
 		String email = getUserEmail();
