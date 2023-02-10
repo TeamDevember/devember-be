@@ -4,6 +4,7 @@ package com.gridians.gridians.domain.card.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gridians.gridians.domain.card.entity.*;
 import com.gridians.gridians.domain.comment.dto.CommentDto;
+import com.gridians.gridians.domain.user.entity.Github;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
