@@ -59,7 +59,6 @@ public class UserController {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword());
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
-
         LoginDto.Response res = userService.login(authentication);
 
         return ResponseEntity.ok().body(res);
@@ -76,9 +75,9 @@ public class UserController {
             @RequestBody LoginDto.SocialRequest loginDto
     ) throws Exception {
         Authentication authentication = userService.socialLogin(loginDto.getToken());
-        String accessToken = generateToken(response, authentication);
+        LoginDto.Response res = userService.login(authentication);
 
-        return ResponseEntity.ok().body(LoginDto.Response.socialFrom(accessToken));
+        return ResponseEntity.ok().body(res);
     }
 
     private String generateToken(HttpServletResponse response, Authentication authentication) {

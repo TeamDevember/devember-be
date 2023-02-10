@@ -141,6 +141,7 @@ public class ProfileCardService {
 			simpleResponse.setImageSrc(s3Service.getProfileImage(pc.getUser().getId().toString()));
 			profileCardList.add(simpleResponse);
 		}
+		log.info("size = {}", profileCardList.size());
 		return profileCardList;
 	}
 

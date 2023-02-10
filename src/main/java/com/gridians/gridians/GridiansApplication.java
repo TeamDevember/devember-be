@@ -10,11 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.PostConstruct;
 
@@ -22,8 +19,8 @@ import javax.annotation.PostConstruct;
 @SpringBootApplication
 public class GridiansApplication {
 
-//    private final UserRepository userRepository;
-//    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     UserController userController;
@@ -32,35 +29,35 @@ public class GridiansApplication {
         SpringApplication.run(GridiansApplication.class, args);
     }
 
-//    @PostConstruct
-//    @Transactional
-//    public void postConstruct() {
-//        userRepository.deleteAll();
-//        User user = User.builder()
-//                .email("email@email.com")
-//                .password(passwordEncoder.encode("password12!"))
-//                .nickname("nickname")
-//                .role(Role.USER)
-//                .userStatus(UserStatus.ACTIVE)
-//                .build();
-//        User user2 = User.builder()
-//                .email("test@email.com")
-//                .password(passwordEncoder.encode("password12!"))
-//                .nickname("nickname2")
-//                .role(Role.USER)
-//                .userStatus(UserStatus.ACTIVE)
-//                .build();
-//
-//        User user3 = User.builder()
-//                .email("qwejklasd@naver.com")
-//                .password(passwordEncoder.encode("password12!"))
-//                .nickname("nickname2")
-//                .role(Role.USER)
-//                .userStatus(UserStatus.ACTIVE)
-//                .build();
-//
-//        userRepository.save(user);
-//        userRepository.save(user2);
-//        userRepository.save(user3);
-//    }
+    @PostConstruct
+    @Transactional
+    public void postConstruct() {
+        userRepository.deleteAll();
+        User user = User.builder()
+                .email("email@email.com")
+                .password(passwordEncoder.encode("password12!"))
+                .nickname("nickname")
+                .role(Role.USER)
+                .userStatus(UserStatus.ACTIVE)
+                .build();
+        User user2 = User.builder()
+                .email("test@email.com")
+                .password(passwordEncoder.encode("password12!"))
+                .nickname("nickname2")
+                .role(Role.USER)
+                .userStatus(UserStatus.ACTIVE)
+                .build();
+
+        User user3 = User.builder()
+                .email("qwejklasd@naver.com")
+                .password(passwordEncoder.encode("password12!"))
+                .nickname("nickname2")
+                .role(Role.USER)
+                .userStatus(UserStatus.ACTIVE)
+                .build();
+
+        userRepository.save(user);
+        userRepository.save(user2);
+        userRepository.save(user3);
+    }
 }
