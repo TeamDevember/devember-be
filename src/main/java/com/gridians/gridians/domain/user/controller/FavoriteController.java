@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class FavoriteController {
 
 	private final UserService userService;
-	private final JwtUtils jwtUtils;
 
 	@PostMapping
 	@Secured("ROLE_USER")
