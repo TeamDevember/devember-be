@@ -63,6 +63,9 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setNickname(user.getNickname());
             savedUser = userRepository.save(user);
+            if(request.getGithubNumberId() != null) {
+                user.setGithubNumberId(request.getGithubNumberId());
+            }
             mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
 
             return savedUser;
@@ -92,14 +95,17 @@ public class UserService {
         }
     }
 
-    public LoginDto.Response login(Authentication authentication) {
+    public LoginDto.Response  login(Authentication authentication) {
         String accessToken = createAccessToken(authentication);
         String refreshToken = createRefreshToken(authentication);
+        JwtUserDetails userDetails = ((JwtUserDetails) authentication.getPrincipal());
 
-        String email = ((JwtUserDetails) authentication.getPrincipal()).getEmail();
+        String email = userDetails.getEmail();
+        String id = userDetails.getUserId();
+
         tokenRepository.save(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
 
-        return LoginDto.Response.from(accessToken, refreshToken);
+        return LoginDto.Response.from(accessToken, refreshToken, id);
     }
 
     public String issueAccessToken(String refreshToken) {
@@ -178,11 +184,6 @@ public class UserService {
         }
 
         return jwtUtils.getAuthenticationByEmail(user.getEmail());
-    }
-
-    public void verifyUserPassword(String email, String password) {
-        User user = getUserByEmail(email);
-        verifyPassword(password, user.getPassword());
     }
 
     @Transactional
