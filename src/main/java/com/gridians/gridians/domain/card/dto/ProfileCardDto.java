@@ -47,6 +47,21 @@ public class ProfileCardDto {
 		private List<CommentDto.Response> commentList;
 		private String imageSrc;
 
+		private String githubName;
+		private String githubAccount;
+
+		private String githubProfileImageUrl;
+		private String githubUrl;
+
+		private LocalDate recentCommitAt;
+		private String recentCommitMessage;
+
+		private Long follower;
+		private Long following;
+
+		private String location;
+		private String company;
+
 		public static DetailResponse from(ProfileCard pc, List<CommentDto.Response> commentDtoList) {
 
 			Set<SnsResponse> snss = new HashSet<>();
@@ -71,6 +86,42 @@ public class ProfileCardDto {
 					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
 					.tagSet(tags == null ? new HashSet<>() : tags)
 					.snsSet(snss == null ? new HashSet<>() : snss)
+					.build();
+		}
+
+		public static DetailResponse from(Github github, ProfileCard pc, List<CommentDto.Response> commentDtoList) {
+
+			Set<SnsResponse> snss = new HashSet<>();
+			Set<String> tags = new HashSet<>();
+
+			Set<Sns> pcSnsSet = pc.getSnsSet();
+			Set<Tag> pcTagSet = pc.getTagList();
+
+			for (Sns s : pcSnsSet) {
+				snss.add(SnsResponse.from(s));
+			}
+
+			for (Tag tag : pcTagSet) {
+				tags.add(tag.getName());
+			}
+
+			return DetailResponse.builder()
+					.introduction(pc.getIntroduction())
+					.commentList(commentDtoList)
+					.statusMessage(pc.getStatusMessage() == null ? "" : pc.getStatusMessage())
+					.field(pc.getField() == null ? "" : pc.getField().getName())
+					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
+					.tagSet(tags == null ? new HashSet<>() : tags)
+					.snsSet(snss == null ? new HashSet<>() : snss)
+					.githubName(github.getName())
+					.githubAccount(github.getLogin())
+					.githubProfileImageUrl(github.getProfileImageUrl())
+					.recentCommitAt(github.getRecentCommitAt())
+					.recentCommitMessage(github.getRecentCommitMessage())
+					.follower(github.getFollowers())
+					.following(github.getFollowing())
+					.location(github.getLocation())
+					.company(github.getCompany())
 					.build();
 		}
 	}

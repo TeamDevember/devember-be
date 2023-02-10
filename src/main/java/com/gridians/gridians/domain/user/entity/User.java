@@ -14,8 +14,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.util.*;
 
-import static javax.persistence.FetchType.LAZY;
-
 @Entity
 @Builder
 @Getter
@@ -51,11 +49,11 @@ public class User extends BaseEntity {
 	@JoinColumn(name = "github_id", unique = true)
 	private Github github;
 
-	@OneToOne(mappedBy = "user", fetch = LAZY)
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
 
 	@Builder.Default
-	@OneToMany(mappedBy = "user", fetch = LAZY, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<Favorite> favorites = new HashSet<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
