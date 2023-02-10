@@ -76,7 +76,7 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeRequests()
-                .antMatchers("/user/auth/**", "image/**").permitAll()
+                .antMatchers("/user/auth/**", "/image/**").permitAll()
                 .antMatchers("/user/**").hasRole("USER")
                 .antMatchers("/fav").hasRole("USER")
 

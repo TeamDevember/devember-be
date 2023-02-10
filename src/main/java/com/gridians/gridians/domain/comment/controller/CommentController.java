@@ -20,7 +20,6 @@ public class CommentController {
 
 	private final CommentService commentService;
 	private final ReplyService replyService;
-	private final JwtUtils jwtUtils;
 
 	private String getUserEmail() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

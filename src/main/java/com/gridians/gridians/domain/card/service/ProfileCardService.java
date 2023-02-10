@@ -74,7 +74,6 @@ public class ProfileCardService {
 	}
 
 	// 프로필 카드 기입
-
 	@Transactional
 	public void dummy() {
 
@@ -103,7 +102,6 @@ public class ProfileCardService {
 		profileCardRepository.save(pc);
 	}
 
-
 	//카드 상세 정보
 	@Transactional
 	public ProfileCardDto.DetailResponse readProfileCard(String email, Long id) {
@@ -129,7 +127,6 @@ public class ProfileCardService {
 		detailResponse.setImageSrc(s3Service.getProfileImage(user.getId().toString()));
 		return detailResponse;
 	}
-
 
 	//카드 리스트 조회
 	@Transactional
