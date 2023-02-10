@@ -1,46 +1,48 @@
-//package com.gridians.gridians.domain.user.controller;
-//
-//import com.gridians.gridians.domain.card.dto.GithubDto;
-//import com.gridians.gridians.domain.user.service.UserService;
-//import com.gridians.gridians.global.utils.JwtUtils;
-//import com.nimbusds.jwt.JWT;
-//import lombok.RequiredArgsConstructor;
-//import org.json.simple.parser.ParseException;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.io.IOException;
-//
-//
-//@RequestMapping("/user/github")
-//@RestController
-//@RequiredArgsConstructor
-//public class GithubController {
-//
-//	private final UserService userService;
-//	private final JwtUtils jwtUtils;
-//
-//	@PostMapping
-//	public ResponseEntity<?> registerGithub(@RequestHeader(name = "Authorization") String token, @RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
-//		String email = jwtUtils.getUserEmailFromToken(token);
-//
-//		userService.saveGithub(email, request);
-//		return ResponseEntity.ok().build();
-//	}
-//
-//	@PutMapping
-//	public ResponseEntity<?> updateGithub(@RequestHeader(name = "Authorization") String token, @RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
-//		String email = jwtUtils.getUserEmailFromToken(token);
-//
-//		userService.saveGithub(email, request);
-//		return ResponseEntity.ok().build();
-//	}
-//
-//	@DeleteMapping
-//	public ResponseEntity<?> deleteGithub(@RequestHeader(name = "Authorization") String token, @RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
-//		String email = jwtUtils.getUserEmailFromToken(token);
-//
-//		userService.deleteGithub(email, request);
-//		return ResponseEntity.ok().build();
-//	}
-//}
+package com.gridians.gridians.domain.user.controller;
+
+import com.gridians.gridians.domain.card.dto.GithubDto;
+import com.gridians.gridians.domain.card.service.ProfileCardService;
+import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
+import lombok.RequiredArgsConstructor;
+import org.json.simple.parser.ParseException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+
+@RequestMapping("/cards/github")
+@RestController
+@RequiredArgsConstructor
+public class GithubController {
+
+	private final ProfileCardService profileCardService;
+
+	@PostMapping
+	public ResponseEntity<?> registerGithub(@RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
+		String email = getUserEmail();
+		profileCardService.saveGithub(email, request.getGithubId());
+		return ResponseEntity.ok().build();
+	}
+
+	@PutMapping
+	public ResponseEntity<?> updateGithub(@RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
+		String email = getUserEmail();
+		profileCardService.saveGithub(email, request.getGithubId());
+		return ResponseEntity.ok().build();
+	}
+
+	@DeleteMapping
+	public ResponseEntity<?> deleteGithub() throws IOException, ParseException, java.text.ParseException {
+		String email = getUserEmail();
+		profileCardService.deleteGithub(email);
+		return ResponseEntity.ok().build();
+	}
+
+	private String getUserEmail() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
+		return userDetails.getEmail();
+	}
+}
