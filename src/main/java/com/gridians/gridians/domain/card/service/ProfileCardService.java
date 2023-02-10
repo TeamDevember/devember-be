@@ -207,17 +207,21 @@ public class ProfileCardService {
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		if(user.getGithub() != null){
 			Github github = user.getGithub();
+			user.setGithub(null);
 			githubRepository.delete(github);
 		}
 		Github github = Github.from(parsing(githubId));
+		github.setUser(user);
 		Github savedGithub = githubRepository.save(github);
 		user.setGithub(savedGithub);
 	}
 
+	@Transactional
 	public void deleteGithub(String email) throws IOException, ParseException, java.text.ParseException {
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-		Github findGithub = githubRepository.findByUser(user).orElseThrow(() -> new RuntimeException("등록되어 있지 않은 아이디입니다."));
-		githubRepository.delete(findGithub);
+		Github github = user.getGithub();
+		user.setGithub(null);
+		githubRepository.delete(github);
 	}
 
 	public GithubDto parsing(String githubId) throws IOException, ParseException, java.text.ParseException {
