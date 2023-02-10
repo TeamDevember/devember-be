@@ -114,6 +114,7 @@ public class ProfileCardService {
 		for (ProfileCard pc : pcList) {
 			profileCardList.add(ProfileCardDto.SimpleResponse.from(pc));
 		}
+		log.info("size = {}", profileCardList.size());
 		return profileCardList;
 	}
 
