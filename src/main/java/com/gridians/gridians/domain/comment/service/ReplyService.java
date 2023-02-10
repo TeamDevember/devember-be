@@ -11,6 +11,7 @@ import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -43,7 +44,11 @@ public class ReplyService {
 	}
 
 	@Transactional
-	public List<ReplyDto.Response> read(Long commentId) {
+	public List<ReplyDto.Response> read(Long commentId, int page, int size) {
+
+//		대댓글 페이지네이션
+//		PageRequest pageRequest = PageRequest.of(page, size);
+//		List<Reply> findReplyList = replyRepository.findAllByComment_IdOrderByCreatedAtDesc(commentId, pageRequest);
 		List<Reply> findReplyList = replyRepository.findAllByComment_IdOrderByCreatedAtDesc(commentId);
 		List<ReplyDto.Response> replyList = new ArrayList<>();
 		for (Reply reply : findReplyList) {
