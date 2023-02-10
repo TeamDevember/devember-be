@@ -112,7 +112,7 @@ public class ProfileCardService {
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
-		List<Comment> commentList = commentRepository.findAllByProfileCard(pc);
+		List<Comment> commentList = commentRepository.findAllByProfileCardOrderByCreatedAtDesc(pc);
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
 
 		for (Comment comment : commentList) {
@@ -141,6 +141,7 @@ public class ProfileCardService {
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
 			simpleResponse.setImageSrc(s3Service.getProfileImage(pc.getUser().getId().toString()));
+			simpleResponse.setSkillSrc(s3Service.getSkillImage(pc.getSkill().getName()));
 			profileCardList.add(simpleResponse);
 		}
 		log.info("size = {}", profileCardList.size());

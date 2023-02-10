@@ -44,16 +44,9 @@ public class Comment extends BaseEntity implements Serializable {
     }
 
 
-    public static Comment from(CommentDto.CreateRequest createRequest){
+    public static Comment from(CommentDto.Request createRequest){
         return Comment.builder()
                 .content(createRequest.getContents())
                 .build();
     }
-
-    public static Comment from(CommentDto.UpdateRequest updateRequest){
-        return Comment.builder()
-                .content(updateRequest.getContents())
-                .build();
-    }
-
 }
