@@ -22,15 +22,12 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -106,6 +103,8 @@ public class ProfileCardService {
 		profileCardRepository.save(pc);
 	}
 
+
+	//카드 상세 정보
 	@Transactional
 	public ProfileCardDto.DetailResponse readProfileCard(String email, Long id) {
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -131,11 +130,13 @@ public class ProfileCardService {
 		return detailResponse;
 	}
 
+
+	//카드 리스트 조회
 	@Transactional
 	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) {
 
 		PageRequest pageRequest = PageRequest.of(page, size);
-		Page<ProfileCard> pcList = profileCardRepository.findAll(pageRequest);
+		Page<ProfileCard> pcList = profileCardRepository.findAllByOrderByCreatedAtDesc(pageRequest);
 
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
