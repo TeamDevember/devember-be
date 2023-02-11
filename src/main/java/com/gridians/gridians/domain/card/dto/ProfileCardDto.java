@@ -8,7 +8,6 @@ import com.gridians.gridians.domain.user.entity.Github;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -46,12 +45,13 @@ public class ProfileCardDto {
 		private String statusMessage;
 		private String field;
 
-		private Set<String> tagSet;
 		private String skill;
+
+		private Set<String> tagSet;
 		private Set<SnsResponse> snsSet;
 
 		private List<CommentDto.Response> commentList;
-		private String imageSrc;
+		private String profileImage;
 
 		private String githubName;
 		private String githubAccount;
@@ -70,7 +70,6 @@ public class ProfileCardDto {
 
 		public static DetailResponse from(ProfileCard pc, List<CommentDto.Response> commentDtoList) {
 
-			Set<String> skills = new HashSet<>();
 			Set<SnsResponse> snss = new HashSet<>();
 			Set<String> tags = new HashSet<>();
 
@@ -138,7 +137,7 @@ public class ProfileCardDto {
 	public static class SimpleResponse {
 
 		private String field;
-		private String imageSrc;
+		private String profileImage;
 		private String nickname;
 		private String skillSrc;
 		private Long profileCardId;

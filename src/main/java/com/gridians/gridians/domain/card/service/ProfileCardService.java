@@ -106,9 +106,7 @@ public class ProfileCardService {
 
 	//카드 상세 정보
 	@Transactional
-	public ProfileCardDto.DetailResponse readProfileCard(String email, Long id) {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
+	public ProfileCardDto.DetailResponse readProfileCard(Long id) {
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
@@ -119,14 +117,14 @@ public class ProfileCardService {
 			commentDtoList.add(CommentDto.Response.from(comment));
 		}
 		ProfileCardDto.DetailResponse detailResponse;
-		if(user.getGithub() != null){
-			Github github = user.getGithub();
+		if(pc.getUser().getGithub() != null){
+			Github github = pc.getUser().getGithub();
 			detailResponse = ProfileCardDto.DetailResponse.from(github, pc, commentDtoList);
 		} else {
 			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
 		}
 
-		detailResponse.setImageSrc(s3Service.getProfileImage(user.getId().toString()));
+		detailResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
 		return detailResponse;
 	}
 
@@ -140,7 +138,7 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
-			simpleResponse.setImageSrc(s3Service.getProfileImage(pc.getUser().getId().toString()));
+			simpleResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
 			simpleResponse.setSkillSrc(s3Service.getSkillImage(pc.getSkill().getName()));
 			profileCardList.add(simpleResponse);
 		}
@@ -159,7 +157,7 @@ public class ProfileCardService {
 
 		for (Favorite favorite : favorites) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
-			simpleResponse.setImageSrc(s3Service.getProfileImage(favorite.getUser().getId().toString()));
+			simpleResponse.setProfileImage(s3Service.getProfileImage(favorite.getUser().getId().toString()));
 			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
@@ -198,8 +196,14 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public ProfileCard deleteProfileCard(Long id) {
+	public ProfileCard deleteProfileCard(String email, Long id) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		ProfileCard pc = profileCardRepository.findById(id).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+
+		if(user != pc.getUser()){
+			throw new RuntimeException("본인만 삭제할 수 있습니다.");
+		}
+
 		profileCardRepository.delete(pc);
 		return pc;
 	}

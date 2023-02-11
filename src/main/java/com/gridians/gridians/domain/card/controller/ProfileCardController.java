@@ -33,8 +33,7 @@ public class ProfileCardController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> read(@PathVariable Long id) {
-		String email = getUserEmail();
-		return new ResponseEntity<>(profileCardService.readProfileCard(email, id), HttpStatus.OK);
+		return new ResponseEntity<>(profileCardService.readProfileCard(id), HttpStatus.OK);
 	}
 
 	@GetMapping
@@ -75,7 +74,8 @@ public class ProfileCardController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
-		ProfileCard pc = profileCardService.deleteProfileCard(id);
+		String email = getUserEmail();
+		ProfileCard pc = profileCardService.deleteProfileCard(email, id);
 		log.info("[" + pc.getUser().getNickname() + "] Delete Profile Card");
 		return ResponseEntity.ok().build();
 	}
