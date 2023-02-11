@@ -1,8 +1,8 @@
 package com.gridians.gridians.domain.card.entity;
 
 import com.gridians.gridians.domain.comment.entity.Comment;
-import com.gridians.gridians.global.entity.BaseEntity;
 import com.gridians.gridians.domain.user.entity.User;
+import com.gridians.gridians.global.entity.BaseEntity;
 import lombok.*;
 
 import javax.persistence.*;

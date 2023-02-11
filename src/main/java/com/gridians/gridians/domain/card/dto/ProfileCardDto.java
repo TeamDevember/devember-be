@@ -46,6 +46,7 @@ public class ProfileCardDto {
 		private String field;
 
 		private String skill;
+		private String skillImage;
 
 		private Set<String> tagSet;
 		private Set<SnsResponse> snsSet;
@@ -139,7 +140,8 @@ public class ProfileCardDto {
 		private String field;
 		private String profileImage;
 		private String nickname;
-		private String skillSrc;
+		private String skill;
+		private String skillImage;
 		private Long profileCardId;
 
 		public static SimpleResponse from(ProfileCard pc) {
@@ -147,6 +149,7 @@ public class ProfileCardDto {
 			return SimpleResponse.builder()
 					.field(pc.getField() == null ? "" : pc.getField().getName())
 					.nickname(pc.getUser() == null ? "" : pc.getUser().getNickname())
+					.skill(pc.getSkill().getName())
 					.profileCardId(pc.getId())
 					.build();
 		}
