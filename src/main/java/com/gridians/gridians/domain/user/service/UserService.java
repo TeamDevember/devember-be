@@ -64,6 +64,7 @@ public class UserService {
             user.setNickname(user.getNickname());
             savedUser = userRepository.save(user);
             if(request.getGithubNumberId() != null) {
+                log.info("github id = {}", request.getGithubNumberId());
                 user.setGithubNumberId(request.getGithubNumberId());
             }
             mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));

@@ -71,7 +71,6 @@ public class UserController {
 
     @PostMapping("/auth/social-login")
     public ResponseEntity socialLogin(
-            HttpServletResponse response,
             @RequestBody LoginDto.SocialRequest loginDto
     ) throws Exception {
         Authentication authentication = userService.socialLogin(loginDto.getToken());

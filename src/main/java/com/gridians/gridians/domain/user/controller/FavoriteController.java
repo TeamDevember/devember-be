@@ -19,13 +19,11 @@ import org.springframework.web.bind.annotation.*;
 public class FavoriteController {
 
 	private final UserService userService;
-	private final JwtUtils jwtUtils;
 
 	@PostMapping
 	@Secured("ROLE_USER")
 	public ResponseEntity<?> create(@RequestBody FavoriteDto.Request favoriteDto
 	) {
-
 		String email = getUserEmail();
 		userService.addFavorite(email, email);
 		return ResponseEntity.ok().build();

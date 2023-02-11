@@ -26,6 +26,7 @@ public class SocialRequest {
 
     public String githubRequest(String token) throws Exception {
         String accessToken = getGithubAccessToken(token);
+        log.info("access token = {}", accessToken);
         return getGitHubId(accessToken);
 
     }
@@ -37,9 +38,11 @@ public class SocialRequest {
         headers.put("X-GitHub-Api-Version", "2022-11-28");
 
         String response = ApiUtils.requestWithHeader(GITHUB_USER_INFO_URL, "GET", headers);
-
+        log.info("response = {}", response );
         JSONObject jsonObject = (JSONObject) jsonParser.parse(response);
-        return (String) jsonObject.get("id");
+        String ret = jsonObject.get("id").toString();
+        log.info(ret);
+        return ret;
     }
 
     private String getGithubAccessToken(String token) throws Exception {

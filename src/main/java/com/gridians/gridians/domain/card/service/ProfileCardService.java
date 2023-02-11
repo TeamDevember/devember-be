@@ -138,7 +138,7 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
-			simpleResponse.setImageSrc(s3Service.getProfileImage(pc.getUser().getId().toString()));
+//			simpleResponse.setImageSrc(s3Service.getProfileImage(pc.getUser().getId().toString()));
 			profileCardList.add(simpleResponse);
 		}
 		log.info("size = {}", profileCardList.size());

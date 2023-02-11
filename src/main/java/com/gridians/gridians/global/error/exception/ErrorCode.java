@@ -11,7 +11,7 @@ public enum ErrorCode {
 
     DUPLICATE_EMAIL(409, "A001", "Duplicate Email"),
     PASSWORD_NOT_MATCH(400, "A002", "Password Not Match"),
-    EMAIL_NOT_VERIFIED(200, "A003", "email not verified"),
+    EMAIL_NOT_VERIFIED(400, "A003", "email not verified"),
     DELETE_USER_ACCESS(400, "A004", "delete user access"),
     GIT_ID_NOT_FOUND(400, "A005", "git id not found"),
     IMAGE_NOT_FOUND(400, "A006", "image not found"),
