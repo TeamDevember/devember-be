@@ -12,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RequestMapping("/cards/{profileCardId}/comments")
 @RestController
 @RequiredArgsConstructor
@@ -27,14 +29,14 @@ public class CommentController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> writeComment(@PathVariable Long profileCardId, @RequestBody CommentDto.Request request) {
+	public ResponseEntity<?> writeComment(@PathVariable Long profileCardId, @RequestBody CommentDto.Request request) throws IOException {
 		String email = getUserEmail();
 		commentService.write(profileCardId, request, email);
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping
-	public ResponseEntity<?> readComment(@PathVariable Long profileCardId) {
+	public ResponseEntity<?> readComment(@PathVariable Long profileCardId) throws IOException {
 		return new ResponseEntity(commentService.read(profileCardId), HttpStatus.OK);
 	}
 
@@ -61,7 +63,7 @@ public class CommentController {
 	}
 
 	@GetMapping("/{commentId}")
-	public ResponseEntity<?> readReply(@PathVariable Long commentId) {
+	public ResponseEntity<?> readReply(@PathVariable Long commentId) throws IOException {
 		return new ResponseEntity(replyService.read(commentId), HttpStatus.OK);
 	}
 

@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class CommentService {
 	 */
 
 	@Transactional
-	public CommentDto.Response write(Long id, CommentDto.Request request, String email) {
+	public CommentDto.Response write(Long id, CommentDto.Request request, String email) throws IOException {
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		ProfileCard pc = profileCardRepository.findById(id)
@@ -58,7 +59,7 @@ public class CommentService {
 		return response;
 	}
 
-	public List<CommentDto.Response> read(Long profileCardId) {
+	public List<CommentDto.Response> read(Long profileCardId) throws IOException {
 		ProfileCard pc = profileCardRepository.findById(profileCardId).orElseThrow(() -> new RuntimeException(""));
 		List<Comment> commentList = commentRepository.findAllByProfileCardOrderByCreatedAtDesc(pc);
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();

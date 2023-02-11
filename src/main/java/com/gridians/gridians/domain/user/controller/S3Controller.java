@@ -27,7 +27,7 @@ public class S3Controller {
 	}
 
 	@GetMapping("/imageUrl/{id}")
-	public ResponseEntity<?> getImage(@PathVariable String id){
+	public ResponseEntity<?> getImage(@PathVariable String id) throws IOException {
 		return new ResponseEntity<>(s3Service.getProfileImage(id), HttpStatus.OK);
 	}
 

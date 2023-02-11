@@ -116,7 +116,7 @@ public class ProfileCardService {
 	}
 
 	//카드 상세 정보
-	public ProfileCardDto.DetailResponse readProfileCard(Long id) {
+	public ProfileCardDto.DetailResponse readProfileCard(Long id) throws IOException {
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
@@ -140,7 +140,7 @@ public class ProfileCardService {
 	}
 
 	//카드 리스트 조회
-	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) {
+	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) throws IOException {
 
 		PageRequest pageRequest = PageRequest.of(page, size);
 		Page<ProfileCard> pcList = profileCardRepository.findAllByOrderByCreatedAtDesc(pageRequest);
@@ -156,7 +156,7 @@ public class ProfileCardService {
 		return profileCardList;
 	}
 
-	public List<ProfileCardDto.SimpleResponse> favoriteCardList(String email, int page, int size) {
+	public List<ProfileCardDto.SimpleResponse> favoriteCardList(String email, int page, int size) throws IOException {
 
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		PageRequest pageRequest = PageRequest.of(page, size);

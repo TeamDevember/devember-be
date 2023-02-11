@@ -4,6 +4,7 @@ package com.gridians.gridians.domain.user.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
@@ -59,24 +60,22 @@ public class S3Service {
 		amazonS3.putObject(bucket, fileName, multipartFile.getInputStream(), objMeta);
 	}
 
-	public String getProfileImage(String id) {
+	public String getProfileImage(String id) throws IOException {
 
-		try {
-			amazonS3.getObject(bucket, id);
+		try(S3Object s3 = amazonS3.getObject(bucket, id)) {
 			return amazonS3.getUrl(bucket, id).toString();
 		} catch (AmazonS3Exception exception) {
+			log.error("에러 발생");
 			return amazonS3.getUrl(bucket, defaultProfileImage).toString();
 		}
 	}
 
-	public String getSkillImage(String skill) {
+	public String getSkillImage(String skill) throws IOException {
 
-		try {
-			amazonS3.getObject(bucket, skill);
+		try(S3Object s3 = amazonS3.getObject(bucket, skill)){
 			return amazonS3.getUrl(bucket, skill).toString();
 		} catch (AmazonS3Exception exception) {
 			return amazonS3.getUrl(bucket, defaultSkillImage).toString();
 		}
-
 	}
 }

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class ReplyService {
 
 //	public List<ReplyDto.Response> read(Long commentId, int page, int size) {
 
-	public List<ReplyDto.Response> read(Long commentId) {
+	public List<ReplyDto.Response> read(Long commentId) throws IOException {
 
 //		대댓글 페이지네이션
 //		PageRequest pageRequest = PageRequest.of(page, size);
