@@ -44,7 +44,10 @@ public class ReplyService {
 	}
 
 	@Transactional
-	public List<ReplyDto.Response> read(Long commentId, int page, int size) {
+//	public List<ReplyDto.Response> read(Long commentId, int page, int size) {
+
+	public List<ReplyDto.Response> read(Long commentId) {
+
 
 //		대댓글 페이지네이션
 //		PageRequest pageRequest = PageRequest.of(page, size);
