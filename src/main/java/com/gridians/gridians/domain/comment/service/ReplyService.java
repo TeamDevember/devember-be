@@ -12,13 +12,14 @@ import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ReplyService {
 
@@ -42,11 +43,9 @@ public class ReplyService {
 		comment.addReply(savedReply);
 	}
 
-	@Transactional
 //	public List<ReplyDto.Response> read(Long commentId, int page, int size) {
 
 	public List<ReplyDto.Response> read(Long commentId) {
-
 
 //		대댓글 페이지네이션
 //		PageRequest pageRequest = PageRequest.of(page, size);

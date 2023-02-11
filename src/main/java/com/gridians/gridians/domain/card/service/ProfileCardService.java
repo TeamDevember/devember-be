@@ -48,6 +48,7 @@ import java.util.Set;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ProfileCardService {
 
@@ -89,6 +90,9 @@ public class ProfileCardService {
 		List<User> all = userRepository.findAll();
 
 		for (User user : all) {
+			if(user.getEmail().equals("email@email.com")){
+				continue;
+			}
 			ProfileCard pc = ProfileCard.builder().build();
 			pc.setUser(user);
 			profileCardRepository.save(pc);
@@ -112,7 +116,6 @@ public class ProfileCardService {
 	}
 
 	//카드 상세 정보
-	@Transactional
 	public ProfileCardDto.DetailResponse readProfileCard(Long id) {
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
@@ -137,7 +140,6 @@ public class ProfileCardService {
 	}
 
 	//카드 리스트 조회
-	@Transactional
 	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) {
 
 		PageRequest pageRequest = PageRequest.of(page, size);
@@ -154,7 +156,6 @@ public class ProfileCardService {
 		return profileCardList;
 	}
 
-	@Transactional
 	public List<ProfileCardDto.SimpleResponse> favoriteCardList(String email, int page, int size) {
 
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));

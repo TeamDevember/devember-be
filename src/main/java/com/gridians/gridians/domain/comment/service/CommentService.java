@@ -16,14 +16,16 @@ import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+
 public class CommentService {
 
 	private final CommentRepository commentRepository;
@@ -56,7 +58,6 @@ public class CommentService {
 		return response;
 	}
 
-	@Transactional
 	public List<CommentDto.Response> read(Long profileCardId) {
 		ProfileCard pc = profileCardRepository.findById(profileCardId).orElseThrow(() -> new RuntimeException(""));
 		List<Comment> commentList = commentRepository.findAllByProfileCardOrderByCreatedAtDesc(pc);
