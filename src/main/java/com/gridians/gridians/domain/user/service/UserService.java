@@ -50,7 +50,6 @@ public class UserService {
     private final JwtUtils jwtUtils;
     private final TokenRepository tokenRepository;
     private final SocialRequest socialRequest;
-
     private final S3Service s3Service;
 
     @Transactional
@@ -250,11 +249,13 @@ public class UserService {
         return true;
     }
 
-    public User getUserInfo(String userEmail) {
-        return getUserByEmail(userEmail);
+    public UserDto.Response getUserInfo(String userEmail) throws IOException {
+        User user = getUserByEmail(userEmail);
+        UserDto.Response userInfo = UserDto.Response.from(user);
+        userInfo.setProfileImage(s3Service.getProfileImage(user.getId().toString()));
+        return userInfo;
     }
-
-
+    
     @Transactional
     public void dummyUser() {
 
