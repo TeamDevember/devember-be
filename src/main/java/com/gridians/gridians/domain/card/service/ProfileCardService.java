@@ -30,6 +30,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -146,12 +147,12 @@ public class ProfileCardService {
 		Page<ProfileCard> pcList = profileCardRepository.findAllByOrderByCreatedAtDesc(pageRequest);
 
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
-		for (ProfileCard pc : pcList) {
-			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
-			simpleResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
-			simpleResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill().getName().toLowerCase() + extension));
-			profileCardList.add(simpleResponse);
-		}
+			for (ProfileCard pc : pcList) {
+				ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
+				simpleResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
+				simpleResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill() == null ? " " : pc.getSkill().getName().toLowerCase() + extension));
+				profileCardList.add(simpleResponse);
+			}
 		log.info("size = {}", profileCardList.size());
 		return profileCardList;
 	}

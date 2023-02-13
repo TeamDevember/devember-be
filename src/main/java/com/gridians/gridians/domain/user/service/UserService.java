@@ -1,5 +1,7 @@
 package com.gridians.gridians.domain.user.service;
 
+import com.gridians.gridians.domain.card.dto.ProfileCardDto;
+import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.card.type.CardErrorCode;
@@ -23,14 +25,16 @@ import com.gridians.gridians.global.error.exception.EntityNotFoundException;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -46,6 +50,8 @@ public class UserService {
     private final JwtUtils jwtUtils;
     private final TokenRepository tokenRepository;
     private final SocialRequest socialRequest;
+
+    private final S3Service s3Service;
 
     @Transactional
     public User signUp(JoinDto.Request request) throws RuntimeException {
@@ -259,5 +265,25 @@ public class UserService {
             user.setEmail("test" + i + "@test.com");
             userRepository.save(user);
         }
+    }
+
+    public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email, int page, int size) throws IOException {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Favorite> favorites = favoriteRepository.findAllByUser(user, pageRequest);
+
+        HashSet<ProfileCardDto.SimpleResponse> responseList = new HashSet<>();
+
+        for (Favorite favorite : favorites) {
+            System.out.println(favorite.getUser().getProfileCard().getId());
+
+            ProfileCardDto.SimpleResponse response =
+                    ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
+            response.setProfileImage(s3Service.getProfileImage(favorite.getUser().getId().toString()));
+            response.setProfileImage(s3Service.getSkillImage(favorite.getUser().getProfileCard().getSkill().getName()));
+            responseList.add(response);
+        }
+
+        return responseList;
     }
 }
