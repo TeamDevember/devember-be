@@ -25,6 +25,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 
 @Slf4j
 @RequestMapping("/user")
@@ -95,12 +96,10 @@ public class UserController {
 
     @Secured("ROLE_USER")
     @GetMapping("/valid")
-    public ResponseEntity getUser(
-            HttpServletRequest request
-    ) {
+    public ResponseEntity getUser() throws IOException {
         String userEmail = getUserEmail();
-        User user = userService.getUserInfo(userEmail);
-        return ResponseEntity.ok().body(UserDto.Response.from(user));
+        UserDto.Response userInfo = userService.getUserInfo(userEmail);
+        return new ResponseEntity(userInfo, HttpStatus.OK);
     }
 
     @PostMapping("/auth/find-password")

@@ -28,12 +28,14 @@ public class UserDto {
 	}
 
 	@Getter
+	@Setter
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class Response {
 		private String email;
 		private String nickname;
+		private String profileImage;
 
 		public static Response from(User user) {
 			return Response.builder()
