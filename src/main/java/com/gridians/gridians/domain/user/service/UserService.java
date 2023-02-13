@@ -54,20 +54,20 @@ public class UserService {
 
     @Transactional
     public User signUp(JoinDto.Request request) throws RuntimeException {
-        User user = User.from(request);
 
-        Optional<User> optionalUser = userRepository.findByEmail(user.getEmail());
-        User savedUser;
+        Optional<User> findUser = userRepository.findByEmail(request.getEmail());
 
-        if (optionalUser.isPresent()) { //중복 이메일
-            savedUser = optionalUser.get();
-            throw new DuplicateEmailException(savedUser.getEmail());
+        if(findUser.isPresent()){
+            throw new DuplicateEmailException("중복된 이메일입니다.");
+        } else if(userRepository.findByNickname(request.getNickname()).isPresent()){
+            throw new UserException(UserErrorCode.DUPLICATED_NICKNAME);
         } else {
+            User user = User.from(request);
             user.setUserStatus(UserStatus.UNACTIVE);
             user.setRole(Role.ANONYMOUS);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setNickname(user.getNickname());
-            savedUser = userRepository.save(user);
+            User savedUser = userRepository.save(user);
             if(request.getGithubNumberId() != null) {
                 user.setGithubNumberId(request.getGithubNumberId());
             }

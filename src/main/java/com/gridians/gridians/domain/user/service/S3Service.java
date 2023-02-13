@@ -47,7 +47,7 @@ public class S3Service {
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		String fileName = user.getId().toString();
 		ObjectMetadata objMeta = new ObjectMetadata();
-
+		
 		String originalFilename = multipartFile.getOriginalFilename().toLowerCase();
 
 		if (originalFilename != null) {

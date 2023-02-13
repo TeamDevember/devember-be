@@ -3,6 +3,7 @@ package com.gridians.gridians.domain.user.dto;
 import com.gridians.gridians.domain.user.entity.User;
 import lombok.*;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 @Getter
@@ -15,6 +16,7 @@ public class JoinDto {
 	@AllArgsConstructor
 	public static class Request {
 		@NotBlank
+		@Email
 		private String email;
 		@NotBlank
 		private String nickname;

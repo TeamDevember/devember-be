@@ -55,7 +55,7 @@ public class CommentService {
 		profileCardRepository.save(pc);
 
 		CommentDto.Response response = CommentDto.Response.from(savedComment);
-		response.setImageSrc(s3Service.getProfileImage(user.getId().toString()));
+		response.setProfileImage(s3Service.getProfileImage(user.getId().toString()));
 		return response;
 	}
 
@@ -65,7 +65,7 @@ public class CommentService {
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
 		for (Comment comment : commentList) {
 			CommentDto.Response commentResponse = CommentDto.Response.from(comment);
-			commentResponse.setImageSrc(s3Service.getProfileImage(comment.getUser().getId().toString()));
+			commentResponse.setProfileImage(s3Service.getProfileImage(comment.getUser().getId().toString()));
 			List<Reply> replyList = comment.getReplyList();
 			List<ReplyDto.Response> replyResponseList = new ArrayList<>();
 			for (Reply reply : replyList) {
