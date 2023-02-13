@@ -1,13 +1,6 @@
 package com.gridians.gridians;
 
-import com.gridians.gridians.domain.card.entity.Field;
-import com.gridians.gridians.domain.card.entity.Github;
-import com.gridians.gridians.domain.card.entity.ProfileCard;
-import com.gridians.gridians.domain.card.repository.FieldRepository;
-import com.gridians.gridians.domain.card.repository.GithubRepository;
-import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.user.controller.UserController;
-import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.entity.Role;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.repository.UserRepository;
@@ -17,14 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,7 +21,6 @@ import java.util.List;
 public class GridiansApplication {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
 
     @Autowired
     UserController userController;

@@ -1,18 +1,23 @@
 package com.gridians.gridians.domain.card.service;
 
-import com.gridians.gridians.domain.card.dto.GithubDto;
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
-import com.gridians.gridians.domain.card.entity.*;
+import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.card.entity.Skill;
+import com.gridians.gridians.domain.card.entity.Sns;
+import com.gridians.gridians.domain.card.entity.Tag;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.*;
 import com.gridians.gridians.domain.card.type.CardErrorCode;
 import com.gridians.gridians.domain.comment.dto.CommentDto;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.comment.repository.CommentRepository;
+import com.gridians.gridians.domain.user.dto.GithubDto;
 import com.gridians.gridians.domain.user.entity.Favorite;
+import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.FavoriteRepository;
+import com.gridians.gridians.domain.user.repository.GithubRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.domain.user.type.UserErrorCode;
@@ -22,6 +27,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -42,6 +48,7 @@ import java.util.Set;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ProfileCardService {
 
@@ -55,6 +62,9 @@ public class ProfileCardService {
 	private final ProfileCardRepository profileCardRepository;
 	private final GithubRepository githubRepository;
 	private final S3Service s3Service;
+
+	@Value("${custom.gridians-s3.skill.extension}")
+	private String extension;
 
 	//프로필 카드 생성
 	@Transactional
@@ -80,6 +90,9 @@ public class ProfileCardService {
 		List<User> all = userRepository.findAll();
 
 		for (User user : all) {
+			if(user.getEmail().equals("email@email.com")){
+				continue;
+			}
 			ProfileCard pc = ProfileCard.builder().build();
 			pc.setUser(user);
 			profileCardRepository.save(pc);
@@ -103,34 +116,31 @@ public class ProfileCardService {
 	}
 
 	//카드 상세 정보
-	@Transactional
-	public ProfileCardDto.DetailResponse readProfileCard(String email, Long id) {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
+	public ProfileCardDto.DetailResponse readProfileCard(Long id) throws IOException {
 		ProfileCard pc = profileCardRepository.findById(id)
 				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
 
-		List<Comment> commentList = commentRepository.findAllByProfileCard(pc);
+		List<Comment> commentList = commentRepository.findAllByProfileCardOrderByCreatedAtDesc(pc);
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
 
 		for (Comment comment : commentList) {
 			commentDtoList.add(CommentDto.Response.from(comment));
 		}
 		ProfileCardDto.DetailResponse detailResponse;
-		if(user.getGithub() != null){
-			Github github = user.getGithub();
+		if (pc.getUser().getGithub() != null) {
+			Github github = pc.getUser().getGithub();
 			detailResponse = ProfileCardDto.DetailResponse.from(github, pc, commentDtoList);
 		} else {
 			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
 		}
 
-		detailResponse.setImageSrc(s3Service.getProfileImage(user.getId().toString()));
+		detailResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
+		detailResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill().getName().toLowerCase() + extension));
 		return detailResponse;
 	}
 
 	//카드 리스트 조회
-	@Transactional
-	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) {
+	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) throws IOException {
 
 		PageRequest pageRequest = PageRequest.of(page, size);
 		Page<ProfileCard> pcList = profileCardRepository.findAllByOrderByCreatedAtDesc(pageRequest);
@@ -138,15 +148,15 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
-//			simpleResponse.setImageSrc(s3Service.getProfileImage(pc.getUser().getId().toString()));
+			simpleResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
+			simpleResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill().getName().toLowerCase() + extension));
 			profileCardList.add(simpleResponse);
 		}
 		log.info("size = {}", profileCardList.size());
 		return profileCardList;
 	}
 
-	@Transactional
-	public List<ProfileCardDto.SimpleResponse> favoriteCardList(String email, int page, int size) {
+	public List<ProfileCardDto.SimpleResponse> favoriteCardList(String email, int page, int size) throws IOException {
 
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		PageRequest pageRequest = PageRequest.of(page, size);
@@ -156,7 +166,7 @@ public class ProfileCardService {
 
 		for (Favorite favorite : favorites) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
-			simpleResponse.setImageSrc(s3Service.getProfileImage(favorite.getUser().getId().toString()));
+			simpleResponse.setProfileImage(s3Service.getProfileImage(favorite.getUser().getId().toString()));
 			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
@@ -195,8 +205,14 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public ProfileCard deleteProfileCard(Long id) {
+	public ProfileCard deleteProfileCard(String email, Long id) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 		ProfileCard pc = profileCardRepository.findById(id).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+
+		if (user != pc.getUser()) {
+			throw new RuntimeException("본인만 삭제할 수 있습니다.");
+		}
+
 		profileCardRepository.delete(pc);
 		return pc;
 	}
@@ -204,7 +220,7 @@ public class ProfileCardService {
 	@Transactional
 	public void saveGithub(String email, String githubId) throws IOException, ParseException, java.text.ParseException {
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-		if(user.getGithub() != null){
+		if (user.getGithub() != null) {
 			Github github = user.getGithub();
 			user.setGithub(null);
 			githubRepository.delete(github);

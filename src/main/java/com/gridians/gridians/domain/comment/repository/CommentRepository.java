@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-	List<Comment> findAllByProfileCard(ProfileCard pc);
+	List<Comment> findAllByProfileCardOrderByCreatedAtDesc(ProfileCard pc);
 
 }

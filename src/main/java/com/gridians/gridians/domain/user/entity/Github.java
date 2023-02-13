@@ -1,8 +1,7 @@
-package com.gridians.gridians.domain.card.entity;
+package com.gridians.gridians.domain.user.entity;
 
 
-import com.gridians.gridians.domain.card.dto.GithubDto;
-import com.gridians.gridians.domain.user.entity.User;
+import com.gridians.gridians.domain.user.dto.GithubDto;
 import com.gridians.gridians.global.entity.BaseEntity;
 import lombok.*;
 

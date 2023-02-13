@@ -16,56 +16,37 @@ public class CommentDto {
 	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class CreateRequest {
+	public static class Request {
 
 		private String contents;
 
 	}
-
-	@Getter
-	@Setter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class UpdateRequest {
-
-		private String contents;
-		private Long commentId;
-
-	}
-
-	@Getter
-	@Setter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class DeleteRequest {
-
-		private Long commentId;
-
-	}
-
 
 	@Getter
 	@Setter
 	@Builder
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public static class Response  {
+	public static class Response {
 
 		private String contents;
 		private LocalDate createdAt;
 		private Long commentId;
 		private String nickname;
+		private String imageSrc;
 
 		private List<ReplyDto.Response> replyList;
 
 
-		public static Response from(Comment comment){
+		public static Response from(Comment comment) {
 
 			List<Reply> replies = comment.getReplyList();
 			List<ReplyDto.Response> replyList = new ArrayList<>();
-			for (Reply reply : replies) {
-				replyList.add(ReplyDto.Response.from(reply));
-			}
 
+			if (replies != null) {
+				for (Reply reply : replies) {
+					replyList.add(ReplyDto.Response.from(reply));
+				}
+			}
 
 			return Response.builder()
 					.createdAt(comment.getCreatedAt().toLocalDate())

@@ -1,7 +1,6 @@
 package com.gridians.gridians.domain.user.entity;
 
 
-import com.gridians.gridians.domain.card.entity.Github;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.user.dto.JoinDto;

@@ -32,7 +32,7 @@ public class Reply extends BaseEntity implements Serializable {
 	private String content;
 
 
-	public static Reply from(ReplyDto.CreateRequest reply){
+	public static Reply from(ReplyDto.Request reply){
 		return Reply.builder()
 				.content(reply.getContents())
 				.build();

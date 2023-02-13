@@ -32,19 +32,18 @@ public class ProfileCardController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> read(@PathVariable Long id) {
-		String email = getUserEmail();
-		return new ResponseEntity<>(profileCardService.readProfileCard(email, id), HttpStatus.OK);
+	public ResponseEntity<?> read(@PathVariable Long id) throws IOException {
+		return new ResponseEntity<>(profileCardService.readProfileCard(id), HttpStatus.OK);
 	}
 
 	@GetMapping
-	public ResponseEntity<?> cardList(int page, int size) {
+	public ResponseEntity<?> cardList(int page, int size) throws IOException {
 		log.info("CardList Read");
 		return new ResponseEntity<>(profileCardService.allProfileCardList(page, size), HttpStatus.OK);
 	}
 
 	@GetMapping("/favorites")
-	public ResponseEntity<?> favoriteCardList(int page, int size) {
+	public ResponseEntity<?> favoriteCardList(int page, int size) throws IOException {
 		String email = getUserEmail();
 		log.info("Favorite CardList Read");
 		return new ResponseEntity<>(profileCardService.favoriteCardList(email, page, size), HttpStatus.OK);
@@ -75,7 +74,8 @@ public class ProfileCardController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
-		ProfileCard pc = profileCardService.deleteProfileCard(id);
+		String email = getUserEmail();
+		ProfileCard pc = profileCardService.deleteProfileCard(email, id);
 		log.info("[" + pc.getUser().getNickname() + "] Delete Profile Card");
 		return ResponseEntity.ok().build();
 	}

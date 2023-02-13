@@ -12,30 +12,11 @@ public class ReplyDto {
 	@Getter
 	@Setter
 
-	public static class CreateRequest {
+	public static class Request {
 
 		private String contents;
 
 	}
-
-
-	@Getter
-	@Setter
-	public static class UpdateRequest {
-
-		private String contents;
-		private Long replyId;
-
-	}
-
-	@Getter
-	@Setter
-	public static class DeleteRequest {
-
-		private Long replyId;
-
-	}
-
 
 	@Getter
 	@Setter
@@ -48,6 +29,7 @@ public class ReplyDto {
 		private LocalDate createdAt;
 		private Long replyId;
 		private Long commentId;
+		private String imageSrc;
 
 		public static ReplyDto.Response from(Reply reply){
 

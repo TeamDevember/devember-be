@@ -1,7 +1,6 @@
-package com.gridians.gridians.domain.card.repository;
+package com.gridians.gridians.domain.user.repository;
 
-import com.gridians.gridians.domain.card.entity.Github;
-import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

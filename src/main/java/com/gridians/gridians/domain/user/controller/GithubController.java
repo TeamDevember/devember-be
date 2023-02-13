@@ -1,6 +1,6 @@
 package com.gridians.gridians.domain.user.controller;
 
-import com.gridians.gridians.domain.card.dto.GithubDto;
+import com.gridians.gridians.domain.user.dto.GithubDto;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import lombok.RequiredArgsConstructor;

@@ -2,16 +2,16 @@ package com.gridians.gridians.domain.card.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.gridians.gridians.domain.card.entity.Github;
-import com.gridians.gridians.domain.card.entity.ProfileCard;
-import com.gridians.gridians.domain.card.entity.Sns;
-import com.gridians.gridians.domain.card.entity.Tag;
+import com.gridians.gridians.domain.card.entity.*;
 import com.gridians.gridians.domain.comment.dto.CommentDto;
+import com.gridians.gridians.domain.user.entity.Github;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -25,11 +25,17 @@ public class ProfileCardDto {
 	@AllArgsConstructor
 	public static class Request {
 
+		@NotBlank
 		private String statusMessage;
+		@NotBlank
 		private String introduction;
+		@NotBlank
 		private String field;
+		@NotNull
 		private String skill;
+		@NotNull
 		private Set<SnsResponse> snsSet;
+		@NotNull
 		private Set<String> tagSet;
 
 	}
@@ -42,15 +48,16 @@ public class ProfileCardDto {
 	public static class DetailResponse {
 
 		private String statusMessage;
-		private String introduction;
 		private String field;
+
 		private String skill;
+		private String skillImage;
 
 		private Set<String> tagSet;
 		private Set<SnsResponse> snsSet;
 
 		private List<CommentDto.Response> commentList;
-		private String imageSrc;
+		private String profileImage;
 
 		private String githubName;
 		private String githubAccount;
@@ -84,13 +91,12 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
-					.introduction(pc.getIntroduction())
 					.commentList(commentDtoList)
-					.statusMessage(pc.getStatusMessage() == null ? "" : pc.getStatusMessage())
-					.field(pc.getField() == null ? "" : pc.getField().getName())
-					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
-					.tagSet(tags == null ? new HashSet<>() : tags)
-					.snsSet(snss == null ? new HashSet<>() : snss)
+					.statusMessage(pc.getStatusMessage())
+					.field(pc.getField().getName())
+					.skill(pc.getSkill().getName())
+					.tagSet(tags)
+					.snsSet(snss)
 					.build();
 		}
 
@@ -111,13 +117,12 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
-					.introduction(pc.getIntroduction())
 					.commentList(commentDtoList)
-					.statusMessage(pc.getStatusMessage() == null ? "" : pc.getStatusMessage())
-					.field(pc.getField() == null ? "" : pc.getField().getName())
-					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
-					.tagSet(tags == null ? new HashSet<>() : tags)
-					.snsSet(snss == null ? new HashSet<>() : snss)
+					.statusMessage(pc.getStatusMessage())
+					.field(pc.getField().getName())
+					.skill(pc.getSkill().getName())
+					.tagSet(tags)
+					.snsSet(snss)
 					.githubName(github.getName())
 					.githubAccount(github.getLogin())
 					.githubProfileImageUrl(github.getProfileImageUrl())
@@ -140,9 +145,10 @@ public class ProfileCardDto {
 	public static class SimpleResponse {
 
 		private String field;
-		private String imageSrc;
+		private String profileImage;
 		private String nickname;
-		private String skillSrc;
+		private String skill;
+		private String skillImage;
 		private Long profileCardId;
 
 		public static SimpleResponse from(ProfileCard pc) {
@@ -150,6 +156,7 @@ public class ProfileCardDto {
 			return SimpleResponse.builder()
 					.field(pc.getField() == null ? "" : pc.getField().getName())
 					.nickname(pc.getUser() == null ? "" : pc.getUser().getNickname())
+					.skill(pc.getSkill().getName())
 					.profileCardId(pc.getId())
 					.build();
 		}
@@ -172,6 +179,7 @@ public class ProfileCardDto {
 					.build();
 		}
 	}
+
 
 	@Builder
 	@Setter
