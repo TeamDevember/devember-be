@@ -1,12 +1,11 @@
-package com.gridians.gridians.domain.card.exception;
+package com.gridians.gridians.domain.comment.exception;
 
 import com.gridians.gridians.global.error.exception.BusinessException;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 
+public class CommentException extends BusinessException {
 
-public class CardException extends BusinessException {
-
-	public CardException(ErrorCode errorCode) {
+	public CommentException(ErrorCode errorCode) {
 		super(errorCode.getMessage(), errorCode);
 	}
 }
