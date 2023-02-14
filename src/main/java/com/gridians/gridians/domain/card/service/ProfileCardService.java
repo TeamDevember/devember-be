@@ -90,7 +90,7 @@ public class ProfileCardService {
 		List<User> all = userRepository.findAll();
 
 		for (User user : all) {
-			if(user.getEmail().equals("email@email.com")){
+			if (user.getEmail().equals("email@email.com")) {
 				continue;
 			}
 			ProfileCard pc = ProfileCard.builder().build();
@@ -124,7 +124,9 @@ public class ProfileCardService {
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
 
 		for (Comment comment : commentList) {
-			commentDtoList.add(CommentDto.Response.from(comment));
+			CommentDto.Response response = CommentDto.Response.from(comment);
+			response.setProfileImage(comment.getUser().getId().toString());
+			commentDtoList.add(response);
 		}
 		ProfileCardDto.DetailResponse detailResponse;
 		if (pc.getUser().getGithub() != null) {
@@ -133,9 +135,9 @@ public class ProfileCardService {
 		} else {
 			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
 		}
-
 		detailResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
 		detailResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill().getName().toLowerCase() + extension));
+
 		return detailResponse;
 	}
 
@@ -149,7 +151,7 @@ public class ProfileCardService {
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
 			simpleResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
-			simpleResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill().getName().toLowerCase() + extension));
+			simpleResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill() == null ? "" : pc.getSkill().getName().toLowerCase() + extension));
 			profileCardList.add(simpleResponse);
 		}
 		log.info("size = {}", profileCardList.size());
