@@ -1,5 +1,6 @@
 package com.gridians.gridians.domain.user.service;
 
+import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
@@ -15,21 +16,25 @@ import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.TokenRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.type.MailMessage;
-import com.gridians.gridians.domain.user.type.UserErrorCode;
 import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.config.MailComponent;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.error.exception.CustomJwtException;
 import com.gridians.gridians.global.error.exception.EntityNotFoundException;
+import com.gridians.gridians.global.error.exception.ErrorCode;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,6 +51,10 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final TokenRepository tokenRepository;
+    private final S3Service s3Service;
+    private final SocialRequest socialRequest;
+    
+
     private final GithubService githubService;
     private final ProfileCardService profileCardService;
 
@@ -53,8 +62,7 @@ public class UserService {
     public User signUp(JoinDto.Request request) throws Exception {
         User user = User.from(request);
 
-        Optional<User> optionalUser = userRepository.findByEmail(user.getEmail());
-        User savedUser;
+        Optional<User> findUser = userRepository.findByEmail(request.getEmail());
 
         if (optionalUser.isPresent()) { //중복 이메일
             savedUser = optionalUser.get();
@@ -68,7 +76,7 @@ public class UserService {
             user.setRole(Role.ANONYMOUS);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setNickname(user.getNickname());
-            savedUser = userRepository.save(user);
+            User savedUser = userRepository.save(user);
             if(request.getGithubNumberId() != null) {
                 user.setGithubNumberId(request.getGithubNumberId());
                 profileCardService.saveGithub(user.getEmail(), request.getGithubNumberId().toString());
@@ -81,7 +89,7 @@ public class UserService {
 
     @Transactional
     public JoinDto.Response joinAuth(String id) {
-        User user = userRepository.findById(UUID.fromString(id)).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(UUID.fromString(id)).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         user.setRole(Role.USER);
         user.setUserStatus(UserStatus.ACTIVE);
 
@@ -108,11 +116,12 @@ public class UserService {
         JwtUserDetails userDetails = ((JwtUserDetails) authentication.getPrincipal());
 
         String email = userDetails.getEmail();
-        String id = userDetails.getUserId();
-
+//        String id = userDetails.getUserId();
+        String nickname = userDetails.getUser().getNickname();
         tokenRepository.save(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
 
-        return LoginDto.Response.from(accessToken, refreshToken, id);
+
+        return LoginDto.Response.from(accessToken, refreshToken, nickname);
     }
 
     public String issueAccessToken(String refreshToken) {
@@ -157,7 +166,7 @@ public class UserService {
         User favorUser = getUserByEmail(favorUserEmail);
 
         profileCardRepository.findByUser(favorUser)
-                .orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+                .orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
         Favorite favorite = Favorite.builder()
                 .user(user)
@@ -252,11 +261,13 @@ public class UserService {
         return true;
     }
 
-    public User getUserInfo(String userEmail) {
-        return getUserByEmail(userEmail);
+    public UserDto.Response getUserInfo(String userEmail) throws IOException {
+        User user = getUserByEmail(userEmail);
+        UserDto.Response userInfo = UserDto.Response.from(user);
+        userInfo.setProfileImage(s3Service.getProfileImage(user.getId().toString()));
+        return userInfo;
     }
-
-
+    
     @Transactional
     public void dummyUser() {
 
@@ -267,5 +278,25 @@ public class UserService {
             user.setEmail("test" + i + "@test.com");
             userRepository.save(user);
         }
+    }
+
+    public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email, int page, int size) throws IOException {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Favorite> favorites = favoriteRepository.findAllByUser(user, pageRequest);
+
+        HashSet<ProfileCardDto.SimpleResponse> responseList = new HashSet<>();
+
+        for (Favorite favorite : favorites) {
+            System.out.println(favorite.getUser().getProfileCard().getId());
+
+            ProfileCardDto.SimpleResponse response =
+                    ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
+            response.setProfileImage(s3Service.getProfileImage(favorite.getUser().getId().toString()));
+            response.setProfileImage(s3Service.getSkillImage(favorite.getUser().getProfileCard().getSkill().getName()));
+            responseList.add(response);
+        }
+
+        return responseList;
     }
 }

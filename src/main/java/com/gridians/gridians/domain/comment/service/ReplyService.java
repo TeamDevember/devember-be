@@ -3,13 +3,14 @@ package com.gridians.gridians.domain.comment.service;
 import com.gridians.gridians.domain.comment.dto.ReplyDto;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.comment.entity.Reply;
+import com.gridians.gridians.domain.comment.exception.CommentException;
 import com.gridians.gridians.domain.comment.repository.CommentRepository;
 import com.gridians.gridians.domain.comment.repository.ReplyRepository;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.service.S3Service;
-import com.gridians.gridians.domain.user.type.UserErrorCode;
+import com.gridians.gridians.global.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,9 +33,9 @@ public class ReplyService {
 	@Transactional
 	public void write(Long commentId, ReplyDto.Request request, String email) {
 		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-		Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+		Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentException(ErrorCode.COMMENT_NOT_FOUND));
 
 		Reply reply = Reply.from(request);
 		reply.setUser(user);
@@ -65,13 +66,13 @@ public class ReplyService {
 	@Transactional
 	public void update(Long commentId, Long replyId, ReplyDto.Request request, String email) {
 		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
 		Reply findReply = replyRepository.findByComment_IdAndId(commentId, replyId)
-				.orElseThrow(() -> new RuntimeException("답글을 찾을 수 없습니다."));
+				.orElseThrow(() -> new CommentException(ErrorCode.REPLY_NOT_FOUND));
 
 		if (user != findReply.getUser()) {
-			throw new RuntimeException("작성자만 수정할 수 있습니다.");
+			throw new CommentException(ErrorCode.MODIFY_ONLY_WRITER);
 		}
 		findReply.setContent(request.getContents());
 	}
@@ -79,13 +80,13 @@ public class ReplyService {
 	@Transactional
 	public void delete(Long commentId, Long replyId, String email) {
 		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
 		Reply findReply = replyRepository.findByComment_IdAndId(commentId, replyId)
-				.orElseThrow(() -> new RuntimeException("답글을 찾을 수 없습니다."));
+				.orElseThrow(() -> new CommentException(ErrorCode.REPLY_NOT_FOUND));
 
 		if (user != findReply.getUser()) {
-			throw new RuntimeException("작성자만 삭제할 수 있습니다.");
+			throw new CommentException(ErrorCode.DELETE_ONLY_WRITER);
 		}
 		replyRepository.delete(findReply);
 	}

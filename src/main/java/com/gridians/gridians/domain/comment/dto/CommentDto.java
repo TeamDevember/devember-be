@@ -32,7 +32,7 @@ public class CommentDto {
 		private LocalDate createdAt;
 		private Long commentId;
 		private String nickname;
-		private String imageSrc;
+		private String profileImage;
 
 		private List<ReplyDto.Response> replyList;
 

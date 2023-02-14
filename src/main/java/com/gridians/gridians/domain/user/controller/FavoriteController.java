@@ -6,11 +6,14 @@ import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,6 +43,13 @@ public class FavoriteController {
 
 		userService.deleteFavorite(userEmail, email);
 		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping
+	@Secured("ROLE_USER")
+	public ResponseEntity<?> read(int page, int size) throws IOException {
+		String email = getUserEmail();
+		return new ResponseEntity<>(userService.favoriteList(email, page, size), HttpStatus.OK);
 	}
 
 	private String getUserEmail() {

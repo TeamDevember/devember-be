@@ -156,7 +156,7 @@ public class ProfileCardDto {
 			return SimpleResponse.builder()
 					.field(pc.getField() == null ? "" : pc.getField().getName())
 					.nickname(pc.getUser() == null ? "" : pc.getUser().getNickname())
-					.skill(pc.getSkill().getName())
+					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
 					.profileCardId(pc.getId())
 					.build();
 		}

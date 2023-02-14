@@ -4,11 +4,11 @@ package com.gridians.gridians.domain.user.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
-import com.gridians.gridians.domain.user.type.UserErrorCode;
+import com.gridians.gridians.global.config.aws.S3ObjectClosable;
+import com.gridians.gridians.global.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,17 +43,17 @@ public class S3Service {
 	private final AmazonS3 amazonS3;
 
 	public void upload(String email, MultipartFile multipartFile) throws IOException {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 		String fileName = user.getId().toString();
 		ObjectMetadata objMeta = new ObjectMetadata();
-
+		
 		String originalFilename = multipartFile.getOriginalFilename().toLowerCase();
 
 		if (originalFilename != null) {
 			if (originalFilename.endsWith(".jpg") || originalFilename.endsWith(".png")) {
 				objMeta.setContentType(multipartFile.getContentType());
 			} else {
-				throw new UserException(UserErrorCode.ONLY_UPROAD_IMAGE_FILE);
+				throw new UserException(ErrorCode.UPROAD_ONLY_IMAGE_FILE);
 			}
 		}
 		objMeta.setContentLength(multipartFile.getInputStream().available());
@@ -62,17 +62,16 @@ public class S3Service {
 
 	public String getProfileImage(String id) throws IOException {
 
-		try(S3Object s3 = amazonS3.getObject(bucket, id)) {
+		try(final var s3ObjectClosable = new S3ObjectClosable(amazonS3.getObject(bucket, id))) {
 			return amazonS3.getUrl(bucket, id).toString();
 		} catch (AmazonS3Exception exception) {
-			log.error("에러 발생");
 			return amazonS3.getUrl(bucket, defaultProfileImage).toString();
 		}
 	}
 
 	public String getSkillImage(String skill) throws IOException {
 
-		try(S3Object s3 = amazonS3.getObject(bucket, skill)){
+		try(final var s3ObjectClosable = new S3ObjectClosable(amazonS3.getObject(bucket, skill))) {
 			return amazonS3.getUrl(bucket, skill).toString();
 		} catch (AmazonS3Exception exception) {
 			return amazonS3.getUrl(bucket, defaultSkillImage).toString();

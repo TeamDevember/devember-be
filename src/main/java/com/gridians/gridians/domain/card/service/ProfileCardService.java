@@ -7,7 +7,6 @@ import com.gridians.gridians.domain.card.entity.Sns;
 import com.gridians.gridians.domain.card.entity.Tag;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.*;
-import com.gridians.gridians.domain.card.type.CardErrorCode;
 import com.gridians.gridians.domain.comment.dto.CommentDto;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.comment.repository.CommentRepository;
@@ -20,7 +19,7 @@ import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.GithubRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.service.S3Service;
-import com.gridians.gridians.domain.user.type.UserErrorCode;
+import com.gridians.gridians.global.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -69,11 +68,11 @@ public class ProfileCardService {
 	//프로필 카드 생성
 	@Transactional
 	public ProfileCard createProfileCard(String email) {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
 		Optional<ProfileCard> findPc = profileCardRepository.findByUser(user);
 		if (findPc.isPresent()) {
-			throw new CardException(CardErrorCode.DUPLICATED_USER);
+			throw new CardException(ErrorCode.DUPLICATED_USER);
 		}
 
 		ProfileCard pc = ProfileCard.from();
@@ -90,7 +89,7 @@ public class ProfileCardService {
 		List<User> all = userRepository.findAll();
 
 		for (User user : all) {
-			if(user.getEmail().equals("email@email.com")){
+			if (user.getEmail().equals("email@email.com")) {
 				continue;
 			}
 			ProfileCard pc = ProfileCard.builder().build();
@@ -101,9 +100,9 @@ public class ProfileCardService {
 
 	@Transactional
 	public void input(String email, Long id, ProfileCardDto.Request request) throws IOException {
-		userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 		ProfileCard pc = profileCardRepository.findById(id)
-				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
 		saveField(pc, request);
 		saveSnsSet(pc, request);
@@ -118,13 +117,15 @@ public class ProfileCardService {
 	//카드 상세 정보
 	public ProfileCardDto.DetailResponse readProfileCard(Long id) throws IOException {
 		ProfileCard pc = profileCardRepository.findById(id)
-				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
 		List<Comment> commentList = commentRepository.findAllByProfileCardOrderByCreatedAtDesc(pc);
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
 
 		for (Comment comment : commentList) {
-			commentDtoList.add(CommentDto.Response.from(comment));
+			CommentDto.Response response = CommentDto.Response.from(comment);
+			response.setProfileImage(comment.getUser().getId().toString());
+			commentDtoList.add(response);
 		}
 		ProfileCardDto.DetailResponse detailResponse;
 		if (pc.getUser().getGithub() != null) {
@@ -133,9 +134,9 @@ public class ProfileCardService {
 		} else {
 			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
 		}
-
 		detailResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
 		detailResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill().getName().toLowerCase() + extension));
+
 		return detailResponse;
 	}
 
@@ -149,7 +150,7 @@ public class ProfileCardService {
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
 			simpleResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
-			simpleResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill().getName().toLowerCase() + extension));
+			simpleResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill() == null ? "" : pc.getSkill().getName().toLowerCase() + extension));
 			profileCardList.add(simpleResponse);
 		}
 		log.info("size = {}", profileCardList.size());
@@ -158,7 +159,7 @@ public class ProfileCardService {
 
 	public List<ProfileCardDto.SimpleResponse> favoriteCardList(String email, int page, int size) throws IOException {
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 		PageRequest pageRequest = PageRequest.of(page, size);
 		Page<Favorite> favorites = favoriteRepository.findAllByUser(user, pageRequest);
 
@@ -175,7 +176,7 @@ public class ProfileCardService {
 	@Transactional
 	public void saveField(ProfileCard pc, ProfileCardDto.Request request) {
 		pc.setField(fieldRepository.findByName(request.getField())
-				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND)));
+				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND)));
 	}
 
 	@Transactional
@@ -200,14 +201,14 @@ public class ProfileCardService {
 	@Transactional
 	public void saveSkill(ProfileCard pc, ProfileCardDto.Request request) {
 		Skill skill = skillRepository.findByName(request.getSkill())
-				.orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 		skill.addProfileCard(pc);
 	}
 
 	@Transactional
 	public ProfileCard deleteProfileCard(String email, Long id) {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-		ProfileCard pc = profileCardRepository.findById(id).orElseThrow(() -> new CardException(CardErrorCode.CARD_NOT_FOUND));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		ProfileCard pc = profileCardRepository.findById(id).orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
 		if (user != pc.getUser()) {
 			throw new RuntimeException("본인만 삭제할 수 있습니다.");
@@ -219,7 +220,7 @@ public class ProfileCardService {
 
 	@Transactional
 	public void saveGithub(String email, String githubId) throws IOException, ParseException, java.text.ParseException {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 		if (user.getGithub() != null) {
 			Github github = user.getGithub();
 			user.setGithub(null);
@@ -233,7 +234,7 @@ public class ProfileCardService {
 
 	@Transactional
 	public void deleteGithub(String email) throws IOException, ParseException, java.text.ParseException {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 		Github github = user.getGithub();
 		user.setGithub(null);
 		githubRepository.delete(github);

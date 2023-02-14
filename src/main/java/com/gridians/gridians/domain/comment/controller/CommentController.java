@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-@RequestMapping("/cards/{profileCardId}/comments")
+	@RequestMapping("/cards/{profileCardId}/comments")
 @RestController
 @RequiredArgsConstructor
 public class CommentController {
