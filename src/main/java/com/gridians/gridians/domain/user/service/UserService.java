@@ -4,7 +4,6 @@ import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
-import com.gridians.gridians.domain.card.type.CardErrorCode;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
@@ -64,6 +63,7 @@ public class UserService {
         if (optionalUser.isPresent()) { //중복 이메일
             throw new DuplicateEmailException(optionalUser.get().getEmail());
         }
+
         if(userRepository.existsByNickname(user.getNickname())) {
             throw new DuplicateNicknameException(user.getNickname());
         }
