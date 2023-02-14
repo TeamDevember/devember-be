@@ -8,6 +8,7 @@ import com.gridians.gridians.domain.user.entity.Github;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -20,6 +21,8 @@ public class ProfileCardDto {
 
 	@Getter
 	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class Request {
 
 		@NotBlank
@@ -40,6 +43,8 @@ public class ProfileCardDto {
 	@Getter
 	@Setter
 	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class DetailResponse {
 
 		private String statusMessage;
@@ -134,6 +139,8 @@ public class ProfileCardDto {
 	@Getter
 	@Setter
 	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class SimpleResponse {
 
@@ -158,6 +165,8 @@ public class ProfileCardDto {
 	@Builder
 	@Setter
 	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class SnsResponse {
 
 		private String name;
@@ -175,6 +184,8 @@ public class ProfileCardDto {
 	@Builder
 	@Setter
 	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class GithubResponse {
 
 		private String githubName;

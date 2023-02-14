@@ -80,10 +80,12 @@ class FavoriteControllerTest {
         ;
 
         User savedUser = userRepository.findByEmail(email1).get();
+        User user1 = userRepository.findByEmail(email2).get();
         assertThat(savedUser.getFavorites().size()).isEqualTo(1);
 
         Favorite savedFavor = savedUser.getFavorites().stream().findFirst().get();
-        assertThat(savedFavor.getUser().getId()).isEqualTo(user2.getId());
+        assertThat(savedFavor.getFavoriteUser().getId()).isEqualTo(user2.getId());
+
     }
 
     @Test

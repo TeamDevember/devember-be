@@ -50,6 +50,7 @@ public class UserDto {
 	@Builder
 	@AllArgsConstructor
 	public static class RequestToken {
+		private String accessToken;
 		private String refreshToken;
 	}
 

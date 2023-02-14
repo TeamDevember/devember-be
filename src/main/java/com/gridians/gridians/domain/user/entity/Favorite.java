@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "favorite")
@@ -19,11 +20,15 @@ public class Favorite {
     @Column(name = "favorite_id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "id")
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "fk_user_id")
     private User user;
 
-    public void setUser(User user){
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "fk_favorite_user_id")
+    private User favoriteUser;
+
+    public void setUser(User user) {
         this.user = user;
     }
 }

@@ -3,6 +3,8 @@ package com.gridians.gridians.domain.user.service;
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
+import com.gridians.gridians.domain.card.service.ProfileCardService;
+import com.gridians.gridians.domain.card.type.CardErrorCode;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
@@ -49,20 +51,27 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final TokenRepository tokenRepository;
-    private final SocialRequest socialRequest;
     private final S3Service s3Service;
+    private final SocialRequest socialRequest;
+    
+
+    private final GithubService githubService;
+    private final ProfileCardService profileCardService;
 
     @Transactional
-    public User signUp(JoinDto.Request request) throws RuntimeException {
+    public User signUp(JoinDto.Request request) throws Exception {
+        User user = User.from(request);
 
         Optional<User> findUser = userRepository.findByEmail(request.getEmail());
 
-        if(findUser.isPresent()){
-            throw new DuplicateEmailException(ErrorCode.DUPLICATE_EMAIL.getMessage());
-        } else if(userRepository.findByNickname(request.getNickname()).isPresent()){
-            throw new UserException(ErrorCode.DUPLICATED_NICKNAME);
-        } else {
-            User user = User.from(request);
+        if (optionalUser.isPresent()) { //중복 이메일
+            savedUser = optionalUser.get();
+            throw new DuplicateEmailException(savedUser.getEmail());
+        }
+        if(userRepository.existsByNickname(user.getNickname())) {
+            throw new DuplicateNicknameException(user.getNickname());
+        }
+        else {
             user.setUserStatus(UserStatus.UNACTIVE);
             user.setRole(Role.ANONYMOUS);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -70,6 +79,7 @@ public class UserService {
             User savedUser = userRepository.save(user);
             if(request.getGithubNumberId() != null) {
                 user.setGithubNumberId(request.getGithubNumberId());
+                profileCardService.saveGithub(user.getEmail(), request.getGithubNumberId().toString());
             }
             mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
 
@@ -159,8 +169,10 @@ public class UserService {
                 .orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
         Favorite favorite = Favorite.builder()
-                .user(favorUser)
+                .user(user)
+                .favoriteUser(favorUser)
                 .build();
+
         user.addFavorite(favorite);
         User savedUser = userRepository.save(user);
     }
@@ -180,7 +192,7 @@ public class UserService {
 
     @Transactional
     public Authentication socialLogin(String token) throws Exception {
-        Long githubId = Long.valueOf(socialRequest.githubRequest(token));
+        Long githubId = Long.valueOf(githubService.githubRequest(token));
 
         User user = userRepository.findByGithubNumberId(githubId)
                 .orElseThrow(() -> new GithubIdNotFoundException("user not found", githubId.toString()));
@@ -196,7 +208,6 @@ public class UserService {
     public void deleteUser(String userEmail, String password) {
         User user = getUserByEmail(userEmail);
         if(!verifyPassword(password, user.getPassword())){
-            log.info("password not match");
             throw new PasswordNotMatchException("password not match");
         }
 

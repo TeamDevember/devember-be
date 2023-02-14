@@ -29,9 +29,6 @@ public enum ErrorCode {
     MODIFY_ONLY_WRITER(400, "A020", "Modify only writer"),
     DELETE_ONLY_WRITER(400, "A021", "Delete only writer");
 
-
-
-
     private int status;
     private String code;
     private String message;
