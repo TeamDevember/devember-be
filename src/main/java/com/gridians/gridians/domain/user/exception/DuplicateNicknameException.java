@@ -5,6 +5,6 @@ import com.gridians.gridians.global.error.exception.ErrorCode;
 
 public class DuplicateNicknameException extends BusinessException {
     public DuplicateNicknameException(String message) {
-        super(message, ErrorCode.DUPLICATE_NICKNAME);
+        super(message, ErrorCode.DUPLICATED_NICKNAME);
     }
 }

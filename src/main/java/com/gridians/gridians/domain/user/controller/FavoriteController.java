@@ -25,11 +25,11 @@ public class FavoriteController {
 
 	@PostMapping
 	@Secured("ROLE_USER")
-	public ResponseEntity<?> create(
-			@RequestBody FavoriteDto.Request favoriteDto
+	public ResponseEntity<?> create(@RequestBody FavoriteDto.Request favoriteDto
 	) {
+
 		String email = getUserEmail();
-		userService.addFavorite(email, favoriteDto.getEmail());
+		userService.addFavorite(email, email);
 		return ResponseEntity.ok().build();
 	}
 

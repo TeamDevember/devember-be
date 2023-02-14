@@ -4,6 +4,7 @@ package com.gridians.gridians.domain.user.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.gridians.gridians.domain.card.repository.SkillRepository;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
@@ -21,6 +22,8 @@ import java.io.IOException;
 @Service
 @Slf4j
 public class S3Service {
+
+	private SkillRepository skillRepository;
 
 	@Value("${custom.gridians-s3.path}")
 	private String path;
@@ -46,7 +49,7 @@ public class S3Service {
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 		String fileName = user.getId().toString();
 		ObjectMetadata objMeta = new ObjectMetadata();
-		
+
 		String originalFilename = multipartFile.getOriginalFilename().toLowerCase();
 
 		if (originalFilename != null) {
@@ -62,7 +65,7 @@ public class S3Service {
 
 	public String getProfileImage(String id) throws IOException {
 
-		try(final var s3ObjectClosable = new S3ObjectClosable(amazonS3.getObject(bucket, id))) {
+		try (final var s3ObjectClosable = new S3ObjectClosable(amazonS3.getObject(bucket, id))) {
 			return amazonS3.getUrl(bucket, id).toString();
 		} catch (AmazonS3Exception exception) {
 			return amazonS3.getUrl(bucket, defaultProfileImage).toString();
@@ -71,10 +74,11 @@ public class S3Service {
 
 	public String getSkillImage(String skill) throws IOException {
 
-		try(final var s3ObjectClosable = new S3ObjectClosable(amazonS3.getObject(bucket, skill))) {
+		try (final var s3ObjectClosable = new S3ObjectClosable(amazonS3.getObject(bucket, skill))) {
 			return amazonS3.getUrl(bucket, skill).toString();
-		} catch (AmazonS3Exception exception) {
+		} catch (Exception e) {
 			return amazonS3.getUrl(bucket, defaultSkillImage).toString();
 		}
 	}
 }
+
