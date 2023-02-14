@@ -52,9 +52,6 @@ public class UserService {
     private final JwtUtils jwtUtils;
     private final TokenRepository tokenRepository;
     private final S3Service s3Service;
-    private final SocialRequest socialRequest;
-    
-
     private final GithubService githubService;
     private final ProfileCardService profileCardService;
 
@@ -62,11 +59,10 @@ public class UserService {
     public User signUp(JoinDto.Request request) throws Exception {
         User user = User.from(request);
 
-        Optional<User> findUser = userRepository.findByEmail(request.getEmail());
+        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
 
         if (optionalUser.isPresent()) { //중복 이메일
-            savedUser = optionalUser.get();
-            throw new DuplicateEmailException(savedUser.getEmail());
+            throw new DuplicateEmailException(optionalUser.get().getEmail());
         }
         if(userRepository.existsByNickname(user.getNickname())) {
             throw new DuplicateNicknameException(user.getNickname());
