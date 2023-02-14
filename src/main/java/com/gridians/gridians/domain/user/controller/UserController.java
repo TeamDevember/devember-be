@@ -155,7 +155,7 @@ public class UserController {
             @RequestBody UserDto.RequestToken req
     ) {
         String issueAccessToken = userService.issueAccessToken(req.getRefreshToken());
-
+//        log.info("accessToken");
         return ResponseEntity.ok().body(UserDto.ResponseToken.from(issueAccessToken));
     }
 
