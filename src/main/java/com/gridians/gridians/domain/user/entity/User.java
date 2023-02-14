@@ -14,13 +14,13 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@Builder
 @Getter
+@Builder
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class User extends BaseEntity {
+	public User() {}
 
 	@Id
 	@GeneratedValue(generator = "uuid2")
@@ -51,9 +51,8 @@ public class User extends BaseEntity {
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
 
-	@Builder.Default
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private Set<Favorite> favorites = new HashSet<>();
+	private Set<Favorite> favorites;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Comment> commentList = new ArrayList<>();
@@ -70,14 +69,15 @@ public class User extends BaseEntity {
 	}
 
 	public void addFavorite(Favorite favorite) {
+		this.favorites.add(favorite);
 		favorite.setUser(this);
-		favorites.add(favorite);
-	}
-	public void deleteFavorite(Favorite favorite) {
-		favorites.remove(favorite);
 	}
 
 	public void setGithub(Github github) {
 		this.github = github;
+	}
+
+	public void deleteFavorite(Favorite favorite) {
+		favorites.remove(favorite);
 	}
 }

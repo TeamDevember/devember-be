@@ -10,6 +10,7 @@ public enum ErrorCode {
     ENTITY_NOT_FOUND(400, "001", "Entity Not Found"),
 
     DUPLICATE_EMAIL(409, "A001", "Duplicate Email"),
+    DUPLICATE_NICKNAME(409, "A009", "Duplicate Nickname"),
     PASSWORD_NOT_MATCH(400, "A002", "Password Not Match"),
     EMAIL_NOT_VERIFIED(400, "A003", "email not verified"),
     DELETE_USER_ACCESS(400, "A004", "delete user access"),

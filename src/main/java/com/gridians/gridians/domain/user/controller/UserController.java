@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @PostMapping("/auth/signup")
-    public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
+    public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) throws Exception {
         User user = userService.signUp(request);
 
         return new ResponseEntity(JoinDto.Response.from(user), HttpStatus.OK);
@@ -136,7 +136,6 @@ public class UserController {
             @RequestBody UserDto.Request userDto
     ) {
         String userEmail = getUserEmail();
-        log.info("user email = {}, update email = {}", userEmail, userDto.getEmail());
         userService.updateEmail(userEmail, userDto.getEmail());
         return ResponseEntity.ok().build();
     }
@@ -161,26 +160,11 @@ public class UserController {
     }
 
     @Secured("ROLE_USER")
-    @DeleteMapping("/auth/logout")
+    @DeleteMapping("/logout")
     public ResponseEntity logout(
-            HttpServletRequest request,
-            HttpServletResponse response
+            @RequestBody UserDto.RequestToken req
     ) {
-        Cookie[] cookies = request.getCookies();
-        String refreshToken = "";
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("re-token")) {
-                refreshToken = cookie.getValue();
-            }
-        }
-        if (refreshToken.isEmpty()) {
-            throw new RuntimeException("empty refresh token");
-        }
-
-        String userEmail = getUserEmail();
-        userService.logout(userEmail, refreshToken);
-
-        CookieUtils.addHttpOnlyCookie(response, "re-token", "", 0);
+        userService.logout(req.getAccessToken(), req.getRefreshToken());
         return ResponseEntity.ok().build();
     }
 
