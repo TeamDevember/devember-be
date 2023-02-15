@@ -20,7 +20,7 @@ public class Skill {
 	@OneToMany(mappedBy = "skill", fetch = FetchType.LAZY)
 	private List<ProfileCard> profileCardList;
 
-	private String  name;
+	private String  name = "";
 
 	public static Skill from(String name){
 		return Skill.builder()

@@ -76,7 +76,7 @@ public class S3Service {
 
 		try (final var s3ObjectClosable = new S3ObjectClosable(amazonS3.getObject(bucket, skill))) {
 			return amazonS3.getUrl(bucket, skill).toString();
-		} catch (Exception e) {
+		} catch (Exception exception) {
 			return amazonS3.getUrl(bucket, defaultSkillImage).toString();
 		}
 	}

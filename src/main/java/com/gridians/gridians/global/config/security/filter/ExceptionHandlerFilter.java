@@ -34,6 +34,7 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
         ObjectMapper objectMapper = new ObjectMapper();
         response.setStatus(errorCode.getStatus());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
         ErrorResponse errorResponse = new ErrorResponse(errorCode.getStatus(), errorCode.getMessage());
         try {
             response.getWriter().write(objectMapper.writeValueAsString(errorResponse));

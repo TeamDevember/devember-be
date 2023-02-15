@@ -18,6 +18,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(400, "A009" ,"User not found "),
     DUPLICATED_USER(400, "A010", "Duplicated user"),
     DUPLICATED_NICKNAME(400, "A011", "Duplicated nickname"),
+    DUPLICATED_FAVORITE_USER(400, "A022", "Duplicated favorite user"),
     WRONG_USER_PASSWORD(400, "A012", "Wrong password"),
     OVERLAP_STATUS(400, "A013", "Overlap status"),
     NOT_AUTHENTICATED(400, "A014", "Not authenticated account"),
