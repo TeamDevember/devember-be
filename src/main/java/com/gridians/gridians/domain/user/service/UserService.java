@@ -42,271 +42,279 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final ProfileCardRepository profileCardRepository;
-    private final FavoriteRepository favoriteRepository;
-    private final MailComponent mailComponent;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtils jwtUtils;
-    private final TokenRepository tokenRepository;
-    private final S3Service s3Service;
-    private final GithubService githubService;
-    private final ProfileCardService profileCardService;
+	private final UserRepository userRepository;
+	private final ProfileCardRepository profileCardRepository;
+	private final FavoriteRepository favoriteRepository;
+	private final MailComponent mailComponent;
+	private final PasswordEncoder passwordEncoder;
+	private final JwtUtils jwtUtils;
+	private final TokenRepository tokenRepository;
+	private final S3Service s3Service;
+	private final GithubService githubService;
+	private final ProfileCardService profileCardService;
 
-    @Transactional
-    public User signUp(JoinDto.Request request) throws Exception {
-        User user = User.from(request);
+	@Transactional
+	public User signUp(JoinDto.Request request) throws Exception {
+		User user = User.from(request);
 
-        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+		Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
 
-        if (optionalUser.isPresent()) { //중복 이메일
-            throw new DuplicateEmailException(optionalUser.get().getEmail());
-        }
+		if (optionalUser.isPresent()) { //중복 이메일
+			throw new DuplicateEmailException(optionalUser.get().getEmail());
+		}
 
-        if(userRepository.existsByNickname(user.getNickname())) {
-            throw new DuplicateNicknameException(user.getNickname());
-        }
-        else {
-            user.setUserStatus(UserStatus.UNACTIVE);
-            user.setRole(Role.ANONYMOUS);
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setNickname(user.getNickname());
-            User savedUser = userRepository.save(user);
-            if(request.getGithubNumberId() != null) {
-                user.setGithubNumberId(request.getGithubNumberId());
-                profileCardService.saveGithub(user.getEmail(), request.getGithubNumberId().toString());
-            }
-            mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
+		if (userRepository.existsByNickname(user.getNickname())) {
+			throw new DuplicateNicknameException(user.getNickname());
+		} else {
+			user.setUserStatus(UserStatus.UNACTIVE);
+			user.setRole(Role.ANONYMOUS);
+			user.setPassword(passwordEncoder.encode(user.getPassword()));
+			user.setNickname(user.getNickname());
+			User savedUser = userRepository.save(user);
+			if (request.getGithubNumberId() != null) {
+				user.setGithubNumberId(request.getGithubNumberId());
+				profileCardService.saveGithub(user.getEmail(), request.getGithubNumberId().toString());
+			}
+			mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
 
-            return savedUser;
-        }
-    }
+			return savedUser;
+		}
+	}
 
-    @Transactional
-    public JoinDto.Response joinAuth(String id) {
-        User user = userRepository.findById(UUID.fromString(id)).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-        user.setRole(Role.USER);
-        user.setUserStatus(UserStatus.ACTIVE);
+	@Transactional
+	public JoinDto.Response joinAuth(String id) {
+		User user = userRepository.findById(UUID.fromString(id)).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		user.setRole(Role.USER);
+		user.setUserStatus(UserStatus.ACTIVE);
 
-        return JoinDto.Response.from(userRepository.save(user));
-    }
+		return JoinDto.Response.from(userRepository.save(user));
+	}
 
-    public void verifyUser(String email, String password) {
-        User user = getUserByEmail(email);
+	public void verifyUser(String email, String password) {
+		User user = getUserByEmail(email);
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new PasswordNotMatchException("password not match");
-        }
-        if (user.getUserStatus() == UserStatus.UNACTIVE) {
-            throw new EmailNotVerifiedException("email not verified");
-        }
-        if(user.getUserStatus() == UserStatus.DELETED) {
-            throw new UserDeleteException("deleted user");
-        }
-    }
+		if (!passwordEncoder.matches(password, user.getPassword())) {
+			throw new PasswordNotMatchException("password not match");
+		}
+		if (user.getUserStatus() == UserStatus.UNACTIVE) {
+			throw new EmailNotVerifiedException("email not verified");
+		}
+		if (user.getUserStatus() == UserStatus.DELETED) {
+			throw new UserDeleteException("deleted user");
+		}
+	}
 
-    public LoginDto.Response  login(Authentication authentication) {
-        String accessToken = createAccessToken(authentication);
-        String refreshToken = createRefreshToken(authentication);
-        JwtUserDetails userDetails = ((JwtUserDetails) authentication.getPrincipal());
+	public LoginDto.Response login(Authentication authentication) {
+		String accessToken = createAccessToken(authentication);
+		String refreshToken = createRefreshToken(authentication);
+		JwtUserDetails userDetails = ((JwtUserDetails) authentication.getPrincipal());
 
-        String email = userDetails.getEmail();
+		String email = userDetails.getEmail();
 //        String id = userDetails.getUserId();
-        String nickname = userDetails.getUser().getNickname();
-        tokenRepository.save(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
+		String nickname = userDetails.getUser().getNickname();
+		tokenRepository.save(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
 
 
-        return LoginDto.Response.from(accessToken, refreshToken, nickname);
-    }
+		return LoginDto.Response.from(accessToken, refreshToken, nickname);
+	}
 
-    public String issueAccessToken(String refreshToken) {
-        String issuedAccessToken = "";
-        try {
-            if(StringUtils.hasText(refreshToken) && tokenRepository.hasKeyToken(refreshToken)) {
-                Authentication authentication = jwtUtils.getAuthenticationByToken(refreshToken);
-                issuedAccessToken = jwtUtils.createAccessToken(authentication);
-            }
-        } catch (Exception e) {
-            throw new CustomJwtException("no refresh key");
-        }
+	public String issueAccessToken(String refreshToken) {
+		String issuedAccessToken = "";
+		try {
+			if (StringUtils.hasText(refreshToken) && tokenRepository.hasKeyToken(refreshToken)) {
+				Authentication authentication = jwtUtils.getAuthenticationByToken(refreshToken);
+				issuedAccessToken = jwtUtils.createAccessToken(authentication);
+			}
+		} catch (Exception e) {
+			throw new CustomJwtException("no refresh key");
+		}
 
-        return issuedAccessToken;
-    }
+		return issuedAccessToken;
+	}
 
-    public String createAccessToken(Authentication authentication) {
-        return jwtUtils.createAccessToken(authentication);
-    }
+	public String createAccessToken(Authentication authentication) {
+		return jwtUtils.createAccessToken(authentication);
+	}
 
-    public String createRefreshToken(Authentication authentication) {
-        return jwtUtils.createRefreshToken(authentication);
-    }
+	public String createRefreshToken(Authentication authentication) {
+		return jwtUtils.createRefreshToken(authentication);
+	}
 
-    public void logout(String accessToken, String refreshToken) {
-        String email = jwtUtils.getUserEmailFromToken(refreshToken);
-        tokenRepository.saveBlackList(accessToken, email, jwtUtils.ACCESS_TOKEN_EXPIRE_TIME.intValue());
-        tokenRepository.saveBlackList(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
-    }
+	public void logout(String accessToken, String refreshToken) {
+		String email = jwtUtils.getUserEmailFromToken(refreshToken);
+		tokenRepository.saveBlackList(accessToken, email, jwtUtils.ACCESS_TOKEN_EXPIRE_TIME.intValue());
+		tokenRepository.saveBlackList(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
+	}
 
-    public boolean checkUser(String email) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+	public boolean checkUser(String email) {
+		if (userRepository.findByEmail(email).isPresent()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-    @Transactional
-    public void addFavorite(String email, Long favorProfileCardId) {
-        User user = getUserByEmail(email);
+	@Transactional
+	public void addFavorite(String email, Long favoriteProfileCardId) {
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        ProfileCard favorProfileCard = profileCardRepository.findById(favorProfileCardId)
-                .orElseThrow(() -> new EntityNotFoundException(favorProfileCardId.toString()));
+		ProfileCard fvCard = profileCardRepository.findById(favoriteProfileCardId)
+				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
-        User favorUser = favorProfileCard.getUser();
+		User favoriteuser = userRepository.findByProfileCard_Id(fvCard.getId())
+				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
+		;
 
-        Favorite favorite = Favorite.builder()
-                .user(user)
-                .favoriteUser(favorUser)
-                .build();
+		Optional<Favorite> findFavorite = favoriteRepository.findByUserAndFavoriteUser(user, favoriteuser);
+		if (findFavorite.isPresent()) {
+			throw new DuplicateFavoriteUserException("Duplicated favorite user");
+		}
 
-        user.addFavorite(favorite);
-        User savedUser = userRepository.save(user);
-    }
+		Favorite favorite = Favorite.builder()
+				.user(user)
+				.favoriteUser(favoriteuser)
+				.build();
 
-    @Transactional
-    public void deleteFavorite(String email, Long favorProfileCardId) {
-        User user = getUserByEmail(email);
+		Favorite savedFavorite = favoriteRepository.save(favorite);
+		user.addFavorite(savedFavorite);
+		userRepository.save(user);
+	}
 
-        ProfileCard favorProfileCard = profileCardRepository.findById(favorProfileCardId)
-                .orElseThrow(() -> new EntityNotFoundException(favorProfileCardId.toString()));
+	@Transactional
+	public void deleteFavorite(String email, Long favoriteProfileCardId) {
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        List<Favorite> favorites = favoriteRepository.findByUser(favorProfileCard.getUser());
+		ProfileCard fvCard = profileCardRepository.findById(favoriteProfileCardId)
+				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
-        Favorite favorite = null;
-        for(Favorite favor : favorites) {
-            if(favorProfileCard.getUser().getId() == favor.getFavoriteUser().getId()) {
-                favorite = favor;
-            }
-        }
+		User favoriteUser = userRepository.findById(fvCard.getUser().getId())
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        if(favorite == null) {
-            throw new EntityNotFoundException(favorProfileCardId.toString());
-        }
+		Favorite favorite = favoriteRepository.findByUserAndFavoriteUser(user, favoriteUser)
+				.orElseThrow(() -> new UserException(ErrorCode.FAVORITE_USER_NOT_FOUND));
 
-        user.deleteFavorite(favorite);
-        favoriteRepository.deleteById(favorite.getId());
-    }
-
-
-    @Transactional
-    public Authentication socialLogin(String token) throws Exception {
-        Long githubId = Long.valueOf(githubService.githubRequest(token));
-
-        User user = userRepository.findByGithubNumberId(githubId)
-                .orElseThrow(() -> new GithubIdNotFoundException("user not found", githubId.toString()));
-
-        if (user.getUserStatus() == UserStatus.UNACTIVE) {
-            throw new EmailNotVerifiedException("email not verified");
-        }
-
-        return jwtUtils.getAuthenticationByEmail(user.getEmail());
-    }
-
-    @Transactional
-    public void deleteUser(String userEmail, String password) {
-        User user = getUserByEmail(userEmail);
-        if(!verifyPassword(password, user.getPassword())){
-            throw new PasswordNotMatchException("password not match");
-        }
-
-        user.setUserStatus(UserStatus.DELETED);
-    }
-
-    @Transactional
-    public void updateEmail(String userEmail, String updateEmail) {
-        User user = getUserByEmail(userEmail);
-        user.setEmail(updateEmail);
-    }
-
-    @Transactional
-    public UserDto.Response updateUser(String userEmail, UserDto.Request userDto) {
-        User user = getUserByEmail(userEmail);
-
-        user.setNickname(userDto.getNickname());
-
-        if(!userDto.getPassword().isEmpty()){
-            if(verifyPassword(userDto.getPassword(), user.getPassword())) {
-                user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
-            }
-        }
-
-        return UserDto.Response.from(user);
-    }
-
-    @Transactional
-    public void findPassword(String email) {
-        String uuid = UUID.randomUUID().toString();
-        User user = getUserByEmail(email);
-        user.setPassword(passwordEncoder.encode(uuid));
-
-        mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
-    }
-
-    public void sendUpdateEmail(String userEmail, String updateEmail) {
-        mailComponent.sendUpdateEmail(updateEmail, MailMessage.EMAIL_EMAIL_UPDATE, MailMessage.setEmailUpdateMessage(updateEmail));
-    }
+		favoriteRepository.delete(favorite);
+		user.deleteFavorite(favorite);
+	}
 
 
-    private User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException(email + "not found"));
-    }
+	@Transactional
+	public Authentication socialLogin(String token) throws Exception {
+		Long githubId = Long.valueOf(githubService.githubRequest(token));
+
+		User user = userRepository.findByGithubNumberId(githubId)
+				.orElseThrow(() -> new GithubIdNotFoundException("user not found", githubId.toString()));
+
+		if (user.getUserStatus() == UserStatus.UNACTIVE) {
+			throw new EmailNotVerifiedException("email not verified");
+		}
+
+		return jwtUtils.getAuthenticationByEmail(user.getEmail());
+	}
+
+	@Transactional
+	public void deleteUser(String userEmail, String password) {
+		User user = getUserByEmail(userEmail);
+		if (!verifyPassword(password, user.getPassword())) {
+			throw new PasswordNotMatchException("password not match");
+		}
+
+		user.setUserStatus(UserStatus.DELETED);
+	}
+
+	@Transactional
+	public void updateEmail(String userEmail, String updateEmail) {
+		User user = getUserByEmail(userEmail);
+		Optional<User> findUser = userRepository.findByEmail(updateEmail);
+
+		if (findUser.isPresent()) {
+			throw new UserException(ErrorCode.DUPLICATED_EMAIL);
+		}
+
+		user.setEmail(updateEmail);
+	}
+
+	@Transactional
+	public UserDto.Response updateUser(String userEmail, UserDto.Request userDto) {
+		User user = getUserByEmail(userEmail);
+
+		user.setNickname(userDto.getNickname());
+
+		if (!userDto.getPassword().isEmpty()) {
+			if (verifyPassword(userDto.getPassword(), user.getPassword())) {
+				user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
+			}
+		}
+
+		return UserDto.Response.from(user);
+	}
+
+	@Transactional
+	public void findPassword(String email) {
+		String uuid = UUID.randomUUID().toString();
+		User user = getUserByEmail(email);
+		user.setPassword(passwordEncoder.encode(uuid));
+
+		mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
+	}
+
+	public void sendUpdateEmail(String userEmail, String updateEmail) {
+		mailComponent.sendUpdateEmail(updateEmail, MailMessage.EMAIL_EMAIL_UPDATE, MailMessage.setEmailUpdateMessage(updateEmail));
+	}
 
 
-    private boolean verifyPassword(String rawPassword, String cryptPassword) {
-        if (!passwordEncoder.matches(rawPassword, cryptPassword)) {
-            throw new PasswordNotMatchException("password not match");
-        }
+	private User getUserByEmail(String email) {
+		return userRepository.findByEmail(email)
+				.orElseThrow(() -> new EntityNotFoundException(email + "not found"));
+	}
 
-        return true;
-    }
 
-    public UserDto.Response getUserInfo(String userEmail) throws IOException {
-        User user = getUserByEmail(userEmail);
-        UserDto.Response userInfo = UserDto.Response.from(user);
-        userInfo.setProfileImage(s3Service.getProfileImage(user.getId().toString()));
-        return userInfo;
-    }
-    
-    @Transactional
-    public void dummyUser() {
+	private boolean verifyPassword(String rawPassword, String cryptPassword) {
+		if (!passwordEncoder.matches(rawPassword, cryptPassword)) {
+			throw new PasswordNotMatchException("password not match");
+		}
 
-        for (int i = 0; i <= 99; i++) {
-            User user = User.builder().password("test1234").build();
+		return true;
+	}
 
-            user.setNickname("test" + i);
-            user.setEmail("test" + i + "@test.com");
-            userRepository.save(user);
-        }
-    }
+	public UserDto.Response getUserInfo(String userEmail) throws IOException {
+		User user = getUserByEmail(userEmail);
+		UserDto.Response userInfo = UserDto.Response.from(user);
+		userInfo.setProfileImage(s3Service.getProfileImage(user.getId().toString()));
+		return userInfo;
+	}
 
-    public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email) throws IOException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException(email));
+	@Transactional
+	public void dummyUser() {
 
-        Set<Favorite> favorites = user.getFavorites();
-        HashSet<ProfileCardDto.SimpleResponse> responseList = new HashSet<>();
+		for (int i = 0; i <= 99; i++) {
+			User user = User.builder().password("test1234").build();
 
-        for (Favorite favorite : favorites) {
-            User favorUser = favorite.getFavoriteUser();
+			user.setNickname("test" + i);
+			user.setEmail("test" + i + "@test.com");
+			userRepository.save(user);
+		}
+	}
 
-            ProfileCardDto.SimpleResponse response =
-                    ProfileCardDto.SimpleResponse.from(favorUser.getProfileCard());
-            response.setProfileImage(s3Service.getProfileImage(favorUser.getId().toString()));
-            response.setProfileImage(s3Service.getSkillImage(favorUser.getProfileCard().getSkill() == null ? "" : favorUser.getProfileCard().getSkill().getName()));
-            responseList.add(response);
-        }
+	public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email) throws IOException {
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new EntityNotFoundException(email));
 
-        return responseList;
-    }
+		Set<Favorite> favorites = user.getFavorites();
+		HashSet<ProfileCardDto.SimpleResponse> responseList = new HashSet<>();
+
+		for (Favorite favorite : favorites) {
+			User favorUser = favorite.getFavoriteUser();
+
+			ProfileCardDto.SimpleResponse response =
+					ProfileCardDto.SimpleResponse.from(favorUser.getProfileCard());
+			response.setProfileImage(s3Service.getProfileImage(favorUser.getId().toString()));
+			response.setProfileImage(s3Service.getSkillImage(favorUser.getProfileCard().getSkill() == null ? "" : favorUser.getProfileCard().getSkill().getName()));
+			responseList.add(response);
+		}
+
+		return responseList;
+	}
 }

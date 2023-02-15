@@ -9,9 +9,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
-    List<Favorite> findByUser(User user);
+    Set<Favorite> findAllByUser(User user);
     Page<Favorite> findAllByUser(User user, Pageable pageable);
+    Optional<Favorite> findByUserAndFavoriteUser(User user, User favoriteUser);
 }

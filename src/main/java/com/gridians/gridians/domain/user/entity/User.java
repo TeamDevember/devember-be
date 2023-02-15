@@ -54,8 +54,8 @@ public class User extends BaseEntity {
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
 
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private Set<Favorite> favorites;
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+	private Set<Favorite> favorites = new HashSet<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Comment> commentList = new ArrayList<>();
@@ -71,14 +71,19 @@ public class User extends BaseEntity {
 				.build();
 	}
 
-	public void addFavorite(Favorite favorite) {
-		for(Favorite fav : this.favorites) {
-			if(fav.getFavoriteUser() == favorite.getFavoriteUser()) {
-				throw new DuplicateFavoriteUserException("duplicate favorite user");
-			}
-		}
+	//종명님 코드
+//	public void addFavorite(Favorite favorite) {
+//		for(Favorite fav : this.favorites) {
+//			if(fav.getFavoriteUser() == favorite.getFavoriteUser()) {
+//				throw new DuplicateFavoriteUserException("duplicate favorite user");
+//			}
+//		}
+//		this.favorites.add(favorite);
+//		favorite.setUser(this);
+//	}
+
+	public void addFavorite(Favorite favorite){
 		this.favorites.add(favorite);
-		favorite.setUser(this);
 	}
 
 	public void setGithub(Github github) {

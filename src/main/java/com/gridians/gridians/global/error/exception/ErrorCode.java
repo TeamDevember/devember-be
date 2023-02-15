@@ -24,11 +24,15 @@ public enum ErrorCode {
     NOT_AUTHENTICATED(400, "A014", "Not authenticated account"),
     UPROAD_ONLY_IMAGE_FILE(400, "A015", "Upload only image file"),
     CARD_NOT_FOUND(400, "A016", "Card not found"),
-    DUPLICATED_SKILL(400, "A017", "Duplicated Skill"),
+    DUPLICATED_SKILL(400, "A017", "Duplicated skill"),
     COMMENT_NOT_FOUND(400, "A018", "Comment not found"),
     REPLY_NOT_FOUND(400, "A019", "Reply not found"),
     MODIFY_ONLY_WRITER(400, "A020", "Modify only writer"),
-    DELETE_ONLY_WRITER(400, "A021", "Delete only writer");
+    DELETE_ONLY_WRITER(400, "A021", "Delete only writer"),
+    DUPLICATED_EMAIL(400, "A022", "Duplicated email"),
+    FAVORITE_USER_NOT_FOUND(400, "A022", "Favorite user not found");
+
+
 
     private int status;
     private String code;
