@@ -119,9 +119,11 @@ public class JwtUtils {
         } catch (ExpiredJwtException exception) {
             throw exception;
         } catch (JwtException exception) {
+            exception.printStackTrace();
             throw exception;
         }
         catch (Exception exception) {
+            exception.printStackTrace();
             throw exception;
         }
     }

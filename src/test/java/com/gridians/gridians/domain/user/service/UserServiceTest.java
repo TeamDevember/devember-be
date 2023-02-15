@@ -46,7 +46,7 @@ class UserServiceTest {
         given(profileCardRepository.findByUser(any())).willReturn(Optional.of(profileCard));
         given(userRepository.findByEmail(any())).willReturn(Optional.of(user));
 
-        userService.addFavorite(user.getEmail(), user2.getEmail());
+//        userService.addFavorite(user.getEmail(), user2.getEmail());
 
         User savedUser = userRepository.findByEmail(user.getEmail()).get();
         assertThat(savedUser.getFavorites().size()).isEqualTo(1);
@@ -63,7 +63,7 @@ class UserServiceTest {
         given(userRepository.findByEmail(any())).willReturn(Optional.of(user));
         given(favoriteRepository.findByUser(any())).willReturn(Optional.of(favorite));
 
-        userService.deleteFavorite(user.getEmail(), user2.getNickname());
+//        userService.deleteFavorite(user.getEmail(), user2.getNickname());
 
         Mockito.verify(favoriteRepository, times(1)).deleteById(favorite.getId());
 

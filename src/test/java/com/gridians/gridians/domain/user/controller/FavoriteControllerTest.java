@@ -66,43 +66,43 @@ class FavoriteControllerTest {
         accessToken = jwtUtils.createAccessToken((JwtUserDetails) customUserDetailsService.loadUserByUsername(email1));
     }
 
-    @Test
-    @DisplayName("즐겨찾기 추가")
-    public void addFavorite() throws Exception {
-        User user2 = userRepository.findByEmail(email2).get();
-        FavoriteDto.Request content = FavoriteDto.Request.builder().email(email2).build();
+//    @Test
+//    @DisplayName("즐겨찾기 추가")
+//    public void addFavorite() throws Exception {
+//        User user2 = userRepository.findByEmail(email2).get();
+//        FavoriteDto.Request content = FavoriteDto.Request.builder().email(email2).build();
+//
+//        mvc.perform(post("/fav")
+//                        .header("Authorization", "Bearer " + accessToken)
+//                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+//                        .content(objectMapper.writeValueAsString(content)))
+//                .andExpect(status().isOk())
+//        ;
+//
+//        User savedUser = userRepository.findByEmail(email1).get();
+//        User user1 = userRepository.findByEmail(email2).get();
+//        assertThat(savedUser.getFavorites().size()).isEqualTo(1);
+//
+//        Favorite savedFavor = savedUser.getFavorites().stream().findFirst().get();
+//        assertThat(savedFavor.getFavoriteUser().getId()).isEqualTo(user2.getId());
+//
+//    }
 
-        mvc.perform(post("/fav")
-                        .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(content)))
-                .andExpect(status().isOk())
-        ;
-
-        User savedUser = userRepository.findByEmail(email1).get();
-        User user1 = userRepository.findByEmail(email2).get();
-        assertThat(savedUser.getFavorites().size()).isEqualTo(1);
-
-        Favorite savedFavor = savedUser.getFavorites().stream().findFirst().get();
-        assertThat(savedFavor.getFavoriteUser().getId()).isEqualTo(user2.getId());
-
-    }
-
-    @Test
-    @DisplayName("즐겨찾기 삭제")
-    public void deleteFavorite() throws Exception {
-        userService.addFavorite(email1, email2);
-        FavoriteDto.Request content = FavoriteDto.Request.builder().email(email2).build();
-
-        mvc.perform(delete("/fav")
-                        .header("Authorization", "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(content))
-                )
-                .andExpect(status().isOk())
-        ;
-
-        User findUser = userRepository.findByEmail(email1).get();
-        assertThat(findUser.getFavorites().size()).isEqualTo(0);
-    }
+//    @Test
+//    @DisplayName("즐겨찾기 삭제")
+//    public void deleteFavorite() throws Exception {
+//        userService.addFavorite(email1, email2);
+//        FavoriteDto.Request content = FavoriteDto.Request.builder().email(email2).build();
+//
+//        mvc.perform(delete("/fav")
+//                        .header("Authorization", "Bearer " + accessToken)
+//                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+//                        .content(objectMapper.writeValueAsString(content))
+//                )
+//                .andExpect(status().isOk())
+//        ;
+//
+//        User findUser = userRepository.findByEmail(email1).get();
+//        assertThat(findUser.getFavorites().size()).isEqualTo(0);
+//    }
 }

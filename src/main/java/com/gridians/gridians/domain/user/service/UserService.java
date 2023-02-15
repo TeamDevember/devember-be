@@ -1,6 +1,7 @@
 package com.gridians.gridians.domain.user.service;
 
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
+import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
@@ -33,9 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -157,12 +156,13 @@ public class UserService {
     }
 
     @Transactional
-    public void addFavorite(String email, String favorUserEmail) {
+    public void addFavorite(String email, Long favorProfileCardId) {
         User user = getUserByEmail(email);
-        User favorUser = getUserByEmail(favorUserEmail);
 
-        profileCardRepository.findByUser(favorUser)
-                .orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
+        ProfileCard favorProfileCard = profileCardRepository.findById(favorProfileCardId)
+                .orElseThrow(() -> new EntityNotFoundException(favorProfileCardId.toString()));
+
+        User favorUser = favorProfileCard.getUser();
 
         Favorite favorite = Favorite.builder()
                 .user(user)
@@ -174,12 +174,14 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteFavorite(String email, String favorUserEmail) {
+    public void deleteFavorite(String email, Long favorProfileCardId) {
         User user = getUserByEmail(email);
-        User favorUser = getUserByEmail(favorUserEmail);
 
-        Favorite favorite = favoriteRepository.findByUser(favorUser)
-                .orElseThrow(() -> new EntityNotFoundException("Favorite not found"));
+        ProfileCard favorProfileCard = profileCardRepository.findById(favorProfileCardId)
+                .orElseThrow(() -> new EntityNotFoundException(favorProfileCardId.toString()));
+
+        Favorite favorite = favoriteRepository.findByUser(favorProfileCard.getUser())
+                .orElseThrow(() -> new EntityNotFoundException(favorProfileCard.getUser().getEmail()));
 
         user.deleteFavorite(favorite);
         favoriteRepository.deleteById(favorite.getId());
@@ -276,20 +278,22 @@ public class UserService {
         }
     }
 
-    public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email, int page, int size) throws IOException {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-        PageRequest pageRequest = PageRequest.of(page, size);
-        Page<Favorite> favorites = favoriteRepository.findAllByUser(user, pageRequest);
+    public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email) throws IOException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException(email));
 
+        Set<Favorite> favorites = user.getFavorites();
         HashSet<ProfileCardDto.SimpleResponse> responseList = new HashSet<>();
 
         for (Favorite favorite : favorites) {
-            System.out.println(favorite.getUser().getProfileCard().getId());
+            System.out.println(favorite.getFavoriteUser().getProfileCard().getId());
+
+            User favorUser = favorite.getFavoriteUser();
 
             ProfileCardDto.SimpleResponse response =
-                    ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
-            response.setProfileImage(s3Service.getProfileImage(favorite.getUser().getId().toString()));
-            response.setProfileImage(s3Service.getSkillImage(favorite.getUser().getProfileCard().getSkill().getName()));
+                    ProfileCardDto.SimpleResponse.from(favorUser.getProfileCard());
+            response.setProfileImage(s3Service.getProfileImage(favorUser.getId().toString()));
+            response.setProfileImage(s3Service.getSkillImage(favorUser.getProfileCard().getSkill() == null ? "" : favorUser.getProfileCard().getSkill().getName()));
             responseList.add(response);
         }
 

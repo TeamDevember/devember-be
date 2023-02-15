@@ -13,6 +13,6 @@ public class FavoriteDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Request {
-        private String email;
+        private Long profileCardId;
     }
 }

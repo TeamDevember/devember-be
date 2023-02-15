@@ -39,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (!requestMatcherImage.matches(request) && !requestMatcherUser.matches(request)) {
             try {
                 String jwt = getResolveAuthHeader(request);
-
+                log.info("jwt = {}", jwt);
                 if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)) {
                     String email = jwtUtils.getUserEmailFromToken(jwt);
 
@@ -63,6 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getResolveAuthHeader(HttpServletRequest request) {
         String auth = request.getHeader("Authorization");
+        log.info("auth = {}", auth);
         if(StringUtils.hasText(auth) && auth.startsWith("Bearer")){
             return auth.substring(7);
         }

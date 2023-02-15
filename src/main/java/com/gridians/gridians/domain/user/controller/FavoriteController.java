@@ -1,5 +1,6 @@
 package com.gridians.gridians.domain.user.controller;
 
+import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.domain.user.dto.FavoriteDto;
 import com.gridians.gridians.domain.user.service.UserService;
@@ -11,45 +12,46 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashSet;
 
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/fav")
-@RestController
+@Controller
 public class FavoriteController {
 
 	private final UserService userService;
 
-	@PostMapping
 	@Secured("ROLE_USER")
+	@PostMapping
 	public ResponseEntity<?> create(
 			@RequestBody FavoriteDto.Request favoriteDto
 	) {
 		String email = getUserEmail();
-		userService.addFavorite(email, favoriteDto.getEmail());
+		userService.addFavorite(email, favoriteDto.getProfileCardId());
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping
 	@Secured("ROLE_USER")
+	@DeleteMapping
 	public ResponseEntity<?> delete(
 			@RequestBody FavoriteDto.Request favoriteDto
 	) {
 		String userEmail = getUserEmail();
-		String email = favoriteDto.getEmail();
 
-		userService.deleteFavorite(userEmail, email);
+		userService.deleteFavorite(userEmail, favoriteDto.getProfileCardId());
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping
 	@Secured("ROLE_USER")
-	public ResponseEntity<?> read(int page, int size) throws IOException {
+	@GetMapping
+	public ResponseEntity<?> read() throws IOException {
 		String email = getUserEmail();
-		return new ResponseEntity<>(userService.favoriteList(email, page, size), HttpStatus.OK);
+		return new ResponseEntity<>(userService.favoriteList(email), HttpStatus.OK);
 	}
 
 	private String getUserEmail() {

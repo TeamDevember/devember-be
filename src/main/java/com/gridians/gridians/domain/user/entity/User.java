@@ -4,8 +4,11 @@ package com.gridians.gridians.domain.user.entity;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.user.dto.JoinDto;
+import com.gridians.gridians.domain.user.exception.DuplicateEmailException;
+import com.gridians.gridians.domain.user.exception.DuplicateFavoriteUserException;
 import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.entity.BaseEntity;
+import com.gridians.gridians.global.error.exception.BusinessException;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -69,6 +72,11 @@ public class User extends BaseEntity {
 	}
 
 	public void addFavorite(Favorite favorite) {
+		for(Favorite fav : this.favorites) {
+			if(fav.getFavoriteUser() == favorite.getFavoriteUser()) {
+				throw new DuplicateFavoriteUserException("duplicate favorite user");
+			}
+		}
 		this.favorites.add(favorite);
 		favorite.setUser(this);
 	}

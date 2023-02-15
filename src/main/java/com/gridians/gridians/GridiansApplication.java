@@ -1,6 +1,9 @@
 package com.gridians.gridians;
 
+import com.gridians.gridians.domain.card.controller.ProfileCardController;
+import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.user.controller.UserController;
+import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.Role;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.repository.UserRepository;
@@ -21,9 +24,10 @@ import javax.annotation.PostConstruct;
 public class GridiansApplication {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
     @Autowired
     UserController userController;
+    @Autowired
+    ProfileCardController profileCardController;
 
     public static void main(String[] args) {
         SpringApplication.run(GridiansApplication.class, args);
@@ -32,7 +36,7 @@ public class GridiansApplication {
     @Transactional
     public void postConstruct() {
         userRepository.deleteAll();
-        User user = User.builder()
+        User user1 = User.builder()
                 .email("email@email.com")
                 .password(passwordEncoder.encode("password12!"))
                 .nickname("nickname")
@@ -55,8 +59,11 @@ public class GridiansApplication {
                 .userStatus(UserStatus.ACTIVE)
                 .build();
 
-        User saveUser = userRepository.save(user);
+        User saveUser = userRepository.save(user1);
         userRepository.save(user2);
         userRepository.save(user3);
+
+        userController.dummy();
+        profileCardController.dummy();
     }
 }
