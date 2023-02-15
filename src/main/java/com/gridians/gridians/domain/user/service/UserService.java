@@ -166,7 +166,7 @@ public class UserService {
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 		;
 
-		Optional<Favorite> findFavorite = favoriteRepository.findByUserAndFavoriteUser(user, favoriteuser);
+		Optional<Favorite> findFavorite = favoriteRepository.findByUserAndFavoriteUser(user, favoriteUser);
 		if (findFavorite.isPresent()) {
 			throw new DuplicateFavoriteUserException("Duplicated favorite user");
 		}
