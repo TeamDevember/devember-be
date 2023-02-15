@@ -31,6 +31,7 @@ public class FavoriteController {
 	public ResponseEntity<?> create(
 			@RequestBody FavoriteDto.Request favoriteDto
 	) {
+
 		String email = getUserEmail();
 		userService.addFavorite(email, favoriteDto.getProfileCardId());
 		return ResponseEntity.ok().build();

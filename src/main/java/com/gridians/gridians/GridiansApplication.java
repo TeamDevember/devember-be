@@ -22,6 +22,7 @@ import javax.annotation.PostConstruct;
 @RequiredArgsConstructor
 @SpringBootApplication
 public class GridiansApplication {
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     @Autowired
@@ -32,6 +33,7 @@ public class GridiansApplication {
     public static void main(String[] args) {
         SpringApplication.run(GridiansApplication.class, args);
     }
+
     @PostConstruct
     @Transactional
     public void postConstruct() {

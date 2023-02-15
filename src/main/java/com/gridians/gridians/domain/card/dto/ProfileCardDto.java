@@ -94,7 +94,7 @@ public class ProfileCardDto {
 					.commentList(commentDtoList)
 					.statusMessage(pc.getStatusMessage())
 					.field(pc.getField().getName())
-					.skill(pc.getSkill().getName())
+					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
 					.tagSet(tags)
 					.snsSet(snss)
 					.build();

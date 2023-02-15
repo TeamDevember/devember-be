@@ -87,7 +87,6 @@ class FavoriteControllerTest {
 //        assertThat(savedFavor.getFavoriteUser().getId()).isEqualTo(user2.getId());
 //
 //    }
-
 //    @Test
 //    @DisplayName("즐겨찾기 삭제")
 //    public void deleteFavorite() throws Exception {
@@ -106,3 +105,4 @@ class FavoriteControllerTest {
 //        assertThat(findUser.getFavorites().size()).isEqualTo(0);
 //    }
 }
+

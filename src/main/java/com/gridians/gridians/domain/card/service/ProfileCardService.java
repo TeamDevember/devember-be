@@ -135,7 +135,7 @@ public class ProfileCardService {
 			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
 		}
 		detailResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
-		detailResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill().getName().toLowerCase() + extension));
+		detailResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill() == null ? "" : pc.getSkill().getName().toLowerCase() + extension));
 
 		return detailResponse;
 	}
