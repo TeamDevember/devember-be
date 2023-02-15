@@ -180,8 +180,18 @@ public class UserService {
         ProfileCard favorProfileCard = profileCardRepository.findById(favorProfileCardId)
                 .orElseThrow(() -> new EntityNotFoundException(favorProfileCardId.toString()));
 
-        Favorite favorite = favoriteRepository.findByUser(favorProfileCard.getUser())
-                .orElseThrow(() -> new EntityNotFoundException(favorProfileCard.getUser().getEmail()));
+        List<Favorite> favorites = favoriteRepository.findByUser(favorProfileCard.getUser());
+
+        Favorite favorite = null;
+        for(Favorite favor : favorites) {
+            if(favorProfileCard.getUser().getId() == favor.getFavoriteUser().getId()) {
+                favorite = favor;
+            }
+        }
+
+        if(favorite == null) {
+            throw new EntityNotFoundException(favorProfileCardId.toString());
+        }
 
         user.deleteFavorite(favorite);
         favoriteRepository.deleteById(favorite.getId());
@@ -288,8 +298,6 @@ public class UserService {
         HashSet<ProfileCardDto.SimpleResponse> responseList = new HashSet<>();
 
         for (Favorite favorite : favorites) {
-            System.out.println(favorite.getFavoriteUser().getProfileCard().getId());
-
             User favorUser = favorite.getFavoriteUser();
 
             ProfileCardDto.SimpleResponse response =
