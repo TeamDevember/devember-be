@@ -162,7 +162,7 @@ public class UserService {
 		ProfileCard fvCard = profileCardRepository.findById(favoriteProfileCardId)
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
-		User favoriteuser = userRepository.findByProfileCard_Id(fvCard.getId())
+		User favoriteUser = userRepository.findByProfileCard_Id(fvCard.getId())
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 		;
 
@@ -173,7 +173,7 @@ public class UserService {
 
 		Favorite favorite = Favorite.builder()
 				.user(user)
-				.favoriteUser(favoriteuser)
+				.favoriteUser(favoriteUser)
 				.build();
 
 		Favorite savedFavorite = favoriteRepository.save(favorite);

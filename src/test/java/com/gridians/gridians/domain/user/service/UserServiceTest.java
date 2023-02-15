@@ -61,7 +61,7 @@ class UserServiceTest {
         Favorite favorite = Favorite.builder().id(1L).user(user2).build();
 
         given(userRepository.findByEmail(any())).willReturn(Optional.of(user));
-        given(favoriteRepository.findByUser(any())).willReturn(Optional.of(favorite));
+//        given(favoriteRepository.findByUser(any())).willReturn(Optional.of(favorite));
 
 //        userService.deleteFavorite(user.getEmail(), user2.getNickname());
 
