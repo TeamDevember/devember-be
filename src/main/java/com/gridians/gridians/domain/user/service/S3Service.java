@@ -39,7 +39,6 @@ public class S3Service {
 	@Value("${custom.gridians-s3.skill.extension}")
 	private String extension;
 
-
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
 

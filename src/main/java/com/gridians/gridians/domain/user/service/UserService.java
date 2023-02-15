@@ -219,7 +219,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(String userEmail, UserDto.Request userDto) {
+    public UserDto.Response updateUser(String userEmail, UserDto.Request userDto) {
         User user = getUserByEmail(userEmail);
 
         user.setNickname(userDto.getNickname());
@@ -229,6 +229,8 @@ public class UserService {
                 user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
             }
         }
+
+        return UserDto.Response.from(user);
     }
 
     @Transactional
