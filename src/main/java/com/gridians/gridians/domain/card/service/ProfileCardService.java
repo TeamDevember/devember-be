@@ -136,7 +136,7 @@ public class ProfileCardService {
 			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
 		}
 		detailResponse.setProfileImage(serverApi + "/profile-image/" + pc.getUser().getEmail());
-		detailResponse.setSkillImage(serverApi + "/skill-image/" + pc.getSkill().getName());
+		detailResponse.setSkillImage(serverApi + "/skill-image/" + pc.getSkill().getName().toLowerCase());
 
 		return detailResponse;
 	}
@@ -151,7 +151,7 @@ public class ProfileCardService {
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
 			simpleResponse.setProfileImage(serverApi + "/profile-image/" + pc.getUser().getEmail());
-			simpleResponse.setSkillImage(pc.getSkill() == null ? serverApi + "/skill-image/default" : serverApi + "/skill-image/" + pc.getSkill().getName());
+			simpleResponse.setSkillImage(pc.getSkill() == null ? serverApi + "/skill-image/default" : serverApi + "/skill-image/" + pc.getSkill().getName().toLowerCase());
 			profileCardList.add(simpleResponse);
 		}
 		log.info("size = {}", profileCardList.size());
