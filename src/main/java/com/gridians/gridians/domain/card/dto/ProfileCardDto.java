@@ -93,7 +93,7 @@ public class ProfileCardDto {
 			return DetailResponse.builder()
 					.commentList(commentDtoList)
 					.statusMessage(pc.getStatusMessage())
-					.field(pc.getField().getName())
+					.field(pc.getField() == null? "" : pc.getField().getName())
 					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
 					.tagSet(tags)
 					.snsSet(snss)
