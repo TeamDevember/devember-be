@@ -33,7 +33,6 @@ public class ImageController {
         return imageService.getSkillImage(skill);
     }
 
-
     @Secured("ROLE_USER")
     @PutMapping("/user/profile")
     public ResponseEntity updateProfileImage(@RequestBody ImageDto imageDto) {

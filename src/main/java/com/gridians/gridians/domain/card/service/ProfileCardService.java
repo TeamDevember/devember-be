@@ -126,8 +126,10 @@ public class ProfileCardService {
 			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
 		}
 		detailResponse.setProfileImage(server + "/profile-image/" + pc.getUser().getEmail());
-		detailResponse.setSkillImage(server + "/skill-image/" + pc.getSkill().getName().toLowerCase());
-
+		detailResponse.setSkillImage(pc.getSkill() == null ?
+				server + "/" + skillApi + "/default" :
+				server + "/" + skillApi + "/" + pc.getSkill().getName().toLowerCase()
+		);
 		return detailResponse;
 	}
 
@@ -140,7 +142,7 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
-			simpleResponse.setProfileImage(server + "/"+ profileApi +"/" + pc.getUser().getEmail());
+			simpleResponse.setProfileImage(server + "/" + profileApi + "/" + pc.getUser().getEmail());
 			simpleResponse.setSkillImage(pc.getSkill() == null ?
 					server + "/" + skillApi + "/default" :
 					server + "/" + skillApi + "/" + pc.getSkill().getName().toLowerCase()
@@ -161,7 +163,7 @@ public class ProfileCardService {
 
 		for (Favorite favorite : favorites) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
-			simpleResponse.setProfileImage(server + "/" + profileApi  + "/" + favorite.getUser().getEmail());
+			simpleResponse.setProfileImage(server + "/" + profileApi + "/" + favorite.getUser().getEmail());
 			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
@@ -243,7 +245,7 @@ public class ProfileCardService {
 		String result = br.readLine();
 		JSONObject o1 = (JSONObject) parser.parse(result);
 
-		URL subUrl = new URL(githubApi +"/" + githubId + "/events");
+		URL subUrl = new URL(githubApi + "/" + githubId + "/events");
 		BufferedReader subBr = new BufferedReader(new InputStreamReader(subUrl.openStream(), StandardCharsets.UTF_8));
 		String subResult = subBr.readLine();
 

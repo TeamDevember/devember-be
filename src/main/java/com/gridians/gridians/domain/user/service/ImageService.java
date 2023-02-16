@@ -13,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,7 +44,15 @@ public class ImageService {
 		User user = userRepository.findByEmail(userEmail)
 				.orElseThrow(() -> new EntityNotFoundException(userEmail + " not found"));
 
-		base64Image = base64Image.split(",")[1];
+		//data:image/jpeg;base64,
+
+		String extension = "";
+		String imageType = "image/";
+		extension = base64Image.substring(base64Image.indexOf(imageType) + imageType.length(), base64Image.indexOf(";base64"));
+
+		if(base64Image.contains(",")){
+			base64Image = base64Image.split(",")[1];
+		}
 
 		if (base64Image == null || base64Image.equals("")) {
 			throw new NotFoundImageException("Image not found");
@@ -64,7 +70,14 @@ public class ImageService {
 		byte[] decodeBytes = Base64.getDecoder().decode(base64Image);
 
 		// 파일 주소 생성
-		String filePath = profileImagePath + "/" + user.getId() + ".png";
+		String filePath = profileImagePath + "/" + user.getId() + "." + extension;
+		File f = new File(filePath);
+
+		if(f.exists()){
+			Long size = f.length();
+			String sizeString = Long.toString(size) + "bytes";
+			log.info("file size =" + sizeString);
+		}
 
 		// 위에서 생성된 파일 주소를 가지고 Path 객체 가져옴
 		Path savePath = Paths.get(filePath);
@@ -78,12 +91,21 @@ public class ImageService {
 
 	}
 
+
 	public byte[] getProfileImage(String email) {
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new EntityNotFoundException(email + " not found"));
 
 		String filePath = profileImagePath + "/" + user.getId() + ".png";
-		System.out.println(filePath);
+
+		File f = new File(filePath);
+
+		if(f.exists()){
+			Long size = f.length();
+			String sizeString = Long.toString(size) + "bytes";
+			log.info("file size =" + sizeString);
+		}
+
 		return getProfileImageByteArray(filePath);
 	}
 
@@ -96,13 +118,24 @@ public class ImageService {
 	private byte[] getProfileImageByteArray(String path) {
 		File file = new File(path);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		InputStream stream = null;
 		log.info("file path = {}", path);
 		try {
-			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "png", bos);
+			stream = new FileInputStream(file);
+			BufferedImage image = ImageIO.read(stream);
+			ImageIO.write(image, "jpg", bos);
+
 			return bos.toByteArray();
 		} catch (IOException e) {
 			return getProfileBaseImage();
+		} finally {
+			if(stream != null){
+				try {
+					stream.close();
+				} catch (IOException e) {
+					log.error("ERROR closing image input stream: "+e.getMessage(), e);
+				}
+			}
 		}
 	}
 
