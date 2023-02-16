@@ -33,7 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -41,7 +44,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService {
 
-	private final ImageService imageService;
 	private final UserRepository userRepository;
 	private final ProfileCardRepository profileCardRepository;
 	private final FavoriteRepository favoriteRepository;
@@ -53,7 +55,16 @@ public class UserService {
 	private final ProfileCardService profileCardService;
 
 	@Value("${server.host.api}")
-	private String serverApi;
+	private String server;
+
+	@Value("${custom.path.github}")
+	private String githubApi;
+
+	@Value("${custom.path.profileApi}")
+	private String profileApi;
+
+	@Value("${custom.path.skillApi}")
+	private String skillApi;
 
 	@Transactional
 	public User signUp(JoinDto.Request request) throws Exception {
@@ -137,7 +148,6 @@ public class UserService {
 	public String createAccessToken(Authentication authentication) {
 		return jwtUtils.createAccessToken(authentication);
 	}
-
 	public String createRefreshToken(Authentication authentication) {
 		return jwtUtils.createRefreshToken(authentication);
 	}
@@ -284,20 +294,8 @@ public class UserService {
 	public UserDto.Response getUserInfo(String userEmail) throws IOException {
 		User user = getUserByEmail(userEmail);
 		UserDto.Response userInfo = UserDto.Response.from(user);
-		userInfo.setProfileImage(serverApi + "/profile-image/" + userEmail);
+		userInfo.setProfileImage(server + "/" + profileApi + "/" + userEmail);
 		return userInfo;
-	}
-
-	@Transactional
-	public void dummyUser() {
-
-		for (int i = 0; i <= 99; i++) {
-			User user = User.builder().password("test1234").build();
-
-			user.setNickname("test" + i);
-			user.setEmail("test" + i + "@test.com");
-			userRepository.save(user);
-		}
 	}
 
 	public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email) throws IOException {
@@ -312,7 +310,7 @@ public class UserService {
 
 			ProfileCardDto.SimpleResponse response =
 					ProfileCardDto.SimpleResponse.from(favorUser.getProfileCard());
-			response.setProfileImage(serverApi + "/profile-image/" + email);
+			response.setProfileImage(server + "/" + profileApi + "/" + email);
 			responseList.add(response);
 		}
 

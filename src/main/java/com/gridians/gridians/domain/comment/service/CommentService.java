@@ -34,7 +34,13 @@ public class CommentService {
 	private final UserRepository userRepository;
 
 	@Value("${server.host.api}")
-	private String serverApi;
+	private String server;
+
+	@Value("${custom.path.profileApi}")
+	private String profileApi;
+
+	@Value("${custom.path.skillApi}")
+	private String skillApi;
 
 
 	/**
@@ -57,7 +63,7 @@ public class CommentService {
 		profileCardRepository.save(pc);
 
 		CommentDto.Response response = CommentDto.Response.from(savedComment);
-		response.setProfileImage(serverApi + "/profile-image/" + comment.getUser().getEmail());
+		response.setProfileImage(server + "/profile-image/" + comment.getUser().getEmail());
 		return response;
 	}
 
@@ -67,12 +73,12 @@ public class CommentService {
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
 		for (Comment comment : commentList) {
 			CommentDto.Response commentResponse = CommentDto.Response.from(comment);
-			commentResponse.setProfileImage(serverApi + "/profile-image/" + comment.getUser().getEmail());
+			commentResponse.setProfileImage(server + "/" + profileApi + "/" + comment.getUser().getEmail());
 			List<Reply> replyList = comment.getReplyList();
 			List<ReplyDto.Response> replyResponseList = new ArrayList<>();
 			for (Reply reply : replyList) {
 				ReplyDto.Response replyResponse = ReplyDto.Response.from(reply);
-				replyResponse.setImageSrc(serverApi + "/profile-image/" + comment.getUser().getEmail());
+				replyResponse.setImageSrc(server + "/" + profileApi + "/" + comment.getUser().getEmail());
 				replyResponseList.add(replyResponse);
 			}
 			commentResponse.setReplyList(replyResponseList);

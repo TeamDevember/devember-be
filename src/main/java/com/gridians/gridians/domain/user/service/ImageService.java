@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -30,13 +31,15 @@ public class ImageService {
 //3. 유저가 이미지를 삭제할 때 해당 DB 체크 후에 날짜에 맞는 디렉토리로 이동해서 삭제 DB에서도 삭제
 
 	private final UserRepository userRepository;
-	private final SkillRepository skillRepository;
 
 	@Value("${custom.path.profileImages}")
 	private String profileImagePath;
 
 	@Value("${custom.path.skillImages}")
 	private String skillImagePath;
+
+	@Value("${custom.path.defaultImage}")
+	private String defaultImage;
 
 	public void updateProfileImage(String userEmail, String base64Image) {
 
@@ -86,7 +89,7 @@ public class ImageService {
 
 	public byte[] getSkillImage(String skill) {
 
-		String filePath = skillImagePath + "/" + skill + ".png";
+		String filePath = skillImagePath + "/" + skill.toLowerCase() + ".png";
 		return getSkillImageByteArray(filePath);
 	}
 
@@ -117,7 +120,7 @@ public class ImageService {
 	}
 
 	private byte[] getProfileBaseImage() {
-		File file = new File(profileImagePath + "/default.png");
+		File file = new File(profileImagePath + "/" + defaultImage);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
 		try {
@@ -130,7 +133,7 @@ public class ImageService {
 	}
 
 	private byte[] getSkillBaseImage() {
-		File file = new File(skillImagePath + "/default.png");
+		File file = new File(skillImagePath + "/" + defaultImage);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
 		try {

@@ -23,11 +23,6 @@ public class ProfileCardController {
 
 	private final ProfileCardService profileCardService;
 
-	@GetMapping("/dummy")
-	public void dummy(){
-		profileCardService.dummy();
-	}
-
 	@GetMapping("/{id}")
 	public ResponseEntity<?> read(@PathVariable Long id) throws IOException {
 		return new ResponseEntity<>(profileCardService.readProfileCard(id), HttpStatus.OK);
@@ -51,14 +46,6 @@ public class ProfileCardController {
 		String email = getUserEmail();
 		ProfileCard pc = profileCardService.createProfileCard(email);
 		log.info("[" + pc.getUser().getNickname() + "] Create Profile Card");
-		return ResponseEntity.ok().build();
-	}
-
-
-	@PostMapping("/{id}")
-	public ResponseEntity<?> input(@PathVariable Long id, @RequestBody @Valid ProfileCardDto.Request request) throws IOException {
-		String email = getUserEmail();
-		profileCardService.input(email, id, request);
 		return ResponseEntity.ok().build();
 	}
 

@@ -12,6 +12,5 @@ import java.util.Set;
 
 public interface ProfileCardRepository extends JpaRepository<ProfileCard, Long> {
 	Optional<ProfileCard> findByUser(User user);
-
 	Page<ProfileCard> findAllByOrderByCreatedAtDesc(Pageable pageable);
 }

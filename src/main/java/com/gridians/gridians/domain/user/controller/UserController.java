@@ -37,12 +37,6 @@ public class UserController {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
 
-
-    @GetMapping("/dummy")
-    public void dummy(){
-        userService.dummyUser();
-    }
-
     @PostMapping("/auth/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) throws Exception {
         User user = userService.signUp(request);

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-	@RequestMapping("/cards/{profileCardId}/comments")
+@RequestMapping("/cards/{profileCardId}/comments")
 @RestController
 @RequiredArgsConstructor
 public class CommentController {
@@ -22,11 +22,6 @@ public class CommentController {
 	private final CommentService commentService;
 	private final ReplyService replyService;
 
-	private String getUserEmail() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
-		return userDetails.getEmail();
-	}
 
 	@PostMapping
 	public ResponseEntity<?> writeComment(@PathVariable Long profileCardId, @RequestBody CommentDto.Request request) throws IOException {
@@ -41,7 +36,7 @@ public class CommentController {
 	}
 
 	@PutMapping("/{commentId}")
-	public ResponseEntity<?> updateComment(@PathVariable Long profileCardId, @PathVariable Long commentId, @RequestBody CommentDto.Request request){
+	public ResponseEntity<?> updateComment(@PathVariable Long profileCardId, @PathVariable Long commentId, @RequestBody CommentDto.Request request) {
 		String email = getUserEmail();
 		commentService.update(profileCardId, commentId, request, email);
 		return ResponseEntity.ok().build();
@@ -54,7 +49,6 @@ public class CommentController {
 		return ResponseEntity.ok().build();
 	}
 
-	// 답글
 	@PostMapping("/{commentId}")
 	public ResponseEntity<?> writeReply(@PathVariable Long commentId, @RequestBody ReplyDto.Request request) {
 		String email = getUserEmail();
@@ -80,4 +74,11 @@ public class CommentController {
 		replyService.delete(commentId, replyId, email);
 		return ResponseEntity.ok().build();
 	}
+
+	private String getUserEmail() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
+		return userDetails.getEmail();
+	}
+
 }

@@ -23,14 +23,12 @@ public class ImageController {
     @ResponseBody
     @GetMapping(value = "/profile-image/{email}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     public byte[] getProfileImage(@PathVariable String email) {
-        log.info("호출");
         return imageService.getProfileImage(email);
     }
 
     @ResponseBody
     @GetMapping(value = "/skill-image/{skill}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     public byte[] getProfileCardSkillImage(@PathVariable String skill) {
-        log.info("호출");
 
         return imageService.getSkillImage(skill);
     }
@@ -39,7 +37,6 @@ public class ImageController {
     @Secured("ROLE_USER")
     @PutMapping("/user/profile")
     public ResponseEntity updateProfileImage(@RequestBody ImageDto imageDto) {
-        log.info("호출");
 
         String userEmail = getUserEmail();
         imageService.updateProfileImage(userEmail, imageDto.getBase64Image());
@@ -50,8 +47,6 @@ public class ImageController {
     @Secured("ROLE_USER")
     @DeleteMapping("/user/profile")
     public ResponseEntity deleteProfileImage() {
-        log.info("호출");
-
 
         String userEmail = getUserEmail();
         imageService.deleteProfileImage(userEmail);

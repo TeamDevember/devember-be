@@ -61,10 +61,16 @@ public class ProfileCardService {
 	private final GithubRepository githubRepository;
 
 	@Value("${server.host.api}")
-	private String serverApi;
+	private String server;
 
-	@Value("${custom.path.skill.extension}")
-	private String extension;
+	@Value("${custom.path.github}")
+	private String githubApi;
+
+	@Value("${custom.path.profileApi}")
+	private String profileApi;
+
+	@Value("${custom.path.skillApi}")
+	private String skillApi;
 
 	//프로필 카드 생성
 	@Transactional
@@ -81,22 +87,6 @@ public class ProfileCardService {
 		ProfileCard savedPc = profileCardRepository.save(pc);
 		user.setProfileCard(savedPc);
 		return savedPc;
-	}
-
-	// 프로필 카드 기입
-	@Transactional
-	public void dummy() {
-
-		List<User> all = userRepository.findAll();
-
-		for (User user : all) {
-			if (user.getEmail().equals("email@email.com")) {
-				continue;
-			}
-			ProfileCard pc = ProfileCard.builder().build();
-			pc.setUser(user);
-			profileCardRepository.save(pc);
-		}
 	}
 
 	@Transactional
@@ -135,8 +125,8 @@ public class ProfileCardService {
 		} else {
 			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
 		}
-		detailResponse.setProfileImage(serverApi + "/profile-image/" + pc.getUser().getEmail());
-		detailResponse.setSkillImage(serverApi + "/skill-image/" + pc.getSkill().getName().toLowerCase());
+		detailResponse.setProfileImage(server + "/profile-image/" + pc.getUser().getEmail());
+		detailResponse.setSkillImage(server + "/skill-image/" + pc.getSkill().getName().toLowerCase());
 
 		return detailResponse;
 	}
@@ -150,8 +140,11 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
-			simpleResponse.setProfileImage(serverApi + "/profile-image/" + pc.getUser().getEmail());
-			simpleResponse.setSkillImage(pc.getSkill() == null ? serverApi + "/skill-image/default" : serverApi + "/skill-image/" + pc.getSkill().getName().toLowerCase());
+			simpleResponse.setProfileImage(server + "/"+ profileApi +"/" + pc.getUser().getEmail());
+			simpleResponse.setSkillImage(pc.getSkill() == null ?
+					server + "/" + skillApi + "/default" :
+					server + "/" + skillApi + "/" + pc.getSkill().getName().toLowerCase()
+			);
 			profileCardList.add(simpleResponse);
 		}
 		log.info("size = {}", profileCardList.size());
@@ -168,7 +161,7 @@ public class ProfileCardService {
 
 		for (Favorite favorite : favorites) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
-			simpleResponse.setProfileImage(serverApi + "/profile-image/" + favorite.getUser().getEmail());
+			simpleResponse.setProfileImage(server + "/" + profileApi  + "/" + favorite.getUser().getEmail());
 			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
@@ -244,13 +237,13 @@ public class ProfileCardService {
 	public GithubDto parsing(String githubId) throws IOException, ParseException, java.text.ParseException {
 		JSONParser parser = new JSONParser();
 
-		URL mainUrl = new URL("https://api.github.com/users/" + githubId);
+		URL mainUrl = new URL(githubApi + "/" + githubId);
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(mainUrl.openStream(), StandardCharsets.UTF_8));
 		String result = br.readLine();
 		JSONObject o1 = (JSONObject) parser.parse(result);
 
-		URL subUrl = new URL("https://api.github.com/users/" + githubId + "/events");
+		URL subUrl = new URL(githubApi +"/" + githubId + "/events");
 		BufferedReader subBr = new BufferedReader(new InputStreamReader(subUrl.openStream(), StandardCharsets.UTF_8));
 		String subResult = subBr.readLine();
 
