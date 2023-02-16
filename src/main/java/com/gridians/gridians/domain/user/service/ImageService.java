@@ -123,7 +123,7 @@ public class ImageService {
 		try {
 			stream = new FileInputStream(file);
 			BufferedImage image = ImageIO.read(stream);
-			ImageIO.write(image, "jpg", bos);
+			ImageIO.write(image, "png", bos);
 
 			return bos.toByteArray();
 		} catch (IOException e) {
