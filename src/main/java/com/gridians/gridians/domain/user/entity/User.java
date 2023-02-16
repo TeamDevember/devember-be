@@ -4,12 +4,12 @@ package com.gridians.gridians.domain.user.entity;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.user.dto.JoinDto;
-import com.gridians.gridians.domain.user.exception.DuplicateEmailException;
-import com.gridians.gridians.domain.user.exception.DuplicateFavoriteUserException;
 import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.entity.BaseEntity;
-import com.gridians.gridians.global.error.exception.BusinessException;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 

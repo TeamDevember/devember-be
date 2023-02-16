@@ -18,7 +18,6 @@ import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.GithubRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
-import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,9 +59,11 @@ public class ProfileCardService {
 	private final FavoriteRepository favoriteRepository;
 	private final ProfileCardRepository profileCardRepository;
 	private final GithubRepository githubRepository;
-	private final S3Service s3Service;
 
-	@Value("${custom.gridians-s3.skill.extension}")
+	@Value("${server.host.api}")
+	private String serverApi;
+
+	@Value("${custom.path.skill.extension}")
 	private String extension;
 
 	//프로필 카드 생성
@@ -134,8 +135,8 @@ public class ProfileCardService {
 		} else {
 			detailResponse = ProfileCardDto.DetailResponse.from(pc, commentDtoList);
 		}
-		detailResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
-		detailResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill() == null ? "" : pc.getSkill().getName().toLowerCase() + extension));
+		detailResponse.setProfileImage(serverApi + "/profile-image/" + pc.getUser().getEmail());
+		detailResponse.setSkillImage(serverApi + "/skill-image/" + pc.getSkill().getName());
 
 		return detailResponse;
 	}
@@ -149,8 +150,8 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : pcList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
-			simpleResponse.setProfileImage(s3Service.getProfileImage(pc.getUser().getId().toString()));
-			simpleResponse.setSkillImage(s3Service.getSkillImage(pc.getSkill() == null ? "" : pc.getSkill().getName().toLowerCase() + extension));
+			simpleResponse.setProfileImage(serverApi + "/profile-image/" + pc.getUser().getEmail());
+			simpleResponse.setSkillImage(pc.getSkill() == null ? serverApi + "/skill-image/default" : serverApi + "/skill-image/" + pc.getSkill().getName());
 			profileCardList.add(simpleResponse);
 		}
 		log.info("size = {}", profileCardList.size());
@@ -167,7 +168,7 @@ public class ProfileCardService {
 
 		for (Favorite favorite : favorites) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
-			simpleResponse.setProfileImage(s3Service.getProfileImage(favorite.getUser().getId().toString()));
+			simpleResponse.setProfileImage(serverApi + "/profile-image/" + favorite.getUser().getEmail());
 			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
