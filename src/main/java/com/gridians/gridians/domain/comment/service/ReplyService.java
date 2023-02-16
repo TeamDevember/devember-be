@@ -9,9 +9,9 @@ import com.gridians.gridians.domain.comment.repository.ReplyRepository;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
-import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +28,10 @@ public class ReplyService {
 	private final CommentRepository commentRepository;
 	private final ReplyRepository replyRepository;
 	private final UserRepository userRepository;
-	private final S3Service s3Service;
+
+	@Value("${server.host.api}")
+	private String serverApi;
+
 
 	@Transactional
 	public void write(Long commentId, ReplyDto.Request request, String email) {
@@ -56,7 +59,7 @@ public class ReplyService {
 		List<ReplyDto.Response> replyList = new ArrayList<>();
 		for (Reply reply : findReplyList) {
 			ReplyDto.Response response = ReplyDto.Response.from(reply);
-			response.setImageSrc(s3Service.getProfileImage(reply.getUser().getId().toString()));
+			response.setImageSrc(serverApi + "/profile-image/" + reply.getUser().getEmail());
 			replyList.add(response);
 		}
 

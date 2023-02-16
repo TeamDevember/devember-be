@@ -25,6 +25,7 @@ public class GridiansApplication {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
     @Autowired
     UserController userController;
     @Autowired

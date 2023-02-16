@@ -25,8 +25,7 @@ import com.gridians.gridians.global.error.exception.ErrorCode;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,6 +41,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService {
 
+	private final ImageService imageService;
 	private final UserRepository userRepository;
 	private final ProfileCardRepository profileCardRepository;
 	private final FavoriteRepository favoriteRepository;
@@ -49,9 +49,11 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtils jwtUtils;
 	private final TokenRepository tokenRepository;
-	private final S3Service s3Service;
 	private final GithubService githubService;
 	private final ProfileCardService profileCardService;
+
+	@Value("${server.host.api}")
+	private String serverApi;
 
 	@Transactional
 	public User signUp(JoinDto.Request request) throws Exception {
@@ -282,7 +284,7 @@ public class UserService {
 	public UserDto.Response getUserInfo(String userEmail) throws IOException {
 		User user = getUserByEmail(userEmail);
 		UserDto.Response userInfo = UserDto.Response.from(user);
-		userInfo.setProfileImage(s3Service.getProfileImage(user.getId().toString()));
+		userInfo.setProfileImage(serverApi + "/profile-image/" + userEmail);
 		return userInfo;
 	}
 
@@ -310,8 +312,7 @@ public class UserService {
 
 			ProfileCardDto.SimpleResponse response =
 					ProfileCardDto.SimpleResponse.from(favorUser.getProfileCard());
-			response.setProfileImage(s3Service.getProfileImage(favorUser.getId().toString()));
-			response.setProfileImage(s3Service.getSkillImage(favorUser.getProfileCard().getSkill() == null ? "" : favorUser.getProfileCard().getSkill().getName()));
+			response.setProfileImage(serverApi + "/profile-image/" + email);
 			responseList.add(response);
 		}
 

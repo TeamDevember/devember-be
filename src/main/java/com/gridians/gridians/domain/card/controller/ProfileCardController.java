@@ -3,7 +3,6 @@ package com.gridians.gridians.domain.card.controller;
 import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
-import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ import java.io.IOException;
 public class ProfileCardController {
 
 	private final ProfileCardService profileCardService;
-	private final S3Service s3Service;
 
 	@GetMapping("/dummy")
 	public void dummy(){
@@ -77,12 +75,6 @@ public class ProfileCardController {
 		ProfileCard pc = profileCardService.deleteProfileCard(email, id);
 		log.info("[" + pc.getUser().getNickname() + "] Delete Profile Card");
 		return ResponseEntity.ok().build();
-	}
-
-	@GetMapping("/images/skills/{skill}")
-	public ResponseEntity<?> getImage(@PathVariable String skill) throws IOException {
-		// 실제 주소가 되어야 함
-		return new ResponseEntity(s3Service.getSkillImage(skill), HttpStatus.OK);
 	}
 
 	private String getUserEmail() {

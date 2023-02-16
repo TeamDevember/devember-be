@@ -12,9 +12,9 @@ import com.gridians.gridians.domain.comment.repository.CommentRepository;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
-import com.gridians.gridians.domain.user.service.S3Service;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +33,9 @@ public class CommentService {
 	private final ProfileCardRepository profileCardRepository;
 	private final UserRepository userRepository;
 
-	private final S3Service s3Service;
+	@Value("${server.host.api}")
+	private String serverApi;
+
 
 	/**
 	 * 댓글 -> 부모의 여부에 따라 댓글, 대댓글로 나뉘어짐
@@ -55,7 +57,7 @@ public class CommentService {
 		profileCardRepository.save(pc);
 
 		CommentDto.Response response = CommentDto.Response.from(savedComment);
-		response.setProfileImage(s3Service.getProfileImage(user.getId().toString()));
+		response.setProfileImage(serverApi + "/profile-image/" + comment.getUser().getEmail());
 		return response;
 	}
 
@@ -65,12 +67,12 @@ public class CommentService {
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
 		for (Comment comment : commentList) {
 			CommentDto.Response commentResponse = CommentDto.Response.from(comment);
-			commentResponse.setProfileImage(s3Service.getProfileImage(comment.getUser().getId().toString()));
+			commentResponse.setProfileImage(serverApi + "/profile-image/" + comment.getUser().getEmail());
 			List<Reply> replyList = comment.getReplyList();
 			List<ReplyDto.Response> replyResponseList = new ArrayList<>();
 			for (Reply reply : replyList) {
 				ReplyDto.Response replyResponse = ReplyDto.Response.from(reply);
-				replyResponse.setImageSrc(s3Service.getProfileImage(reply.getUser().getId().toString()));
+				replyResponse.setImageSrc(serverApi + "/profile-image/" + comment.getUser().getEmail());
 				replyResponseList.add(replyResponse);
 			}
 			commentResponse.setReplyList(replyResponseList);
