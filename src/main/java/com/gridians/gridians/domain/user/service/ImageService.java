@@ -134,7 +134,7 @@ public class ImageService {
 
 	public byte[] getSkillImage(String skill) {
 
-		String filePath = skillImagePath + "/" + skill.toLowerCase() + ".png";
+		String filePath = skillImagePath + "/" + skill.toLowerCase() + ".svg";
 		return getSkillImageByteArray(filePath);
 	}
 
@@ -168,7 +168,7 @@ public class ImageService {
 		log.info("file path = {}", path);
 		try {
 			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "png", bos);
+			ImageIO.write(image, "svg", bos);
 			return bos.toByteArray();
 		} catch (IOException e) {
 			return getSkillBaseImage();
