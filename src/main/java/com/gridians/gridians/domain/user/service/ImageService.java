@@ -108,7 +108,7 @@ public class ImageService {
 				.orElseThrow(() -> new EntityNotFoundException(email + " not found"));
 
 		String filePath = user.getProfileImage().getPath();
-		String extension = filePath.substring(filePath.lastIndexOf("."));
+		String extension = filePath.substring(filePath.indexOf(".") + 1);
 		System.out.println(extension);
 
 		Path path = Paths.get(filePath);
