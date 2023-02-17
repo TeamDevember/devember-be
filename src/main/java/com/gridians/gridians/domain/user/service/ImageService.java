@@ -110,7 +110,7 @@ public class ImageService {
 		if(user.getProfileImage() == null){
 			return getProfileBaseImage();
 		}
-		
+
 		String filePath = user.getProfileImage().getPath();
 		String extension = filePath.substring(filePath.indexOf(".") + 1);
 

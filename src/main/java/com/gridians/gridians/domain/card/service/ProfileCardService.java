@@ -115,7 +115,7 @@ public class ProfileCardService {
 
 		for (Comment comment : commentList) {
 			CommentDto.Response response = CommentDto.Response.from(comment);
-			response.setProfileImage(comment.getUser().getId().toString());
+			response.setProfileImage(server + "/profile-image/" + pc.getUser().getEmail());
 			commentDtoList.add(response);
 		}
 		ProfileCardDto.DetailResponse detailResponse;
