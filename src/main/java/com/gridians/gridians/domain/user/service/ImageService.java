@@ -181,7 +181,7 @@ public class ImageService {
 
 		try {
 			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "png", bos);
+			ImageIO.write(image, "svg", bos);
 			return bos.toByteArray();
 		} catch (IOException e) {
 			throw new NotFoundImageException("image not found");
@@ -194,7 +194,7 @@ public class ImageService {
 
 		try {
 			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "png", bos);
+			ImageIO.write(image, "svg", bos);
 			return bos.toByteArray();
 		} catch (IOException e) {
 			throw new NotFoundImageException("image not found");
