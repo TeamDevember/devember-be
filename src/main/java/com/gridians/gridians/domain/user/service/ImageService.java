@@ -134,7 +134,7 @@ public class ImageService {
 
 	public byte[] getSkillImage(String skill) {
 
-		String filePath = skillImagePath + "/" + skill.toLowerCase() + ".svg";
+		String filePath = skillImagePath + "/" + skill.toLowerCase() + ".png";
 		return getSkillImageByteArray(filePath);
 	}
 
@@ -168,7 +168,7 @@ public class ImageService {
 		log.info("file path = {}", path);
 		try {
 			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "svg", bos);
+			ImageIO.write(image, "png", bos);
 			return bos.toByteArray();
 		} catch (IOException e) {
 			return getSkillBaseImage();
@@ -181,7 +181,7 @@ public class ImageService {
 
 		try {
 			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "svg", bos);
+			ImageIO.write(image, "png", bos);
 			return bos.toByteArray();
 		} catch (IOException e) {
 			throw new NotFoundImageException("image not found");
@@ -194,7 +194,7 @@ public class ImageService {
 
 		try {
 			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "svg", bos);
+			ImageIO.write(image, "png", bos);
 			return bos.toByteArray();
 		} catch (IOException e) {
 			throw new NotFoundImageException("image not found");
