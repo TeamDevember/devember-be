@@ -63,6 +63,9 @@ public class User extends BaseEntity {
 	@Column(unique = true)
 	private Long githubNumberId;
 
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+	private ProfileImage profileImage;
+
 	public static User from(JoinDto.Request request){
 		return User.builder().email(request.getEmail())
 				.nickname(request.getNickname())

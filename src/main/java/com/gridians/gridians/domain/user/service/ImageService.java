@@ -1,8 +1,10 @@
 package com.gridians.gridians.domain.user.service;
 
 import com.gridians.gridians.domain.card.repository.SkillRepository;
+import com.gridians.gridians.domain.user.entity.ProfileImage;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.NotFoundImageException;
+import com.gridians.gridians.domain.user.repository.ProfileImageRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.global.error.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,6 +26,8 @@ import java.util.Base64;
 @Service
 @RequiredArgsConstructor
 public class ImageService {
+
+	private final ProfileImageRepository profileImageRepository;
 
 //1. 유저가 이미지를 저장하기 전에 조회 -> DB 체크 해보고 저장된 DB가 없으면 기본 이미지 반환
 //2. 유저가 최초 이미지를 저장, 수정했을 때 -> DB 체크 해보고 저장된 DB가 없으면 오늘 날짜의 디렉토리를 생성해서 저장 후 DB에 반영, 저장된 DB가 있으면 그 날짜에 해당하는 디렉토리에 가서 파일 확인 후에 새로운 사진 등록하고 마지막에 삭제
@@ -44,47 +49,53 @@ public class ImageService {
 		User user = userRepository.findByEmail(userEmail)
 				.orElseThrow(() -> new EntityNotFoundException(userEmail + " not found"));
 
-		//data:image/jpeg;base64,
+		if(user.getProfileImage() != null){
+			try {
+				Files.delete(Paths.get(user.getProfileImage().getPath()));
+				profileImageRepository.delete(user.getProfileImage());
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 
+		//data:image/jpeg;base64,
 		String extension = "";
 		String imageType = "image/";
 		extension = base64Image.substring(base64Image.indexOf(imageType) + imageType.length(), base64Image.indexOf(";base64"));
 
-		if(base64Image.contains(",")){
+		if (base64Image.contains(",")) {
 			base64Image = base64Image.split(",")[1];
 		}
 
 		if (base64Image == null || base64Image.equals("")) {
-			throw new NotFoundImageException("Image not found");
+			throw new NotFoundImageException("ProfileImage not found");
 		}
 
 		// 날짜에 맞는 폴더 주소
-		File folder = new File(profileImagePath);
+		Path folder = Paths.get(profileImagePath);
 
 		// 위의 폴더 주소가 이미 존재하는지 여부 후에 없으면 폴더 생성
-		if (!folder.exists()) {
-			folder.mkdir();
+		if (!Files.isDirectory(folder)) {
+			try {
+				Files.createDirectory(folder);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		// base64를 byte[]로 디코딩 (Output에 이미지로 쓰기 위함)
 		byte[] decodeBytes = Base64.getDecoder().decode(base64Image);
 
 		// 파일 주소 생성
-		String filePath = profileImagePath + "/" + user.getId() + "." + extension;
-		File f = new File(filePath);
-
-		if(f.exists()){
-			Long size = f.length();
-			String sizeString = Long.toString(size) + "bytes";
-			log.info("file size =" + sizeString);
-		}
-
-		// 위에서 생성된 파일 주소를 가지고 Path 객체 가져옴
-		Path savePath = Paths.get(filePath);
+		Path filePath = Paths.get(profileImagePath + "/" + user.getId() + "." + extension);
 
 		try {
 			// 파일 생성
-			Files.write(savePath, decodeBytes);
+			Files.write(filePath, decodeBytes);
+			ProfileImage savedImage = profileImageRepository.save(ProfileImage.builder().path(filePath.toString()).user(user).build());
+			user.setProfileImage(savedImage);
+			userRepository.save(user);
+
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -96,17 +107,24 @@ public class ImageService {
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new EntityNotFoundException(email + " not found"));
 
-		String filePath = profileImagePath + "/" + user.getId() + ".png";
+		String filePath = user.getProfileImage().getPath();
+		String extension = filePath.substring(filePath.lastIndexOf("."));
+		System.out.println(extension);
 
-		File f = new File(filePath);
+		Path path = Paths.get(filePath);
 
-		if(f.exists()){
-			Long size = f.length();
-			String sizeString = Long.toString(size) + "bytes";
-			log.info("file size =" + sizeString);
+		if (Files.exists(path)) {
+			Long size = null;
+			try {
+				size = Files.size(path);
+				String sizeString = Long.toString(size) + "bytes";
+				log.info("file size =" + sizeString);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
-		return getProfileImageByteArray(filePath);
+		return getProfileImageByteArray(filePath, extension);
 	}
 
 	public byte[] getSkillImage(String skill) {
@@ -115,7 +133,7 @@ public class ImageService {
 		return getSkillImageByteArray(filePath);
 	}
 
-	private byte[] getProfileImageByteArray(String path) {
+	private byte[] getProfileImageByteArray(String path, String extension) {
 		File file = new File(path);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		InputStream stream = null;
@@ -123,17 +141,17 @@ public class ImageService {
 		try {
 			stream = new FileInputStream(file);
 			BufferedImage image = ImageIO.read(stream);
-			ImageIO.write(image, "png", bos);
+			ImageIO.write(image, extension, bos);
 
 			return bos.toByteArray();
 		} catch (IOException e) {
 			return getProfileBaseImage();
 		} finally {
-			if(stream != null){
+			if (stream != null) {
 				try {
 					stream.close();
 				} catch (IOException e) {
-					log.error("ERROR closing image input stream: "+e.getMessage(), e);
+					log.error("ERROR closing image input stream: " + e.getMessage(), e);
 				}
 			}
 		}
@@ -178,17 +196,26 @@ public class ImageService {
 		}
 	}
 
-	public void deleteProfileImage(String email){
+	public void deleteProfileImage(String email) {
 
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new EntityNotFoundException(email + " not found"));
 
-		File file = new File(profileImagePath + "/" + user.getId().toString() + ".png");
-
-		if(file.exists()){
-			file.delete();
-		} else {
+		if(user.getProfileImage() == null){
 			throw new NotFoundImageException("Image not found");
+		}
+
+		Path path = Paths.get(user.getProfileImage().getPath());
+
+		if (Files.exists(path)) {
+			try {
+				Files.delete(path);
+				profileImageRepository.delete(user.getProfileImage());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			throw new NotFoundImageException("ProfileImage not found");
 		}
 	}
 }

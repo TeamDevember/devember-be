@@ -12,7 +12,7 @@ public enum ErrorCode {
     EMAIL_NOT_VERIFIED(200, "A003", "Email not verified"),
     DELETE_USER_ACCESS(400, "A004", "Delete user access"),
     GIT_ID_NOT_FOUND(400, "A005", "Git id not found"),
-    IMAGE_NOT_FOUND(400, "A006", "Image not found"),
+    IMAGE_NOT_FOUND(400, "A006", "ProfileImage not found"),
     TOKEN_EXPIRE(401, "A007", "Expire"),
     INVALID_TOKEN(401, "A008", "Error"),
     USER_NOT_FOUND(400, "A009" ,"User not found "),
