@@ -166,8 +166,15 @@ public class UserService {
 		}
 	}
 
+	public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email) throws IOException {
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new EntityNotFoundException(email));
+
+		return getFavorites(user);
+	}
+
 	@Transactional
-	public void addFavorite(String email, Long favoriteProfileCardId) {
+	public HashSet<ProfileCardDto.SimpleResponse> addFavorite(String email, Long favoriteProfileCardId) {
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
@@ -176,7 +183,6 @@ public class UserService {
 
 		User favoriteUser = userRepository.findByProfileCard_Id(fvCard.getId())
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
-		;
 
 		Optional<Favorite> findFavorite = favoriteRepository.findByUserAndFavoriteUser(user, favoriteUser);
 		if (findFavorite.isPresent()) {
@@ -191,6 +197,23 @@ public class UserService {
 		Favorite savedFavorite = favoriteRepository.save(favorite);
 		user.addFavorite(savedFavorite);
 		userRepository.save(user);
+
+		return getFavorites(user);
+	}
+
+	public HashSet<ProfileCardDto.SimpleResponse> getFavorites(User user) {
+		HashSet<ProfileCardDto.SimpleResponse> responseList = new HashSet<>();
+
+		for (Favorite favor : user.getFavorites()) {
+			User favorUser = favor.getFavoriteUser();
+
+			ProfileCardDto.SimpleResponse response =
+					ProfileCardDto.SimpleResponse.from(favorUser.getProfileCard());
+			response.setProfileImage(server + "/" + profileApi + "/" + favorUser.getEmail());
+			responseList.add(response);
+		}
+
+		return responseList;
 	}
 
 	@Transactional
@@ -296,24 +319,5 @@ public class UserService {
 		UserDto.Response userInfo = UserDto.Response.from(user);
 		userInfo.setProfileImage(server + "/" + profileApi + "/" + userEmail);
 		return userInfo;
-	}
-
-	public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email) throws IOException {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new EntityNotFoundException(email));
-
-		Set<Favorite> favorites = user.getFavorites();
-		HashSet<ProfileCardDto.SimpleResponse> responseList = new HashSet<>();
-
-		for (Favorite favorite : favorites) {
-			User favorUser = favorite.getFavoriteUser();
-
-			ProfileCardDto.SimpleResponse response =
-					ProfileCardDto.SimpleResponse.from(favorUser.getProfileCard());
-			response.setProfileImage(server + "/" + profileApi + "/" + favorUser.getEmail());
-			responseList.add(response);
-		}
-
-		return responseList;
 	}
 }
