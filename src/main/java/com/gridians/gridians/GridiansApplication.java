@@ -2,6 +2,7 @@ package com.gridians.gridians;
 
 import com.gridians.gridians.domain.card.controller.ProfileCardController;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.user.controller.UserController;
 import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.Role;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class GridiansApplication {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ProfileCardRepository profileCardRepository;
 
     @Autowired
     UserController userController;
@@ -66,7 +69,22 @@ public class GridiansApplication {
 //        userRepository.save(user2);
 //        userRepository.save(user3);
 //
-//        userController.dummy();
-//        profileCardController.dummy();
+//        for (int i = 0; i <= 99; i++) {
+//            User user = User.builder().password("test1234").build();
+//
+//            user.setNickname("test" + i);
+//            user.setEmail("test" + i + "@test.com");
+//            userRepository.save(user);
+//        }
+//        List<User> all = userRepository.findAll();
+//
+//        for (User user : all) {
+//            if (user.getEmail().equals("email@email.com")) {
+//                continue;
+//            }
+//            ProfileCard pc = ProfileCard.builder().build();
+//            pc.setUser(user);
+//            profileCardRepository.save(pc);
+//        }
 //    }
 }
