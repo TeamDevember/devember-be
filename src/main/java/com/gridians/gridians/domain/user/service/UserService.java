@@ -310,7 +310,7 @@ public class UserService {
 
 			ProfileCardDto.SimpleResponse response =
 					ProfileCardDto.SimpleResponse.from(favorUser.getProfileCard());
-			response.setProfileImage(server + "/" + profileApi + "/" + email);
+			response.setProfileImage(server + "/" + profileApi + "/" + favorUser.getEmail());
 			responseList.add(response);
 		}
 
