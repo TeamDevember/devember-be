@@ -26,7 +26,6 @@ public class GithubService {
     @Value("${github.client-secret}")
     private String gitHubClientSecret;
 
-
     public String githubRequest(String token) throws Exception {
         String accessToken = getGithubAccessToken(token);
         return getGitHubId(accessToken);
