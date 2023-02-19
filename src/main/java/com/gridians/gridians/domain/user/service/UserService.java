@@ -319,7 +319,6 @@ public class UserService {
 			Github github = Github.from(parsing(githubId));
 			github.setUser(findUser);
 			findUser.setGithub(github);
-			findUser.setGithubNumberId(github.getGithubNumberId());
 			githubRepository.save(github);
 		}catch (Exception e){
 			throw new RuntimeException("잠시 후에 다시 등록해주세요");
