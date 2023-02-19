@@ -6,10 +6,7 @@ import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.entity.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -20,10 +17,10 @@ import java.util.*;
 @Getter
 @Builder
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class User extends BaseEntity {
-	public User() {}
 
 	@Id
 	@GeneratedValue(generator = "uuid2")
@@ -31,9 +28,8 @@ public class User extends BaseEntity {
 	@Column(columnDefinition = "BINARY(16)", name = "id")
 	private UUID id;
 
-	private String email;
-	private String nickname;
-	private String password;
+	@Column(unique = true)
+	private Long githubNumberId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "create_type")
@@ -47,10 +43,6 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "github_id", unique = true)
-	private Github github;
-
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
 
@@ -60,11 +52,15 @@ public class User extends BaseEntity {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Comment> commentList = new ArrayList<>();
 
-	@Column(unique = true)
-	private Long githubNumberId;
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+	private Github github;
 
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private ProfileImage profileImage;
+
+	private String email;
+	private String nickname;
+	private String password;
 
 	public static User from(JoinDto.Request request){
 		return User.builder().email(request.getEmail())
@@ -74,23 +70,8 @@ public class User extends BaseEntity {
 				.build();
 	}
 
-	//종명님 코드
-//	public void addFavorite(Favorite favorite) {
-//		for(Favorite fav : this.favorites) {
-//			if(fav.getFavoriteUser() == favorite.getFavoriteUser()) {
-//				throw new DuplicateFavoriteUserException("duplicate favorite user");
-//			}
-//		}
-//		this.favorites.add(favorite);
-//		favorite.setUser(this);
-//	}
-
 	public void addFavorite(Favorite favorite){
 		this.favorites.add(favorite);
-	}
-
-	public void setGithub(Github github) {
-		this.github = github;
 	}
 
 	public void deleteFavorite(Favorite favorite) {

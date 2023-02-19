@@ -10,11 +10,10 @@ import javax.validation.constraints.NotBlank;
 public class JoinDto {
 
 	@Getter
-	@Setter
-	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class Request {
+
 		@NotBlank
 		@Email
 		private String email;

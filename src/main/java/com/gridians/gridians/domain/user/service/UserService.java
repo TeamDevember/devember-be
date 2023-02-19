@@ -4,15 +4,17 @@ import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
-import com.gridians.gridians.domain.card.service.ProfileCardService;
+import com.gridians.gridians.domain.user.dto.GithubDto;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.Favorite;
+import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.Role;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.*;
 import com.gridians.gridians.domain.user.repository.FavoriteRepository;
+import com.gridians.gridians.domain.user.repository.GithubRepository;
 import com.gridians.gridians.domain.user.repository.TokenRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
 import com.gridians.gridians.domain.user.type.MailMessage;
@@ -25,6 +27,10 @@ import com.gridians.gridians.global.error.exception.ErrorCode;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,10 +38,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -44,6 +56,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
 
+	private final GithubRepository githubRepository;
 	private final UserRepository userRepository;
 	private final ProfileCardRepository profileCardRepository;
 	private final FavoriteRepository favoriteRepository;
@@ -52,7 +65,7 @@ public class UserService {
 	private final JwtUtils jwtUtils;
 	private final TokenRepository tokenRepository;
 	private final GithubService githubService;
-	private final ProfileCardService profileCardService;
+
 
 	@Value("${server.host.api}")
 	private String server;
@@ -60,19 +73,18 @@ public class UserService {
 	@Value("${custom.path.github}")
 	private String githubApi;
 
-	@Value("${custom.path.profileApi}")
-	private String profileApi;
+	@Value("${custom.path.profile}")
+	private String profilePath;
 
-	@Value("${custom.path.skillApi}")
-	private String skillApi;
+	private String separator = "/";
 
 	@Transactional
-	public User signUp(JoinDto.Request request) throws Exception {
+	public User signUp(JoinDto.Request request) {
 		User user = User.from(request);
 
 		Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
 
-		if (optionalUser.isPresent()) { //중복 이메일
+		if (optionalUser.isPresent()) {
 			throw new DuplicateEmailException(optionalUser.get().getEmail());
 		}
 
@@ -86,7 +98,7 @@ public class UserService {
 			User savedUser = userRepository.save(user);
 			if (request.getGithubNumberId() != null) {
 				user.setGithubNumberId(request.getGithubNumberId());
-				profileCardService.saveGithub(user.getEmail(), request.getGithubNumberId().toString());
+				updateGithub(user.getEmail(), request.getGithubNumberId().toString());
 			}
 			mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
 
@@ -96,25 +108,12 @@ public class UserService {
 
 	@Transactional
 	public JoinDto.Response joinAuth(String id) {
-		User user = userRepository.findById(UUID.fromString(id)).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-		user.setRole(Role.USER);
-		user.setUserStatus(UserStatus.ACTIVE);
+		User findUser = userRepository.findById(UUID.fromString(id))
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		findUser.setRole(Role.USER);
+		findUser.setUserStatus(UserStatus.ACTIVE);
 
-		return JoinDto.Response.from(userRepository.save(user));
-	}
-
-	public void verifyUser(String email, String password) {
-		User user = getUserByEmail(email);
-
-		if (!passwordEncoder.matches(password, user.getPassword())) {
-			throw new PasswordNotMatchException("password not match");
-		}
-		if (user.getUserStatus() == UserStatus.UNACTIVE) {
-			throw new EmailNotVerifiedException("email not verified");
-		}
-		if (user.getUserStatus() == UserStatus.DELETED) {
-			throw new UserDeleteException("deleted user");
-		}
+		return JoinDto.Response.from(userRepository.save(findUser));
 	}
 
 	public LoginDto.Response login(Authentication authentication) {
@@ -123,12 +122,71 @@ public class UserService {
 		JwtUserDetails userDetails = ((JwtUserDetails) authentication.getPrincipal());
 
 		String email = userDetails.getEmail();
-//        String id = userDetails.getUserId();
 		String nickname = userDetails.getUser().getNickname();
 		tokenRepository.save(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
 
 
 		return LoginDto.Response.from(accessToken, refreshToken, nickname);
+	}
+
+	@Transactional
+	public UserDto.DefaultResponse updateUser(String userEmail, UserDto.UpdateRequest userDto) {
+		User user = verifyUserByEmail(userEmail);
+
+		user.setNickname(userDto.getNickname());
+
+		if (!userDto.getPassword().isEmpty()) {
+			if (verifyPassword(userDto.getPassword(), user.getPassword())) {
+				user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
+			}
+		}
+
+		return UserDto.DefaultResponse.from(user);
+	}
+	
+	@Transactional
+	public void deleteUser(String userEmail, String password) {
+		User user = verifyUserByEmail(userEmail);
+		if (!verifyPassword(password, user.getPassword())) {
+			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
+		}
+
+		user.setUserStatus(UserStatus.DELETED);
+	}
+
+	@Transactional
+	public void updateEmail(String userEmail, String updateEmail) {
+		User user = verifyUserByEmail(userEmail);
+		Optional<User> findUser = userRepository.findByEmail(updateEmail);
+
+		if (findUser.isPresent()) {
+			throw new UserException(ErrorCode.DUPLICATED_EMAIL);
+		}
+
+		user.setEmail(updateEmail);
+	}
+
+	@Transactional
+	public void findPassword(String email) {
+		String uuid = UUID.randomUUID().toString();
+		User user = verifyUserByEmail(email);
+		user.setPassword(passwordEncoder.encode(uuid));
+
+		mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
+	}
+
+	public void verifyUser(String email, String password) {
+		User user = verifyUserByEmail(email);
+
+		if (!passwordEncoder.matches(password, user.getPassword())) {
+			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
+		}
+		if (user.getUserStatus() == UserStatus.UNACTIVE) {
+			throw new UserException(ErrorCode.EMAIL_NOT_VERIFIED);
+		}
+		if (user.getUserStatus() == UserStatus.DELETED) {
+			throw new UserException(ErrorCode.DELETE_USER_ACCESS);
+		}
 	}
 
 	public String issueAccessToken(String refreshToken) {
@@ -139,7 +197,7 @@ public class UserService {
 				issuedAccessToken = jwtUtils.createAccessToken(authentication);
 			}
 		} catch (Exception e) {
-			throw new CustomJwtException("no refresh key");
+			throw new CustomJwtException("No refresh key");
 		}
 
 		return issuedAccessToken;
@@ -148,6 +206,7 @@ public class UserService {
 	public String createAccessToken(Authentication authentication) {
 		return jwtUtils.createAccessToken(authentication);
 	}
+
 	public String createRefreshToken(Authentication authentication) {
 		return jwtUtils.createRefreshToken(authentication);
 	}
@@ -166,39 +225,40 @@ public class UserService {
 		}
 	}
 
-	public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email) throws IOException {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new EntityNotFoundException(email));
-
-		return getFavorites(user);
-	}
-
 	@Transactional
 	public HashSet<ProfileCardDto.SimpleResponse> addFavorite(String email, Long favoriteProfileCardId) {
-		User user = userRepository.findByEmail(email)
+		User findUser = userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-		ProfileCard fvCard = profileCardRepository.findById(favoriteProfileCardId)
+		ProfileCard findProfileCard = profileCardRepository.findById(favoriteProfileCardId)
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
-		User favoriteUser = userRepository.findByProfileCard_Id(fvCard.getId())
+		User findFavoriteUser = userRepository.findByProfileCard_Id(findProfileCard.getId())
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
-		Optional<Favorite> findFavorite = favoriteRepository.findByUserAndFavoriteUser(user, favoriteUser);
-		if (findFavorite.isPresent()) {
+		Optional<Favorite> optionalFavorite = favoriteRepository.findByUserAndFavoriteUser(findUser, findFavoriteUser);
+		if (optionalFavorite.isPresent()) {
 			throw new DuplicateFavoriteUserException("Duplicated favorite user");
 		}
 
 		Favorite favorite = Favorite.builder()
-				.user(user)
-				.favoriteUser(favoriteUser)
+				.user(findUser)
+				.favoriteUser(findFavoriteUser)
 				.build();
 
 		Favorite savedFavorite = favoriteRepository.save(favorite);
-		user.addFavorite(savedFavorite);
-		userRepository.save(user);
+		findUser.addFavorite(savedFavorite);
+		userRepository.save(findUser);
 
-		return getFavorites(user);
+		return getFavorites(findUser);
+	}
+
+
+	public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email) {
+		User findUser = userRepository.findByEmail(email)
+				.orElseThrow(() -> new EntityNotFoundException(email));
+
+		return getFavorites(findUser);
 	}
 
 	public HashSet<ProfileCardDto.SimpleResponse> getFavorites(User user) {
@@ -209,7 +269,7 @@ public class UserService {
 
 			ProfileCardDto.SimpleResponse response =
 					ProfileCardDto.SimpleResponse.from(favorUser.getProfileCard());
-			response.setProfileImage(server + "/" + profileApi + "/" + favorUser.getEmail());
+			response.setProfileImage(server + separator + profilePath + separator + favorUser.getEmail());
 			responseList.add(response);
 		}
 
@@ -218,20 +278,20 @@ public class UserService {
 
 	@Transactional
 	public void deleteFavorite(String email, Long favoriteProfileCardId) {
-		User user = userRepository.findByEmail(email)
+		User findUser = userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-		ProfileCard fvCard = profileCardRepository.findById(favoriteProfileCardId)
+		ProfileCard findProfileCard = profileCardRepository.findById(favoriteProfileCardId)
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
-		User favoriteUser = userRepository.findById(fvCard.getUser().getId())
+		User findFavoriteUser = userRepository.findById(findProfileCard.getUser().getId())
 				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-		Favorite favorite = favoriteRepository.findByUserAndFavoriteUser(user, favoriteUser)
+		Favorite findFavorite = favoriteRepository.findByUserAndFavoriteUser(findUser, findFavoriteUser)
 				.orElseThrow(() -> new UserException(ErrorCode.FAVORITE_USER_NOT_FOUND));
 
-		favoriteRepository.delete(favorite);
-		user.deleteFavorite(favorite);
+		favoriteRepository.delete(findFavorite);
+		findUser.deleteFavorite(findFavorite);
 	}
 
 
@@ -239,60 +299,96 @@ public class UserService {
 	public Authentication socialLogin(String token) throws Exception {
 		Long githubId = Long.valueOf(githubService.githubRequest(token));
 
-		User user = userRepository.findByGithubNumberId(githubId)
-				.orElseThrow(() -> new GithubIdNotFoundException("user not found", githubId.toString()));
+		User findUser = userRepository.findByGithubNumberId(githubId)
+				.orElseThrow(() -> new GithubIdNotFoundException("User not found", githubId.toString()));
 
-		if (user.getUserStatus() == UserStatus.UNACTIVE) {
-			throw new EmailNotVerifiedException("email not verified");
+		if (findUser.getUserStatus() == UserStatus.UNACTIVE) {
+			throw new EmailNotVerifiedException("Email not verified");
 		}
 
-		return jwtUtils.getAuthenticationByEmail(user.getEmail());
+		return jwtUtils.getAuthenticationByEmail(findUser.getEmail());
+	}
+	
+	@Transactional
+	public void updateGithub(String email, String githubId){
+		User findUser = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		Optional<Github> optionalGithub = githubRepository.findByUser(findUser);
+		if(optionalGithub.isPresent()){
+			githubRepository.delete(optionalGithub.get());
+		}
+		try {
+			Github github = Github.from(parsing(githubId));
+			github.setUser(findUser);
+			findUser.setGithub(github);
+			findUser.setGithubNumberId(github.getGithubNumberId());
+			githubRepository.save(github);
+		}catch (Exception e){
+			throw new RuntimeException("잠시 후에 다시 등록해주세요");
+		}
 	}
 
 	@Transactional
-	public void deleteUser(String userEmail, String password) {
-		User user = getUserByEmail(userEmail);
-		if (!verifyPassword(password, user.getPassword())) {
-			throw new PasswordNotMatchException("password not match");
-		}
-
-		user.setUserStatus(UserStatus.DELETED);
+	public void deleteGithub(String email) {
+		User findUser = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		Github findGithub = githubRepository.findByUser(findUser)
+				.orElseThrow(() -> new UserException(ErrorCode.GITHUB_NOT_FOUND));
+		githubRepository.delete(findGithub);
 	}
 
-	@Transactional
-	public void updateEmail(String userEmail, String updateEmail) {
-		User user = getUserByEmail(userEmail);
-		Optional<User> findUser = userRepository.findByEmail(updateEmail);
+	public GithubDto parsing(String githubId) throws IOException, ParseException, java.text.ParseException {
+		JSONParser parser = new JSONParser();
 
-		if (findUser.isPresent()) {
-			throw new UserException(ErrorCode.DUPLICATED_EMAIL);
-		}
+		URL mainUrl = new URL(githubApi + separator + githubId);
 
-		user.setEmail(updateEmail);
-	}
+		BufferedReader br = new BufferedReader(new InputStreamReader(mainUrl.openStream(), StandardCharsets.UTF_8));
+		String result = br.readLine();
+		JSONObject o1 = (JSONObject) parser.parse(result);
 
-	@Transactional
-	public UserDto.Response updateUser(String userEmail, UserDto.Request userDto) {
-		User user = getUserByEmail(userEmail);
+		URL subUrl = new URL(githubApi + separator + githubId + "/events");
+		BufferedReader subBr = new BufferedReader(new InputStreamReader(subUrl.openStream(), StandardCharsets.UTF_8));
+		String subResult = subBr.readLine();
 
-		user.setNickname(userDto.getNickname());
+		JSONArray jsonArray = (JSONArray) parser.parse(subResult);
+		String message = "";
+		String date = "";
 
-		if (!userDto.getPassword().isEmpty()) {
-			if (verifyPassword(userDto.getPassword(), user.getPassword())) {
-				user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
+
+		for (Object o : jsonArray) {
+			JSONObject o2 = (JSONObject) o;
+
+			if (o2.get("type").equals("PushEvent")) {
+				date = (String) o2.get("created_at");
+				Object payload = o2.get("payload");
+				JSONObject payload1 = (JSONObject) payload;
+				Object commits = payload1.get("commits");
+				JSONArray commits1 = (JSONArray) commits;
+
+				if (commits1.size() > 0) {
+					Object o3 = commits1.get(0);
+					JSONObject o31 = (JSONObject) o3;
+					message = (String) o31.get("message");
+					break;
+				}
 			}
 		}
 
-		return UserDto.Response.from(user);
-	}
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		LocalDate realDate = simpleDateFormat.parse(date).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-	@Transactional
-	public void findPassword(String email) {
-		String uuid = UUID.randomUUID().toString();
-		User user = getUserByEmail(email);
-		user.setPassword(passwordEncoder.encode(uuid));
-
-		mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
+		return GithubDto.builder()
+				.name((String) o1.get("name"))
+				.login((String) o1.get("login"))
+				.githubId((Long) o1.get("id"))
+				.githubUrl((String) o1.get("url"))
+				.following((Long) o1.get("following"))
+				.followers((Long) o1.get("followers"))
+				.location((String) o1.get("location"))
+				.imageUrl((String) o1.get("avatar_url"))
+				.recentCommitAt(realDate)
+				.recentCommitMessage(message)
+				.build();
 	}
 
 	public void sendUpdateEmail(String userEmail, String updateEmail) {
@@ -300,24 +396,24 @@ public class UserService {
 	}
 
 
-	private User getUserByEmail(String email) {
+	private User verifyUserByEmail(String email) {
 		return userRepository.findByEmail(email)
 				.orElseThrow(() -> new EntityNotFoundException(email + "not found"));
 	}
 
-
 	private boolean verifyPassword(String rawPassword, String cryptPassword) {
 		if (!passwordEncoder.matches(rawPassword, cryptPassword)) {
-			throw new PasswordNotMatchException("password not match");
+			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
 		}
 
 		return true;
 	}
 
-	public UserDto.Response getUserInfo(String userEmail) throws IOException {
-		User user = getUserByEmail(userEmail);
-		UserDto.Response userInfo = UserDto.Response.from(user);
-		userInfo.setProfileImage(server + "/" + profileApi + "/" + userEmail);
+	public UserDto.DefaultResponse getUserInfo(String userEmail) {
+		User findUser = verifyUserByEmail(userEmail);
+		UserDto.DefaultResponse userInfo = UserDto.DefaultResponse.from(findUser);
+		userInfo.setProfileImage(server + separator + profilePath + separator + userEmail);
 		return userInfo;
 	}
+
 }

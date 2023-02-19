@@ -28,14 +28,15 @@ public class CommentDto {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class Response {
 
-		private String contents;
-		private LocalDate createdAt;
 		private Long commentId;
+
+		private String contents;
 		private String nickname;
 		private String profileImage;
 
-		private List<ReplyDto.Response> replyList;
+		private LocalDate createdAt;
 
+		private List<ReplyDto.Response> replyList;
 
 		public static Response from(Comment comment) {
 
@@ -50,7 +51,7 @@ public class CommentDto {
 
 			return Response.builder()
 					.createdAt(comment.getCreatedAt().toLocalDate())
-					.contents(comment.getContent())
+					.contents(comment.getContents())
 					.commentId(comment.getId())
 					.nickname(comment.getUser().getNickname())
 					.replyList(replyList)

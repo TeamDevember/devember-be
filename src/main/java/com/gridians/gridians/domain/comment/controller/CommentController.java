@@ -22,12 +22,11 @@ public class CommentController {
 	private final CommentService commentService;
 	private final ReplyService replyService;
 
-
 	@PostMapping
 	public ResponseEntity<?> writeComment(@PathVariable Long profileCardId, @RequestBody CommentDto.Request request) throws IOException {
 		String email = getUserEmail();
 		commentService.write(profileCardId, request, email);
-		return ResponseEntity.ok().build();
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping
@@ -39,40 +38,40 @@ public class CommentController {
 	public ResponseEntity<?> updateComment(@PathVariable Long profileCardId, @PathVariable Long commentId, @RequestBody CommentDto.Request request) {
 		String email = getUserEmail();
 		commentService.update(profileCardId, commentId, request, email);
-		return ResponseEntity.ok().build();
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{commentId}")
 	public ResponseEntity<?> deleteComment(@PathVariable Long profileCardId, @PathVariable Long commentId) {
 		String email = getUserEmail();
 		commentService.delete(profileCardId, commentId, email);
-		return ResponseEntity.ok().build();
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@PostMapping("/{commentId}")
 	public ResponseEntity<?> writeReply(@PathVariable Long commentId, @RequestBody ReplyDto.Request request) {
 		String email = getUserEmail();
 		replyService.write(commentId, request, email);
-		return ResponseEntity.ok().build();
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@GetMapping("/{commentId}")
-	public ResponseEntity<?> readReply(@PathVariable Long commentId) throws IOException {
+	@GetMapping("/{commentId}/replies")
+	public ResponseEntity<?> readReply(@PathVariable Long commentId) {
 		return new ResponseEntity(replyService.read(commentId), HttpStatus.OK);
 	}
 
-	@PutMapping("/{commentId}/{replyId}")
+	@PutMapping("/{commentId}/replies/{replyId}")
 	public ResponseEntity<?> updateReply(@PathVariable Long commentId, @PathVariable Long replyId, @RequestBody ReplyDto.Request request) {
 		String email = getUserEmail();
 		replyService.update(commentId, replyId, request, email);
-		return ResponseEntity.ok().build();
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@DeleteMapping("/{commentId}/{replyId}")
+	@DeleteMapping("/{commentId}/replies/{replyId}")
 	public ResponseEntity<?> deleteReply(@PathVariable Long commentId, @PathVariable Long replyId) {
 		String email = getUserEmail();
 		replyService.delete(commentId, replyId, email);
-		return ResponseEntity.ok().build();
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	private String getUserEmail() {

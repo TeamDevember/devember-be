@@ -1,10 +1,11 @@
 package com.gridians.gridians.domain.user.controller;
 
 import com.gridians.gridians.domain.user.dto.GithubDto;
-import com.gridians.gridians.domain.card.service.ProfileCardService;
+import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.parser.ParseException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,32 +13,25 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-@RequestMapping("/cards/github")
+@RequestMapping("/user/github")
 @RestController
 @RequiredArgsConstructor
 public class GithubController {
 
-	private final ProfileCardService profileCardService;
-
-	@PostMapping
-	public ResponseEntity<?> registerGithub(@RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
-		String email = getUserEmail();
-		profileCardService.saveGithub(email, request.getGithubId());
-		return ResponseEntity.ok().build();
-	}
+	private final UserService userService;
 
 	@PutMapping
-	public ResponseEntity<?> updateGithub(@RequestBody GithubDto.Request request) throws IOException, ParseException, java.text.ParseException {
+	public ResponseEntity<?> updateGithub(@RequestBody GithubDto.UpdateRequest request){
 		String email = getUserEmail();
-		profileCardService.saveGithub(email, request.getGithubId());
-		return ResponseEntity.ok().build();
+		userService.updateGithub(email, request.getGithubId());
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping
-	public ResponseEntity<?> deleteGithub() throws IOException, ParseException, java.text.ParseException {
+	public ResponseEntity<?> deleteGithub() {
 		String email = getUserEmail();
-		profileCardService.deleteGithub(email);
-		return ResponseEntity.ok().build();
+		userService.deleteGithub(email);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	private String getUserEmail() {

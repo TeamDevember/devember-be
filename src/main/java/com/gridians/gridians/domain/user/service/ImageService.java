@@ -1,6 +1,5 @@
 package com.gridians.gridians.domain.user.service;
 
-import com.gridians.gridians.domain.card.repository.SkillRepository;
 import com.gridians.gridians.domain.user.entity.ProfileImage;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.NotFoundImageException;
@@ -11,12 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,24 +32,33 @@ public class ImageService {
 
 	private final UserRepository userRepository;
 
-	@Value("${custom.path.profileImages}")
-	private String profileImagePath;
+	@Value("${custom.path.imageBase}")
+	private String imageBase;
 
-	@Value("${custom.path.skillImages}")
-	private String skillImagePath;
+	@Value("${custom.path.profile}")
+	private String profilePath;
+
+	@Value("${custom.path.skill}")
+	private String skillPath;
+
+	@Value("${custom.format.profile}")
+	private String profileFormat;
+
+	@Value("${custom.format.skill}")
+	private String skillFormat;
 
 	@Value("${custom.path.defaultImage}")
 	private String defaultImage;
 
 	public void updateProfileImage(String userEmail, String base64Image) {
 
-		User user = userRepository.findByEmail(userEmail)
+		User findUser = userRepository.findByEmail(userEmail)
 				.orElseThrow(() -> new EntityNotFoundException(userEmail + " not found"));
 
-		if(user.getProfileImage() != null){
+		if(findUser.getProfileImage() != null){
 			try {
-				Files.delete(Paths.get(user.getProfileImage().getPath()));
-				profileImageRepository.delete(user.getProfileImage());
+				Files.delete(Paths.get(findUser.getProfileImage().getPath()));
+				profileImageRepository.delete(findUser.getProfileImage());
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -60,8 +66,8 @@ public class ImageService {
 
 		//data:image/jpeg;base64,
 		String extension = "";
-		String imageType = "image/";
-		extension = base64Image.substring(base64Image.indexOf(imageType) + imageType.length(), base64Image.indexOf(";base64"));
+		String type = "image/";
+		extension = base64Image.substring(base64Image.indexOf(type) + type.length(), base64Image.indexOf(";base64"));
 
 		if (base64Image.contains(",")) {
 			base64Image = base64Image.split(",")[1];
@@ -72,7 +78,7 @@ public class ImageService {
 		}
 
 		// 날짜에 맞는 폴더 주소
-		Path folder = Paths.get(profileImagePath);
+		Path folder = Paths.get(imageBase, profilePath);
 
 		// 위의 폴더 주소가 이미 존재하는지 여부 후에 없으면 폴더 생성
 		if (!Files.isDirectory(folder)) {
@@ -87,14 +93,14 @@ public class ImageService {
 		byte[] decodeBytes = Base64.getDecoder().decode(base64Image);
 
 		// 파일 주소 생성
-		Path filePath = Paths.get(profileImagePath + "/" + user.getId() + "." + extension);
+		Path filePath = Paths.get(imageBase, profilePath,findUser.getId() + "." + extension);
 
 		try {
 			// 파일 생성
 			Files.write(filePath, decodeBytes);
-			ProfileImage savedImage = profileImageRepository.save(ProfileImage.builder().path(filePath.toString()).user(user).build());
-			user.setProfileImage(savedImage);
-			userRepository.save(user);
+			ProfileImage savedImage = profileImageRepository.save(ProfileImage.builder().path(filePath.toString()).user(findUser).build());
+			findUser.setProfileImage(savedImage);
+			userRepository.save(findUser);
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -104,17 +110,15 @@ public class ImageService {
 
 
 	public byte[] getProfileImage(String email) {
-		User user = userRepository.findByEmail(email)
+		User findUser = userRepository.findByEmail(email)
 				.orElseThrow(() -> new EntityNotFoundException(email + " not found"));
 
-		if(user.getProfileImage() == null){
+		if(findUser.getProfileImage() == null){
 			return getProfileBaseImage();
 		}
 
-		String filePath = user.getProfileImage().getPath();
+		String filePath = findUser.getProfileImage().getPath();
 		String extension = filePath.substring(filePath.indexOf(".") + 1);
-
-
 
 		Path path = Paths.get(filePath);
 
@@ -122,29 +126,26 @@ public class ImageService {
 			Long size = null;
 			try {
 				size = Files.size(path);
-				String sizeString = Long.toString(size) + "bytes";
-				log.info("file size =" + sizeString);
+				log.info("file size =" + size + "bytes");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
 
-		return getProfileImageByteArray(filePath, extension);
+		return getProfileImageByteArray(path, extension);
 	}
 
 	public byte[] getSkillImage(String skill) {
-
-		String filePath = skillImagePath + "/" + skill.toLowerCase() + ".png";
-		return getSkillImageByteArray(filePath);
+		Path path = Path.of(imageBase, skillPath, skill.toLowerCase() + "." + skillFormat);
+		return getSkillImageByteArray(path);
 	}
 
-	private byte[] getProfileImageByteArray(String path, String extension) {
-		File file = new File(path);
+	private byte[] getProfileImageByteArray(Path path, String extension) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		InputStream stream = null;
 		log.info("file path = {}", path);
 		try {
-			stream = new FileInputStream(file);
+			stream = new FileInputStream(path.toFile());
 			BufferedImage image = ImageIO.read(stream);
 			ImageIO.write(image, extension, bos);
 
@@ -162,13 +163,13 @@ public class ImageService {
 		}
 	}
 
-	private byte[] getSkillImageByteArray(String path) {
-		File file = new File(path);
+	private byte[] getSkillImageByteArray(Path path) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		log.info("file path = {}", path);
 		try {
-			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "png", bos);
+			System.out.println(path);
+			BufferedImage image = ImageIO.read(path.toFile());
+			ImageIO.write(image, skillFormat, bos);
 			return bos.toByteArray();
 		} catch (IOException e) {
 			return getSkillBaseImage();
@@ -176,46 +177,46 @@ public class ImageService {
 	}
 
 	private byte[] getProfileBaseImage() {
-		File file = new File(profileImagePath + "/" + defaultImage);
+		Path path = Path.of(imageBase, profilePath, defaultImage);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
 		try {
-			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "png", bos);
+			BufferedImage image = ImageIO.read(path.toFile());
+			ImageIO.write(image, profileFormat, bos);
 			return bos.toByteArray();
 		} catch (IOException e) {
-			throw new NotFoundImageException("image not found");
+			throw new NotFoundImageException("Image not found");
 		}
 	}
 
 	private byte[] getSkillBaseImage() {
-		File file = new File(skillImagePath + "/" + defaultImage);
+		Path path = Path.of(imageBase, skillPath, defaultImage);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
 		try {
-			BufferedImage image = ImageIO.read(file);
-			ImageIO.write(image, "png", bos);
+			BufferedImage image = ImageIO.read(path.toFile());
+			ImageIO.write(image, skillFormat, bos);
 			return bos.toByteArray();
 		} catch (IOException e) {
-			throw new NotFoundImageException("image not found");
+			throw new NotFoundImageException("Image not found");
 		}
 	}
 
 	public void deleteProfileImage(String email) {
 
-		User user = userRepository.findByEmail(email)
+		User findUser = userRepository.findByEmail(email)
 				.orElseThrow(() -> new EntityNotFoundException(email + " not found"));
 
-		if(user.getProfileImage() == null){
+		if(findUser.getProfileImage() == null){
 			throw new NotFoundImageException("Image not found");
 		}
 
-		Path path = Paths.get(user.getProfileImage().getPath());
+		Path path = Paths.get(findUser.getProfileImage().getPath());
 
 		if (Files.exists(path)) {
 			try {
 				Files.delete(path);
-				profileImageRepository.delete(user.getProfileImage());
+				profileImageRepository.delete(findUser.getProfileImage());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

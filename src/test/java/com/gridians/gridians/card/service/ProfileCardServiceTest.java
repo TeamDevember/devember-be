@@ -1,19 +1,9 @@
 package com.gridians.gridians.card.service;
 
-import com.gridians.gridians.domain.card.entity.Sns;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
-import com.gridians.gridians.domain.user.entity.User;
-import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
-import com.gridians.gridians.domain.user.type.UserErrorCode;
-
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @SpringBootTest
 class ProfileCardServiceTest {

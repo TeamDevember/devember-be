@@ -1,15 +1,11 @@
 package com.gridians.gridians.domain.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 public class FavoriteDto {
 
-    @Data
-    @Builder
+    @Getter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Request {

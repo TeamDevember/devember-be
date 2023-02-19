@@ -29,12 +29,12 @@ public class Reply extends BaseEntity implements Serializable {
 	@JoinColumn(name = "comment_id")
 	private Comment comment;
 
-	private String content;
+	private String contents;
 
 
 	public static Reply from(ReplyDto.Request reply){
 		return Reply.builder()
-				.content(reply.getContents())
+				.contents(reply.getContents())
 				.build();
 	}
 

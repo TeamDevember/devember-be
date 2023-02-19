@@ -24,18 +24,20 @@ public class ReplyDto {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class Response  {
 
-		private String contents;
-		private String nickname;
-		private LocalDate createdAt;
 		private Long replyId;
 		private Long commentId;
+
+		private String contents;
+		private String nickname;
 		private String imageSrc;
+
+		private LocalDate createdAt;
 
 		public static ReplyDto.Response from(Reply reply){
 
 			return Response.builder()
 					.createdAt(reply.getCreatedAt().toLocalDate())
-					.contents(reply.getContent())
+					.contents(reply.getContents())
 					.nickname(reply.getUser().getNickname())
 					.replyId(reply.getId())
 					.commentId(reply.getComment().getId())

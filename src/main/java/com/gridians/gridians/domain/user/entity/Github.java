@@ -21,26 +21,23 @@ public class Github extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private Long githubNumberId;
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "user_id")
+	private User user;
 
 	private String name;
 	private String login;
-
 	private String profileImageUrl;
-
 	private String url;
-
-	@OneToOne(mappedBy = "github", fetch = FetchType.LAZY)
-	private User user;
-
-	private LocalDate recentCommitAt;
 	private String recentCommitMessage;
+	private String location;
+	private String company;
 
+	private Long githubNumberId;
 	private Long followers;
 	private Long following;
 
-	private String location;
-	private String company;
+	private LocalDate recentCommitAt;
 
 	public static Github from(GithubDto github) throws ParseException {
 

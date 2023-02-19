@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,49 +35,40 @@ public class CommentService {
 	@Value("${server.host.api}")
 	private String server;
 
-	@Value("${custom.path.profileApi}")
-	private String profileApi;
+	@Value("${custom.path.profile}")
+	private String profilePath;
 
-	@Value("${custom.path.skillApi}")
-	private String skillApi;
-
-
-	/**
-	 * 댓글 -> 부모의 여부에 따라 댓글, 대댓글로 나뉘어짐
-	 * 여부는 DTO에 값이 담겼는지에 따라
-	 * request는 각각 만들까? -> 놉
-	 */
+	private String separator = "/";
 
 	@Transactional
-	public CommentDto.Response write(Long id, CommentDto.Request request, String email) throws IOException {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-		ProfileCard pc = profileCardRepository.findById(id)
-				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
+	public CommentDto.Response write(Long profileCardId, CommentDto.Request request, String email) {
+		User findUser = verifyUserByEmail(email);
+		ProfileCard findProfileCard = verifyProfileCardById(profileCardId);
 
 		Comment comment = Comment.from(request);
-		comment.setUser(user);
+		comment.setUser(findUser);
 		Comment savedComment = commentRepository.save(comment);
-		pc.addComment(savedComment);
-		profileCardRepository.save(pc);
+		findProfileCard.addComment(savedComment);
+		profileCardRepository.save(findProfileCard);
 
 		CommentDto.Response response = CommentDto.Response.from(savedComment);
-		response.setProfileImage(server + "/profile-image/" + comment.getUser().getEmail());
+		response.setProfileImage(server + separator + profilePath + separator + comment.getUser().getEmail());
 		return response;
 	}
 
-	public List<CommentDto.Response> read(Long profileCardId) throws IOException {
-		ProfileCard pc = profileCardRepository.findById(profileCardId).orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
-		List<Comment> commentList = commentRepository.findAllByProfileCardOrderByCreatedAtDesc(pc);
+	public List<CommentDto.Response> read(Long profileCardId) {
+		ProfileCard findProfileCard = verifyProfileCardById(profileCardId);
+
+		List<Comment> findCommentList = commentRepository.findAllByProfileCardOrderByCreatedAtDesc(findProfileCard);
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
-		for (Comment comment : commentList) {
+		for (Comment comment : findCommentList) {
 			CommentDto.Response commentResponse = CommentDto.Response.from(comment);
-			commentResponse.setProfileImage(server + "/" + profileApi + "/" + comment.getUser().getEmail());
+			commentResponse.setProfileImage(server + separator + profilePath + separator + comment.getUser().getEmail());
 			List<Reply> replyList = comment.getReplyList();
 			List<ReplyDto.Response> replyResponseList = new ArrayList<>();
 			for (Reply reply : replyList) {
 				ReplyDto.Response replyResponse = ReplyDto.Response.from(reply);
-				replyResponse.setImageSrc(server + "/" + profileApi + "/" + comment.getUser().getEmail());
+				replyResponse.setImageSrc(server + separator + profilePath + separator + comment.getUser().getEmail());
 				replyResponseList.add(replyResponse);
 			}
 			commentResponse.setReplyList(replyResponseList);
@@ -90,33 +80,43 @@ public class CommentService {
 
 	@Transactional
 	public void update(Long profileCardId, Long commentId, CommentDto.Request request, String email) {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-		profileCardRepository.findById(profileCardId)
-				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
-
-		Comment findComment = commentRepository.findById(commentId).orElseThrow(() -> new CommentException(ErrorCode.COMMENT_NOT_FOUND));
+		User user = verifyUserByEmail(email);
+		ProfileCard findProfileCard = verifyProfileCardById(profileCardId);
+		Comment findComment = verifyCommentById(commentId);
 
 		if (user != findComment.getUser()) {
 			throw new CommentException(ErrorCode.MODIFY_ONLY_WRITER);
 
 		}
-		findComment.setContent(request.getContents());
+		findComment.setContents(request.getContents());
 	}
 
 	@Transactional
-	public void delete(Long id, Long commentId, String email) {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-		profileCardRepository.findById(id)
-				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
+	public void delete(Long profileCardId, Long commentId, String email) {
+		User findUser = verifyUserByEmail(email);
+		ProfileCard findProfileCard = verifyProfileCardById(profileCardId);
 
-		Comment findComment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+		Comment findComment = verifyCommentById(commentId);
 
-		if (user != findComment.getUser()) {
+		if (findUser != findComment.getUser()) {
 			throw new CommentException(ErrorCode.DELETE_ONLY_WRITER);
 		}
 
 		commentRepository.delete(findComment);
+	}
+
+	public User verifyUserByEmail(String email) {
+		return userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	public ProfileCard verifyProfileCardById(Long profileCardId) {
+		return profileCardRepository.findById(profileCardId)
+				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
+	}
+
+	public Comment verifyCommentById(Long commentId) {
+		return commentRepository.findById(commentId)
+				.orElseThrow(() -> new CommentException(ErrorCode.COMMENT_NOT_FOUND));
 	}
 }

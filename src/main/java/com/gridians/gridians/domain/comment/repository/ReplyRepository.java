@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
-
-//	Page<Reply> findAllByComment_IdOrderByCreatedAtDesc(Long commentId, Pageable pageable);
-
 	List<Reply> findAllByComment_IdOrderByCreatedAtDesc(Long commentId);
 	Optional<Reply> findByComment_IdAndId(Long CommentId, Long replyId);
 }

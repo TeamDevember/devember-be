@@ -5,6 +5,6 @@ import com.gridians.gridians.global.error.exception.ErrorCode;
 
 public class PasswordNotMatchException extends BusinessException {
     public PasswordNotMatchException(String message){
-        super(message, ErrorCode.PASSWORD_NOT_MATCH);
+        super(message, ErrorCode.WRONG_USER_PASSWORD);
     }
 }

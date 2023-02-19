@@ -4,8 +4,6 @@ package com.gridians.gridians.domain.user.dto;
 import com.gridians.gridians.domain.user.entity.User;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Getter
 public class UserDto {
 
@@ -13,7 +11,7 @@ public class UserDto {
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class Request {
+	public static class UpdateRequest {
 		private String nickname;
 		private String password;
 		private String updatePassword;
@@ -21,9 +19,7 @@ public class UserDto {
 	}
 
 	@Getter
-	@Setter
-	@NoArgsConstructor
-	public static class deleteRequest {
+	public static class DeleteRequest {
 		private String password;
 	}
 
@@ -32,13 +28,13 @@ public class UserDto {
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class Response {
+	public static class DefaultResponse {
 		private String email;
 		private String nickname;
 		private String profileImage;
 
-		public static Response from(User user) {
-			return Response.builder()
+		public static DefaultResponse from(User user) {
+			return DefaultResponse.builder()
 					.nickname(user.getNickname())
 					.email(user.getEmail())
 					.build();

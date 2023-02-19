@@ -25,14 +25,14 @@ import java.util.List;
 @SpringBootApplication
 public class GridiansApplication {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final ProfileCardRepository profileCardRepository;
-
-    @Autowired
-    UserController userController;
-    @Autowired
-    ProfileCardController profileCardController;
+//    private final UserRepository userRepository;
+//    private final PasswordEncoder passwordEncoder;
+//    private final ProfileCardRepository profileCardRepository;
+//
+//    @Autowired
+//    UserController userController;
+//    @Autowired
+//    ProfileCardController profileCardController;
 
     public static void main(String[] args) {
         SpringApplication.run(GridiansApplication.class, args);

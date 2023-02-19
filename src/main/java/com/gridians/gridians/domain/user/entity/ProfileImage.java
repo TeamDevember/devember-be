@@ -1,6 +1,5 @@
 package com.gridians.gridians.domain.user.entity;
 
-import com.gridians.gridians.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,6 +23,5 @@ public class ProfileImage {
 	private User user;
 
 	private String path;
-
 
 }

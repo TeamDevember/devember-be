@@ -23,30 +23,25 @@ public class LoginDto {
     @AllArgsConstructor
     public static class Response {
         private String token;
-//		private String id;
         private String accessToken;
         private String refreshToken;
 		private String nickname;
-//        private String githubId;
 
         public static Response from(String accessToken, String refreshToken, String nickname) {
             return Response.builder()
-//					.id(id)
 		            .nickname(nickname)
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();
         }
-
-		public static Response socialFrom(String token) {
-			return Response.builder()
-					.token(token)
-					.build();
-		}
+//		public static Response socialFrom(String token) {
+//			return Response.builder()
+//					.token(token)
+//					.build();
+//		}
 	}
 
 	@Getter
-	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class SocialRequest {

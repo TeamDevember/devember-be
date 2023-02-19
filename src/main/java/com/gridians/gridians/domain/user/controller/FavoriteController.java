@@ -32,7 +32,7 @@ public class FavoriteController {
 			@RequestBody FavoriteDto.Request favoriteDto
 	) {
 		String email = getUserEmail();
-		return ResponseEntity.ok().body(userService.addFavorite(email, favoriteDto.getProfileCardId()));
+		return new ResponseEntity(userService.addFavorite(email, favoriteDto.getProfileCardId()), HttpStatus.OK);
 	}
 
 	@Secured("ROLE_USER")
@@ -43,7 +43,7 @@ public class FavoriteController {
 		String userEmail = getUserEmail();
 
 		userService.deleteFavorite(userEmail, favoriteDto.getProfileCardId());
-		return ResponseEntity.ok().build();
+		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@Secured("ROLE_USER")

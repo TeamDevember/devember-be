@@ -1,5 +1,7 @@
 package com.gridians.gridians.domain.comment.service;
 
+import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.comment.dto.ReplyDto;
 import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.comment.entity.Reply;
@@ -32,34 +34,32 @@ public class ReplyService {
 	@Value("${server.host.api}")
 	private String serverApi;
 
+	@Value("${custom.path.profile}")
+	private String profilePath;
+
+	private String separator = "/";
 
 	@Transactional
 	public void write(Long commentId, ReplyDto.Request request, String email) {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-		Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentException(ErrorCode.COMMENT_NOT_FOUND));
+		User findUser = verifyUserByEmail(email);
+		Comment findComment = commentRepository.findById(commentId)
+				.orElseThrow(() -> new CommentException(ErrorCode.COMMENT_NOT_FOUND));
 
 		Reply reply = Reply.from(request);
-		reply.setUser(user);
-		reply.setComment(comment);
+		reply.setUser(findUser);
+		reply.setComment(findComment);
 		Reply savedReply = replyRepository.save(reply);
 
-		comment.addReply(savedReply);
+		findComment.addReply(savedReply);
 	}
 
-//	public List<ReplyDto.Response> read(Long commentId, int page, int size) {
+	public List<ReplyDto.Response> read(Long commentId) {
 
-	public List<ReplyDto.Response> read(Long commentId) throws IOException {
-
-//		대댓글 페이지네이션
-//		PageRequest pageRequest = PageRequest.of(page, size);
-//		List<Reply> findReplyList = replyRepository.findAllByComment_IdOrderByCreatedAtDesc(commentId, pageRequest);
 		List<Reply> findReplyList = replyRepository.findAllByComment_IdOrderByCreatedAtDesc(commentId);
 		List<ReplyDto.Response> replyList = new ArrayList<>();
 		for (Reply reply : findReplyList) {
 			ReplyDto.Response response = ReplyDto.Response.from(reply);
-			response.setImageSrc(serverApi + "/profile-image/" + reply.getUser().getEmail());
+			response.setImageSrc(serverApi + separator + profilePath + separator + reply.getUser().getEmail());
 			replyList.add(response);
 		}
 
@@ -68,29 +68,34 @@ public class ReplyService {
 
 	@Transactional
 	public void update(Long commentId, Long replyId, ReplyDto.Request request, String email) {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		User findUser = verifyUserByEmail(email);
+		Reply findReply = verifyReplyByCommentIdAndId(commentId, replyId);
 
-		Reply findReply = replyRepository.findByComment_IdAndId(commentId, replyId)
-				.orElseThrow(() -> new CommentException(ErrorCode.REPLY_NOT_FOUND));
-
-		if (user != findReply.getUser()) {
+		if (findUser != findReply.getUser()) {
 			throw new CommentException(ErrorCode.MODIFY_ONLY_WRITER);
 		}
-		findReply.setContent(request.getContents());
+		findReply.setContents(request.getContents());
 	}
 
 	@Transactional
 	public void delete(Long commentId, Long replyId, String email) {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		User findUser = verifyUserByEmail(email);
+		Reply findReply = verifyReplyByCommentIdAndId(commentId, replyId);
 
-		Reply findReply = replyRepository.findByComment_IdAndId(commentId, replyId)
-				.orElseThrow(() -> new CommentException(ErrorCode.REPLY_NOT_FOUND));
-
-		if (user != findReply.getUser()) {
+		if (findUser != findReply.getUser()) {
 			throw new CommentException(ErrorCode.DELETE_ONLY_WRITER);
 		}
 		replyRepository.delete(findReply);
 	}
+
+	public User verifyUserByEmail(String email) {
+		return userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	public Reply verifyReplyByCommentIdAndId(Long commentId, Long replyId) {
+		return replyRepository.findByComment_IdAndId(commentId, replyId)
+				.orElseThrow(() -> new CommentException(ErrorCode.REPLY_NOT_FOUND));
+	}
+
 }

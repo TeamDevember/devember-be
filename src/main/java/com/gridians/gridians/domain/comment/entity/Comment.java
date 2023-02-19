@@ -32,7 +32,7 @@ public class Comment extends BaseEntity implements Serializable {
     @JoinColumn(name = "profile_card_id")
     private ProfileCard profileCard;
 
-    private String content;
+    private String contents;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
     List<Reply> replyList = new ArrayList<>();
@@ -43,10 +43,9 @@ public class Comment extends BaseEntity implements Serializable {
         replyList.add(reply);
     }
 
-
     public static Comment from(CommentDto.Request createRequest){
         return Comment.builder()
-                .content(createRequest.getContents())
+                .contents(createRequest.getContents())
                 .build();
     }
 }

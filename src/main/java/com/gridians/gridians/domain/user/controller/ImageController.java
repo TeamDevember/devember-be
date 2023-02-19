@@ -5,32 +5,29 @@ import com.gridians.gridians.domain.user.service.ImageService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class ImageController {
 
     private final ImageService imageService;
 
-    @ResponseBody
-    @GetMapping(value = "/profile-image/{email}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
-    public byte[] getProfileImage(@PathVariable String email) {
-        return imageService.getProfileImage(email);
+    @GetMapping(value = "/profile-images/{email}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
+    public ResponseEntity<byte[]> getProfileImage(@PathVariable String email) {
+        return new ResponseEntity<>(imageService.getProfileImage(email),HttpStatus.OK);
     }
 
-    @ResponseBody
-    @GetMapping(value = "/skill-image/{skill}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
-    public byte[] getProfileCardSkillImage(@PathVariable String skill) {
-
-        return imageService.getSkillImage(skill);
+    @GetMapping(value = "/skill-images/{skill}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
+    public ResponseEntity<byte[]> getProfileCardSkillImage(@PathVariable String skill) {
+        return new ResponseEntity<>(imageService.getSkillImage(skill), HttpStatus.OK);
     }
 
     @Secured("ROLE_USER")
@@ -39,8 +36,7 @@ public class ImageController {
 
         String userEmail = getUserEmail();
         imageService.updateProfileImage(userEmail, imageDto.getBase64Image());
-
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Secured("ROLE_USER")
@@ -49,8 +45,7 @@ public class ImageController {
 
         String userEmail = getUserEmail();
         imageService.deleteProfileImage(userEmail);
-
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private String getUserEmail() {
