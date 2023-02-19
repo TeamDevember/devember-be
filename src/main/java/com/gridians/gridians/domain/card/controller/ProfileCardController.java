@@ -25,7 +25,7 @@ public class ProfileCardController {
 
 	@GetMapping("/{profileCardId}")
 	public ResponseEntity<?> read(@PathVariable Long profileCardId) {
-		return new ResponseEntity<>(profileCardService.readProfileCard(id), HttpStatus.OK);
+		return new ResponseEntity<>(profileCardService.readProfileCard(profileCardId), HttpStatus.OK);
 	}
 
 	@GetMapping
