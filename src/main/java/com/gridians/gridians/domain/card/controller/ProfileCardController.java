@@ -23,6 +23,12 @@ public class ProfileCardController {
 
 	private final ProfileCardService profileCardService;
 
+	@GetMapping("/my-card")
+	public ResponseEntity<?> getMyCard(){
+		String email = getUserEmail();
+		return new ResponseEntity<>(profileCardService.getMyCard(email), HttpStatus.OK);
+	}
+
 	@GetMapping("/{profileCardId}")
 	public ResponseEntity<?> read(@PathVariable Long profileCardId) {
 		return new ResponseEntity<>(profileCardService.readProfileCard(profileCardId), HttpStatus.OK);
@@ -46,14 +52,14 @@ public class ProfileCardController {
 		String email = getUserEmail();
 		ProfileCard pc = profileCardService.createProfileCard(email);
 		log.info("[" + pc.getUser().getNickname() + "] Create Profile Card");
-		return ResponseEntity.ok().build();
+		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@PutMapping("/{profileCardId}")
 	public ResponseEntity<?> update(@PathVariable Long profileCardId, @RequestBody @Valid ProfileCardDto.Request request) throws IOException {
 		String email = getUserEmail();
 		profileCardService.input(email, profileCardId, request);
-		return ResponseEntity.ok().build();
+		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{profileCardId}")
@@ -69,9 +75,9 @@ public class ProfileCardController {
 		JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
 		return userDetails.getEmail();
 	}
-
-	@GetMapping("/dummy")
-	public void dummy(){
-		profileCardService.dummy();
-	}
+//
+//	@GetMapping("/dummy")
+//	public void dummy(){
+//		profileCardService.dummy();
+//	}
 }
