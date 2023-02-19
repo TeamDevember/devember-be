@@ -23,19 +23,19 @@ public class ProfileCardController {
 
 	private final ProfileCardService profileCardService;
 
-	@GetMapping("/{id}")
-	public ResponseEntity<?> read(@PathVariable Long id) throws IOException {
+	@GetMapping("/{profileCardId}")
+	public ResponseEntity<?> read(@PathVariable Long id) {
 		return new ResponseEntity<>(profileCardService.readProfileCard(id), HttpStatus.OK);
 	}
 
 	@GetMapping
-	public ResponseEntity<?> cardList(int page, int size) throws IOException {
+	public ResponseEntity<?> cardList(int page, int size) {
 		log.info("CardList Read");
 		return new ResponseEntity<>(profileCardService.allProfileCardList(page, size), HttpStatus.OK);
 	}
 
 	@GetMapping("/favorites")
-	public ResponseEntity<?> favoriteCardList(int page, int size) throws IOException {
+	public ResponseEntity<?> favoriteCardList(int page, int size) {
 		String email = getUserEmail();
 		log.info("Favorite CardList Read");
 		return new ResponseEntity<>(profileCardService.favoriteCardList(email, page, size), HttpStatus.OK);
@@ -49,17 +49,17 @@ public class ProfileCardController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PutMapping("/{id}")
-	public ResponseEntity<?> update(@PathVariable Long id, @RequestBody @Valid ProfileCardDto.Request request) throws IOException {
+	@PutMapping("/{profileCardId}")
+	public ResponseEntity<?> update(@PathVariable Long profileCardId, @RequestBody @Valid ProfileCardDto.Request request) throws IOException {
 		String email = getUserEmail();
-		profileCardService.input(email, id, request);
+		profileCardService.input(email, profileCardId, request);
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> delete(@PathVariable Long id) {
+	@DeleteMapping("/{profileCardId}")
+	public ResponseEntity<?> delete(@PathVariable Long profileCardId) {
 		String email = getUserEmail();
-		ProfileCard pc = profileCardService.deleteProfileCard(email, id);
+		ProfileCard pc = profileCardService.deleteProfileCard(email, profileCardId);
 		log.info("[" + pc.getUser().getNickname() + "] Delete Profile Card");
 		return ResponseEntity.ok().build();
 	}
