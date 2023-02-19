@@ -46,9 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -416,4 +414,15 @@ public class UserService {
 		return userInfo;
 	}
 
+	@Transactional
+	public void dummy() {
+		for (int i = 0; i < 100; i++) {
+			User user = User.builder().userStatus(UserStatus.ACTIVE).role(Role.USER).build();
+			user.setEmail("test" + i + "@test.com");
+			user.setNickname("test" + i);
+			user.setPassword(passwordEncoder.encode("test" + i));
+			userRepository.save(user);
+		}
+
+	}
 }

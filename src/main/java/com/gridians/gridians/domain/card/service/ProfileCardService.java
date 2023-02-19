@@ -9,11 +9,13 @@ import com.gridians.gridians.domain.comment.entity.Comment;
 import com.gridians.gridians.domain.comment.repository.CommentRepository;
 import com.gridians.gridians.domain.user.entity.Favorite;
 import com.gridians.gridians.domain.user.entity.Github;
+import com.gridians.gridians.domain.user.entity.Role;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.GithubRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
+import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -208,4 +210,17 @@ public class ProfileCardService {
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 	}
 
+	@Transactional
+	public void dummy() {
+		List<User> all = userRepository.findAll();
+
+		for (int i = 2; i < 100; i++) {
+			ProfileCard pc = new ProfileCard();
+			User user = all.get(i);
+			user.setProfileCard(pc);
+			pc.setUser(all.get(i));
+			profileCardRepository.save(pc);
+		}
+
+	}
 }
