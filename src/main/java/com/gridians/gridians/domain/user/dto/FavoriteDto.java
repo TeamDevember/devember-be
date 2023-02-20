@@ -6,6 +6,7 @@ import lombok.*;
 public class FavoriteDto {
 
     @Getter
+    @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Request {

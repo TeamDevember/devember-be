@@ -62,10 +62,10 @@ public class ProfileCardController {
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
-	@DeleteMapping("/{profileCardId}")
-	public ResponseEntity<?> delete(@PathVariable Long profileCardId) {
+	@DeleteMapping
+	public ResponseEntity<?> delete() {
 		String email = getUserEmail();
-		ProfileCard pc = profileCardService.deleteProfileCard(email, profileCardId);
+		ProfileCard pc = profileCardService.deleteProfileCard(email);
 		log.info("[" + pc.getUser().getNickname() + "] Delete Profile Card");
 		return ResponseEntity.ok().build();
 	}
