@@ -91,7 +91,6 @@ public class ProfileCardService {
 		profileCardRepository.save(findProfileCard);
 	}
 
-	//카드 상세 정보
 	public ProfileCardDto.DetailResponse readProfileCard(Long profileCardId) {
 		ProfileCard findProfileCard = verifyProfileCardById(profileCardId);
 		List<Comment> findCommentList = commentRepository.findAllByProfileCardOrderByCreatedAtDesc(findProfileCard);
@@ -119,13 +118,12 @@ public class ProfileCardService {
 		return detailResponse;
 	}
 
-	public ProfileCardDto.DetailResponse getMyCard(String email){
+	public ProfileCardDto.DetailResponse getMyCard(String email) {
 		User user = verifyUserByEmail(email);
 		ProfileCard profileCard = verifyProfileCardById(user.getProfileCard().getId());
 		return readProfileCard(profileCard.getId());
 	}
 
-	//카드 리스트 조회
 	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) {
 
 		PageRequest pageRequest = PageRequest.of(page, size);
