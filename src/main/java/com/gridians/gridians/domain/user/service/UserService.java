@@ -140,7 +140,7 @@ public class UserService {
 
 		return UserDto.DefaultResponse.from(user);
 	}
-	
+
 	@Transactional
 	public void deleteUser(String userEmail, String password) {
 		User user = verifyUserByEmail(userEmail);
@@ -233,20 +233,25 @@ public class UserService {
 		User findFavoriteUser = userRepository.findByProfileCard_Id(findProfileCard.getId())
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
+		if(findUser == findFavoriteUser){
+			throw new UserException(ErrorCode.DO_NOT_ADD_YOURSELF);
+		}
+
 		Optional<Favorite> optionalFavorite = favoriteRepository.findByUserAndFavoriteUser(findUser, findFavoriteUser);
+
 		if (optionalFavorite.isPresent()) {
 			throw new DuplicateFavoriteUserException("Duplicated favorite user");
-		} else {
-
-			Favorite favorite = Favorite.builder()
-					.user(findUser)
-					.favoriteUser(findFavoriteUser)
-					.build();
-
-			Favorite savedFavorite = favoriteRepository.save(favorite);
-			findUser.addFavorite(savedFavorite);
-			userRepository.save(findUser);
 		}
+
+		Favorite favorite = Favorite.builder()
+				.user(findUser)
+				.favoriteUser(findFavoriteUser)
+				.build();
+
+		Favorite savedFavorite = favoriteRepository.save(favorite);
+		findUser.addFavorite(savedFavorite);
+		userRepository.save(findUser);
+
 		return getFavorites(findUser);
 	}
 
@@ -304,7 +309,7 @@ public class UserService {
 
 		return jwtUtils.getAuthenticationByEmail(findUser.getEmail());
 	}
-	
+
 	@Transactional
 	public void updateGithub(String email, String githubId){
 		User findUser = userRepository.findByEmail(email)
