@@ -48,6 +48,7 @@ public class ProfileCardDto {
 	public static class DetailResponse {
 
 		private String statusMessage;
+		private String introduction;
 		private String field;
 
 		private String skill;
@@ -92,6 +93,7 @@ public class ProfileCardDto {
 
 			return DetailResponse.builder()
 					.commentList(commentDtoList)
+					.introduction(pc.getIntroduction())
 					.statusMessage(pc.getStatusMessage())
 					.field(pc.getField() == null? "" : pc.getField().getName())
 					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
