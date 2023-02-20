@@ -70,6 +70,7 @@ public class ProfileCardService {
 
 		ProfileCard pc = ProfileCard.from();
 		pc.setUser(findUser);
+
 		ProfileCard savedPc = profileCardRepository.save(pc);
 		findUser.setProfileCard(savedPc);
 		return savedPc;
@@ -116,6 +117,12 @@ public class ProfileCardService {
 				server + separator + skillPath + separator + findProfileCard.getSkill().getName().toLowerCase()
 		);
 		return detailResponse;
+	}
+
+	public ProfileCardDto.DetailResponse getMyCard(String email){
+		User user = verifyUserByEmail(email);
+		ProfileCard profileCard = verifyProfileCardById(user.getProfileCard().getId());
+		return readProfileCard(profileCard.getId());
 	}
 
 	//카드 리스트 조회
@@ -224,17 +231,4 @@ public class ProfileCardService {
 //
 //	}
 
-	public ProfileCardDto.SimpleResponse getMyCard(String email) {
-		User user = verifyUserByEmail(email);
-		if(user.getProfileCard() != null){
-			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(user.getProfileCard());
-			simpleResponse.setProfileImage(server + separator + profilePath + separator + user.getEmail());
-			simpleResponse.setSkillImage(user.getProfileCard().getSkill() == null ?
-					server + separator + skillPath + separator + defaultValue :
-					server + separator + skillPath + separator + user.getProfileCard().getSkill().getName().toLowerCase());
-			return simpleResponse;
-		} else {
-			throw new CardException(ErrorCode.CARD_NOT_FOUND);
-		}
-	}
 }

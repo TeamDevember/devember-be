@@ -99,7 +99,6 @@ public class UserService {
 				updateGithub(user.getEmail(), request.getGithubNumberId().toString());
 			}
 			mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
-
 			return savedUser;
 		}
 	}
@@ -291,7 +290,6 @@ public class UserService {
 		favoriteRepository.delete(findFavorite);
 		findUser.deleteFavorite(findFavorite);
 	}
-
 
 	@Transactional
 	public Authentication socialLogin(String token) throws Exception {
