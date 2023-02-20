@@ -47,8 +47,10 @@ public class GithubService {
     private String githubClientId;
     @Value("${github.client-secret}")
     private String gitHubClientSecret;
+
     @Value("${custom.path.github}")
     private String githubApi;
+
     private String separator = "/";
 
 
@@ -87,20 +89,17 @@ public class GithubService {
         return accessToken;
     }
 
-    public GithubDto parsing(String githubId) throws IOException, ParseException, java.text.ParseException {
+    public GithubDto parsing(String githubId) throws Exception {
         JSONParser parser = new JSONParser();
 
         URL mainUrl = new URL(githubApi + separator + githubId);
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(mainUrl.openStream(), StandardCharsets.UTF_8));
-        String result = br.readLine();
-        JSONObject o1 = (JSONObject) parser.parse(result);
+        String gitInfo = ApiUtils.request(mainUrl.toString(), "GET");
+        JSONObject gitInfoObject = (JSONObject) parser.parse(gitInfo);
 
         URL subUrl = new URL(githubApi + separator + githubId + "/events");
-        BufferedReader subBr = new BufferedReader(new InputStreamReader(subUrl.openStream(), StandardCharsets.UTF_8));
-        String subResult = subBr.readLine();
+        String gitEventInfo = ApiUtils.request(subUrl.toString(), "GET");
 
-        JSONArray jsonArray = (JSONArray) parser.parse(subResult);
+        JSONArray jsonArray = (JSONArray) parser.parse(gitEventInfo);
         String message = "";
         String date = "";
 
@@ -128,14 +127,14 @@ public class GithubService {
         LocalDate realDate = simpleDateFormat.parse(date).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
         return GithubDto.builder()
-                .name((String) o1.get("name"))
-                .login((String) o1.get("login"))
-                .githubId((Long) o1.get("id"))
-                .githubUrl((String) o1.get("url"))
-                .following((Long) o1.get("following"))
-                .followers((Long) o1.get("followers"))
-                .location((String) o1.get("location"))
-                .imageUrl((String) o1.get("avatar_url"))
+                .name((String) gitInfoObject.get("name"))
+                .login((String) gitInfoObject.get("login"))
+                .githubId((Long) gitInfoObject.get("id"))
+                .githubUrl((String) gitInfoObject.get("url"))
+                .following((Long) gitInfoObject.get("following"))
+                .followers((Long) gitInfoObject.get("followers"))
+                .location((String) gitInfoObject.get("location"))
+                .imageUrl((String) gitInfoObject.get("avatar_url"))
                 .recentCommitAt(realDate)
                 .recentCommitMessage(message)
                 .build();
@@ -160,6 +159,7 @@ public class GithubService {
         if(optionalGithub.isPresent()){
             githubRepository.delete(optionalGithub.get());
         }
+
         try {
             Github github = Github.from(parsing(githubId));
             github.setUser(findUser);

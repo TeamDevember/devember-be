@@ -105,7 +105,7 @@ public class UserService {
 		findUser.setRole(Role.USER);
 		findUser.setUserStatus(UserStatus.ACTIVE);
 
-		if(findUser.getGithub() != null) {
+		if(findUser.getGithubNumberId() != null) {
 			githubService.updateGithub(findUser.getEmail(), findUser.getGithubNumberId().toString());
 		}
 
