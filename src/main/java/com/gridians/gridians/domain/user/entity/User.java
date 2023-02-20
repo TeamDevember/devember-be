@@ -46,6 +46,7 @@ public class User extends BaseEntity {
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private ProfileCard profileCard;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
 	private Set<Favorite> favorites = new HashSet<>();
 

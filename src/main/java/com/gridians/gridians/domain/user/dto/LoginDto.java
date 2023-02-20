@@ -34,11 +34,6 @@ public class LoginDto {
                     .refreshToken(refreshToken)
                     .build();
         }
-//		public static Response socialFrom(String token) {
-//			return Response.builder()
-//					.token(token)
-//					.build();
-//		}
 	}
 
 	@Getter

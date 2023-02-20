@@ -210,20 +210,6 @@ public class ProfileCardService {
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 	}
 
-//	@Transactional
-//	public void dummy() {
-//		List<User> all = userRepository.findAll();
-//
-//		for (int i = 2; i < 100; i++) {
-//			ProfileCard pc = new ProfileCard();
-//			User user = all.get(i);
-//			user.setProfileCard(pc);
-//			pc.setUser(all.get(i));
-//			profileCardRepository.save(pc);
-//		}
-//
-//	}
-
 	public ProfileCardDto.SimpleResponse getMyCard(String email) {
 		User user = verifyUserByEmail(email);
 		if(user.getProfileCard() != null){
