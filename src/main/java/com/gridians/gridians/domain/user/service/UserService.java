@@ -236,17 +236,17 @@ public class UserService {
 		Optional<Favorite> optionalFavorite = favoriteRepository.findByUserAndFavoriteUser(findUser, findFavoriteUser);
 		if (optionalFavorite.isPresent()) {
 			throw new DuplicateFavoriteUserException("Duplicated favorite user");
+		} else {
+
+			Favorite favorite = Favorite.builder()
+					.user(findUser)
+					.favoriteUser(findFavoriteUser)
+					.build();
+
+			Favorite savedFavorite = favoriteRepository.save(favorite);
+			findUser.addFavorite(savedFavorite);
+			userRepository.save(findUser);
 		}
-
-		Favorite favorite = Favorite.builder()
-				.user(findUser)
-				.favoriteUser(findFavoriteUser)
-				.build();
-
-		Favorite savedFavorite = favoriteRepository.save(favorite);
-		findUser.addFavorite(savedFavorite);
-		userRepository.save(findUser);
-
 		return getFavorites(findUser);
 	}
 
