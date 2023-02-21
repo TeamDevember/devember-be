@@ -47,6 +47,9 @@ public class ProfileCardDto {
 	@AllArgsConstructor
 	public static class DetailResponse {
 
+		private Long profileCardId;
+
+
 		private String statusMessage;
 		private String introduction;
 		private String field;
@@ -74,6 +77,8 @@ public class ProfileCardDto {
 
 		private String location;
 		private String company;
+
+		private boolean hasGithub;
 
 		public static DetailResponse from(ProfileCard pc, List<CommentDto.Response> commentDtoList) {
 
@@ -119,6 +124,8 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
+					.hasGithub(pc.getUser().getGithub() != null ? true : false)
+					.profileCardId(pc.getId())
 					.commentList(commentDtoList)
 					.statusMessage(pc.getStatusMessage())
 					.field(pc.getField().getName())

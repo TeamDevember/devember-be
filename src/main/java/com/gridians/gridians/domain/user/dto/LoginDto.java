@@ -26,9 +26,11 @@ public class LoginDto {
         private String accessToken;
         private String refreshToken;
 		private String nickname;
+		private Long githubNumberId;
 
-        public static Response from(String accessToken, String refreshToken, String nickname) {
+        public static Response from(String accessToken, String refreshToken, String nickname, Long githubNumberId) {
             return Response.builder()
+		            .githubNumberId(githubNumberId)
 		            .nickname(nickname)
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)

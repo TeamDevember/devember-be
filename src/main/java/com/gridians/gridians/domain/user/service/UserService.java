@@ -108,9 +108,11 @@ public class UserService {
 
 		String email = userDetails.getEmail();
 		String nickname = userDetails.getUser().getNickname();
+
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 		tokenRepository.save(refreshToken, email, jwtUtils.getRefreshTokenExpireTime().intValue());
 
-		return LoginDto.Response.from(accessToken, refreshToken, nickname);
+		return LoginDto.Response.from(accessToken, refreshToken, nickname, user.getGithubNumberId());
 	}
 
 	@Transactional
