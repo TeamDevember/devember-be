@@ -75,9 +75,4 @@ public class ProfileCardController {
 		JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
 		return userDetails.getEmail();
 	}
-//
-//	@GetMapping("/dummy")
-//	public void dummy(){
-//		profileCardService.dummy();
-//	}
 }

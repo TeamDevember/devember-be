@@ -11,6 +11,7 @@ public class JoinDto {
 
 	@Getter
 	@Setter
+	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class Request {

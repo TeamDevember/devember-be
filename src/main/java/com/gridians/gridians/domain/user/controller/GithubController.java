@@ -25,14 +25,14 @@ public class GithubController {
 	public ResponseEntity<?> updateGithub(@RequestBody LoginDto.SocialRequest request) throws Exception {
 		Long githubId = Long.valueOf(githubService.githubRequest(request.getToken()));
 		String email = getUserEmail();
-		userService.updateGithub(email, githubId);
+		githubService.updateGithub(email, githubId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/user/github")
 	public ResponseEntity<?> deleteGithub() {
 		String email = getUserEmail();
-		userService.deleteGithub(email);
+		githubService.deleteGithub(email);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

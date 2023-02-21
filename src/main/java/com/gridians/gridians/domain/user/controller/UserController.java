@@ -33,11 +33,6 @@ public class UserController {
 	private final JwtUtils jwtUtils;
 	private final AuthenticationManager authenticationManager;
 
-	@GetMapping("/dummy")
-	public void dummyUser(){
-		userService.dummy();
-	}
-
 	@PostMapping("/auth/signup")
 	public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
 		User user = userService.signUp(request);
@@ -152,7 +147,7 @@ public class UserController {
 		String accessToken = userService.createAccessToken(authentication);
 		String refreshToken = userService.createRefreshToken(authentication);
 
-		CookieUtils.addHttpOnlyCookie(response, "re-token", refreshToken, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
+		CookieUtils.addHttpOnlyCookie(response, "re-token", refreshToken, jwtUtils.getRefreshTokenExpireTime().intValue());
 		return accessToken;
 	}
 

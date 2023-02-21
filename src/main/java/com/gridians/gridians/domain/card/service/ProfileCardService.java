@@ -119,7 +119,7 @@ public class ProfileCardService {
 		return detailResponse;
 	}
 
-	public ProfileCardDto.DetailResponse getMyCard(String email) {
+	public ProfileCardDto.DetailResponse getMyCard(String email){
 		User user = verifyUserByEmail(email);
 		ProfileCard profileCard = verifyProfileCardById(user.getProfileCard().getId());
 		return readProfileCard(profileCard.getId());
@@ -215,19 +215,4 @@ public class ProfileCardService {
 		return profileCardRepository.findById(profileCardId)
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 	}
-
-//	@Transactional
-//	public void dummy() {
-//		List<User> all = userRepository.findAll();
-//
-//		for (int i = 2; i < 100; i++) {
-//			ProfileCard pc = new ProfileCard();
-//			User user = all.get(i);
-//			user.setProfileCard(pc);
-//			pc.setUser(all.get(i));
-//			profileCardRepository.save(pc);
-//		}
-//
-//	}
-
 }

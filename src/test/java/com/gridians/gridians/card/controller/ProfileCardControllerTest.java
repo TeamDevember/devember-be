@@ -51,22 +51,22 @@ public class ProfileCardControllerTest {
 	ProfileCardRepository profileCardRepository;
 
 	//Bean으로 등록할 구현체를 넣어야 함
-	@Autowired
+	@MockBean
 	ProfileCardService profileCardService;
 
 	@MockBean
 	UserService userService;
 
-	@MockBean
+	@Autowired
 	PasswordEncoder passwordEncoder;
 
-	@MockBean
+	@Autowired
 	JwtUtils jwtUtils;
 
 	@MockBean
 	CustomUserDetailsService customUserDetailsService;
 
-	@MockBean
+	@Autowired
 	AuthenticationManager authenticationManager;
 
 
