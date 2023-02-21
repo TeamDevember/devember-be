@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -50,7 +51,6 @@ public class UserService {
 	private final JwtUtils jwtUtils;
 	private final TokenRepository tokenRepository;
 	private final GithubService githubService;
-	private final GithubRepository githubRepository;
 
 
 	@Value("${server.host.api}")
@@ -210,11 +210,11 @@ public class UserService {
 		if (findUser == findFavoriteUser) {
 			throw new UserException(ErrorCode.DO_NOT_ADD_YOURSELF);
 		}
-
-		Optional<Favorite> optionalFavorite = favoriteRepository.findByUserAndFavoriteUser(findUser, findFavoriteUser);
-
-		if (optionalFavorite.isPresent()) {
-			throw new DuplicateFavoriteUserException("Duplicated favorite user");
+		Set<Favorite> favorites = findUser.getFavorites();
+		for (Favorite favorite : favorites) {
+			if(favorite.getFavoriteUser() == findFavoriteUser){
+				throw new UserException(ErrorCode.DUPLICATED_FAVORITE_USER);
+			}
 		}
 
 		Favorite favorite = Favorite.builder()

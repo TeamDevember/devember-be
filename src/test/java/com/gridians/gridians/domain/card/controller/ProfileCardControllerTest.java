@@ -23,7 +23,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -44,7 +46,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ProfileCardController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class ProfileCardControllerTest {
 
 
@@ -104,8 +107,6 @@ public class ProfileCardControllerTest {
 		mockMvc.perform(post("/cards")
 				.with(csrf())
 				.header("Authorization", "Bearer " + accessToken));
-
-
 	}
 
 	@Test
@@ -123,9 +124,5 @@ public class ProfileCardControllerTest {
 				.andExpect(status().isOk())
 				.andReturn();
 
-
-
 	}
-
-
 }
