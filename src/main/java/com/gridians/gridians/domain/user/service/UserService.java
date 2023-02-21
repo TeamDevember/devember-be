@@ -81,10 +81,12 @@ public class UserService {
 			user.setRole(Role.ANONYMOUS);
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
 			User savedUser = userRepository.save(user);
+
 			if (request.getGithubNumberId() != null) {
 				user.setGithubNumberId(request.getGithubNumberId());
-				githubService.updateGithub(user.getEmail(), request.getGithubNumberId());
+				githubService.updateGithub(savedUser.getEmail(), savedUser.getGithubNumberId());
 			}
+
 			mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
 			return savedUser;
 		}
