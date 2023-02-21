@@ -33,18 +33,14 @@ public class ImageController {
     @Secured("ROLE_USER")
     @PutMapping("/user/profile")
     public ResponseEntity updateProfileImage(@RequestBody ImageDto imageDto) {
-
-        String userEmail = getUserEmail();
-        imageService.updateProfileImage(userEmail, imageDto.getBase64Image());
+        imageService.updateProfileImage(getUserEmail(), imageDto.getBase64Image());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Secured("ROLE_USER")
     @DeleteMapping("/user/profile")
     public ResponseEntity deleteProfileImage() {
-
-        String userEmail = getUserEmail();
-        imageService.deleteProfileImage(userEmail);
+        imageService.deleteProfileImage(getUserEmail());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
