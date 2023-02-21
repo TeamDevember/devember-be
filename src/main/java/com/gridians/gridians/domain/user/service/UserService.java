@@ -89,14 +89,14 @@ public class UserService {
 		if (userRepository.existsByNickname(user.getNickname())) {
 			throw new DuplicateNicknameException(user.getNickname());
 		} else {
+			user.setNickname(user.getNickname());
 			user.setUserStatus(UserStatus.UNACTIVE);
 			user.setRole(Role.ANONYMOUS);
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
-			user.setNickname(user.getNickname());
 			User savedUser = userRepository.save(user);
 			if (request.getGithubNumberId() != null) {
 				user.setGithubNumberId(request.getGithubNumberId());
-				updateGithub(user.getEmail(), request.getGithubNumberId().toString());
+				updateGithub(user.getEmail(), request.getGithubNumberId());
 			}
 			mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
 			return savedUser;
@@ -311,15 +311,15 @@ public class UserService {
 	}
 
 	@Transactional
-	public void updateGithub(String email, String githubId){
+	public void updateGithub(String email, Long githubNumberId){
 		User findUser = userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-		Optional<Github> optionalGithub = githubRepository.findByUser(findUser);
+		Optional<Github> optionalGithub = githubRepository.findByGithubNumberId(githubNumberId);
 		if(optionalGithub.isPresent()){
 			githubRepository.delete(optionalGithub.get());
 		}
 		try {
-			Github github = Github.from(parsing(githubId));
+			Github github = Github.from(parsing(githubNumberId));
 			github.setUser(findUser);
 			findUser.setGithub(github);
 			githubRepository.save(github);
@@ -337,7 +337,7 @@ public class UserService {
 		githubRepository.delete(findGithub);
 	}
 
-	public GithubDto parsing(String githubId) throws IOException, ParseException, java.text.ParseException {
+	public GithubDto parsing(Long githubId) throws IOException, ParseException, java.text.ParseException {
 		JSONParser parser = new JSONParser();
 
 		URL mainUrl = new URL(githubApi + separator + githubId);

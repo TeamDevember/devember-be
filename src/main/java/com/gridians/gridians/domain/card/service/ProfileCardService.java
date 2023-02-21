@@ -65,6 +65,10 @@ public class ProfileCardService {
 			throw new CardException(ErrorCode.DUPLICATED_USER);
 		}
 
+		if(findUser.getGithubNumberId() != null){
+
+		}
+
 		ProfileCard pc = ProfileCard.from();
 		pc.setUser(findUser);
 
