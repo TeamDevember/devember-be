@@ -35,7 +35,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class GithubService {
     private static final String GITHUB_USER_INFO_WITH_ID = "https://api.github.com/users/";
-
     private static final String GITHUB_USER_INFO_URL_WITH_TOKEN = "https://api.github.com/user";
     private static final String GITHUB_GET_ACCESS_TOKEN_URL_WITH_CODE = "https://github.com/login/oauth/access_token";
     private JSONParser jsonParser = new JSONParser();
