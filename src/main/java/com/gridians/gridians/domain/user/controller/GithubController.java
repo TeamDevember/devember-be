@@ -1,6 +1,7 @@
 package com.gridians.gridians.domain.user.controller;
 
 import com.gridians.gridians.domain.user.dto.GithubDto;
+import com.gridians.gridians.domain.user.service.GithubService;
 import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -19,18 +20,19 @@ import java.io.IOException;
 public class GithubController {
 
 	private final UserService userService;
+	private final GithubService githubService;
 
 	@PutMapping
 	public ResponseEntity<?> updateGithub(@RequestBody GithubDto.UpdateRequest request){
 		String email = getUserEmail();
-		userService.updateGithub(email, request.getGithubId());
+		githubService.updateGithub(email, request.getGithubId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping
 	public ResponseEntity<?> deleteGithub() {
 		String email = getUserEmail();
-		userService.deleteGithub(email);
+		githubService.deleteGithub(email);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

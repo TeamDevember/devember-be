@@ -6,6 +6,7 @@ import com.gridians.gridians.domain.user.repository.TokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,25 +21,35 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    public final Long ACCESS_TOKEN_EXPIRE_TIME;
-    public final Long REFRESH_TOKEN_EXPIRE_TIME;
+    private final Long ACCESS_TOKEN_EXPIRE_TIME;
+    private final Long REFRESH_TOKEN_EXPIRE_TIME;
 
     private Key key;
 
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
-    @Autowired
-    private TokenRepository tokenRepository;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final TokenRepository tokenRepository;
 
     public JwtUtils(
             @Value("${jwt.access-token-expire-time}") Long accessTime,
             @Value("${jwt.refresh-token-expire-time}") Long refreshTime,
-            @Value("${jwt.secret}") String secretKey
+            @Value("${jwt.secret}") String secretKey,
+            CustomUserDetailsService customUserDetailsService,
+            TokenRepository tokenRepository
     ) {
+        this.customUserDetailsService = customUserDetailsService;
+        this.tokenRepository = tokenRepository;
         this.ACCESS_TOKEN_EXPIRE_TIME = accessTime;
         this.REFRESH_TOKEN_EXPIRE_TIME = refreshTime;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         key = Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public Long getAccessTokenExpireTime() {
+        return this.ACCESS_TOKEN_EXPIRE_TIME;
+    }
+
+    public Long getRefreshTokenExpireTime() {
+        return this.REFRESH_TOKEN_EXPIRE_TIME;
     }
 
     private String createToken(Authentication authentication, long expireTime) {

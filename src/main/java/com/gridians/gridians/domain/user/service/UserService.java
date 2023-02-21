@@ -54,7 +54,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService {
 
-	private final GithubRepository githubRepository;
 	private final UserRepository userRepository;
 	private final ProfileCardRepository profileCardRepository;
 	private final FavoriteRepository favoriteRepository;
@@ -68,12 +67,8 @@ public class UserService {
 	@Value("${server.host.api}")
 	private String server;
 
-	@Value("${custom.path.github}")
-	private String githubApi;
-
 	@Value("${custom.path.profile}")
 	private String profilePath;
-
 	private String separator = "/";
 
 	@Transactional
@@ -96,7 +91,6 @@ public class UserService {
 			User savedUser = userRepository.save(user);
 			if (request.getGithubNumberId() != null) {
 				user.setGithubNumberId(request.getGithubNumberId());
-				updateGithub(user.getEmail(), request.getGithubNumberId().toString());
 			}
 			mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
 			return savedUser;
@@ -110,6 +104,10 @@ public class UserService {
 		findUser.setRole(Role.USER);
 		findUser.setUserStatus(UserStatus.ACTIVE);
 
+		if(findUser.getGithubNumberId() != null) {
+			githubService.updateGithub(findUser.getEmail(), findUser.getGithubNumberId().toString());
+		}
+
 		return JoinDto.Response.from(userRepository.save(findUser));
 	}
 
@@ -120,30 +118,29 @@ public class UserService {
 
 		String email = userDetails.getEmail();
 		String nickname = userDetails.getUser().getNickname();
-		tokenRepository.save(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
-
+		tokenRepository.save(refreshToken, email, jwtUtils.getRefreshTokenExpireTime().intValue());
 
 		return LoginDto.Response.from(accessToken, refreshToken, nickname);
 	}
 
 	@Transactional
 	public UserDto.DefaultResponse updateUser(String userEmail, UserDto.UpdateRequest userDto) {
-		User user = verifyUserByEmail(userEmail);
+		User user = findUserByEmail(userEmail);
 
-		user.setNickname(userDto.getNickname());
-
-		if (!userDto.getPassword().isEmpty()) {
-			if (verifyPassword(userDto.getPassword(), user.getPassword())) {
-				user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
+		if (StringUtils.hasText(userDto.getPassword())) {
+			if (!verifyPassword(userDto.getPassword(), user.getPassword())) {
+				throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
 			}
+			user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
 		}
 
+		user.setNickname(userDto.getNickname());
 		return UserDto.DefaultResponse.from(user);
 	}
 
 	@Transactional
 	public void deleteUser(String userEmail, String password) {
-		User user = verifyUserByEmail(userEmail);
+		User user = findUserByEmail(userEmail);
 		if (!verifyPassword(password, user.getPassword())) {
 			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
 		}
@@ -153,7 +150,7 @@ public class UserService {
 
 	@Transactional
 	public void updateEmail(String userEmail, String updateEmail) {
-		User user = verifyUserByEmail(userEmail);
+		User user = findUserByEmail(userEmail);
 		Optional<User> findUser = userRepository.findByEmail(updateEmail);
 
 		if (findUser.isPresent()) {
@@ -166,16 +163,16 @@ public class UserService {
 	@Transactional
 	public void findPassword(String email) {
 		String uuid = UUID.randomUUID().toString();
-		User user = verifyUserByEmail(email);
+		User user = findUserByEmail(email);
 		user.setPassword(passwordEncoder.encode(uuid));
 
 		mailComponent.sendPasswordMail(email, MailMessage.EMAIL_PASSWORD_MESSAGE, MailMessage.setPasswordContentMessage(uuid));
 	}
 
 	public void verifyUser(String email, String password) {
-		User user = verifyUserByEmail(email);
+		User user = findUserByEmail(email);
 
-		if (!passwordEncoder.matches(password, user.getPassword())) {
+		if(!verifyPassword(password, user.getPassword())) {
 			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
 		}
 		if (user.getUserStatus() == UserStatus.UNACTIVE) {
@@ -210,8 +207,8 @@ public class UserService {
 
 	public void logout(String accessToken, String refreshToken) {
 		String email = jwtUtils.getUserEmailFromToken(refreshToken);
-		tokenRepository.saveBlackList(accessToken, email, jwtUtils.ACCESS_TOKEN_EXPIRE_TIME.intValue());
-		tokenRepository.saveBlackList(refreshToken, email, jwtUtils.REFRESH_TOKEN_EXPIRE_TIME.intValue());
+		tokenRepository.saveBlackList(accessToken, email, jwtUtils.getAccessTokenExpireTime().intValue());
+		tokenRepository.saveBlackList(refreshToken, email, jwtUtils.getRefreshTokenExpireTime().intValue());
 	}
 
 	public boolean checkUser(String email) {
@@ -396,35 +393,19 @@ public class UserService {
 	}
 
 
-	private User verifyUserByEmail(String email) {
+	private User findUserByEmail(String email) {
 		return userRepository.findByEmail(email)
 				.orElseThrow(() -> new EntityNotFoundException(email + "not found"));
 	}
 
 	private boolean verifyPassword(String rawPassword, String cryptPassword) {
-		if (!passwordEncoder.matches(rawPassword, cryptPassword)) {
-			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
-		}
-
-		return true;
+		return passwordEncoder.matches(rawPassword, cryptPassword);
 	}
 
 	public UserDto.DefaultResponse getUserInfo(String userEmail) {
-		User findUser = verifyUserByEmail(userEmail);
+		User findUser = findUserByEmail(userEmail);
 		UserDto.DefaultResponse userInfo = UserDto.DefaultResponse.from(findUser);
 		userInfo.setProfileImage(server + separator + profilePath + separator + userEmail);
 		return userInfo;
-	}
-
-	@Transactional
-	public void dummy() {
-		for (int i = 0; i < 100; i++) {
-			User user = User.builder().userStatus(UserStatus.ACTIVE).role(Role.USER).build();
-			user.setEmail("test" + i + "@test.com");
-			user.setNickname("test" + i);
-			user.setPassword(passwordEncoder.encode("test" + i));
-			userRepository.save(user);
-		}
-
 	}
 }

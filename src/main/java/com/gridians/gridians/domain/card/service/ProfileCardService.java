@@ -212,18 +212,17 @@ public class ProfileCardService {
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 	}
 
-//	@Transactional
-//	public void dummy() {
-//		List<User> all = userRepository.findAll();
-//
-//		for (int i = 2; i < 100; i++) {
-//			ProfileCard pc = new ProfileCard();
-//			User user = all.get(i);
-//			user.setProfileCard(pc);
-//			pc.setUser(all.get(i));
-//			profileCardRepository.save(pc);
-//		}
-//
-//	}
-
+	public ProfileCardDto.SimpleResponse getMyCard(String email) {
+		User user = verifyUserByEmail(email);
+		if(user.getProfileCard() != null){
+			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(user.getProfileCard());
+			simpleResponse.setProfileImage(server + separator + profilePath + separator + user.getEmail());
+			simpleResponse.setSkillImage(user.getProfileCard().getSkill() == null ?
+					server + separator + skillPath + separator + defaultValue :
+					server + separator + skillPath + separator + user.getProfileCard().getSkill().getName().toLowerCase());
+			return simpleResponse;
+		} else {
+			throw new CardException(ErrorCode.CARD_NOT_FOUND);
+		}
+	}
 }
