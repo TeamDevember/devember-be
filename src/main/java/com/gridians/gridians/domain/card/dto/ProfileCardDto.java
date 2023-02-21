@@ -49,7 +49,6 @@ public class ProfileCardDto {
 
 		private Long profileCardId;
 
-
 		private String statusMessage;
 		private String introduction;
 		private String field;
@@ -97,6 +96,7 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
+					.profileCardId(pc.getId())
 					.commentList(commentDtoList)
 					.introduction(pc.getIntroduction())
 					.statusMessage(pc.getStatusMessage())
