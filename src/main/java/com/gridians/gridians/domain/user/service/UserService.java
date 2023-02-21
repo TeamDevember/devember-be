@@ -83,7 +83,7 @@ public class UserService {
 			User savedUser = userRepository.save(user);
 
 			if (request.getGithubNumberId() != null) {
-				user.setGithubNumberId(request.getGithubNumberId());
+				savedUser.setGithubNumberId(request.getGithubNumberId());
 				githubService.updateGithub(savedUser.getEmail(), savedUser.getGithubNumberId());
 			}
 
