@@ -21,11 +21,10 @@ public class GithubController {
 	private final UserService userService;
 	private final GithubService githubService;
 
-	@PutMapping("/user/auth/github")
-	public ResponseEntity<?> updateGithub(@RequestBody LoginDto.SocialRequest request) throws Exception {
-		Long githubId = Long.valueOf(githubService.githubRequest(request.getToken()));
+	@PutMapping("/user/github")
+	public ResponseEntity<?> updateGithub() throws Exception {
 		String email = getUserEmail();
-		githubService.updateGithub(email, githubId);
+		githubService.updateGithub(email, 102597172L);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
