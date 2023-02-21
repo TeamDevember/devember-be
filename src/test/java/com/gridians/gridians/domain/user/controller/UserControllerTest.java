@@ -39,5 +39,4 @@ class UserControllerTest {
     public void cleanup() {
 
     }
-
 }

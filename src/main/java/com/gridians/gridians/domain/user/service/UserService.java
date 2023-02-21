@@ -93,7 +93,6 @@ public class UserService {
 				user.setGithubNumberId(request.getGithubNumberId());
 			}
 			mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
-
 			return savedUser;
 		}
 	}
@@ -138,7 +137,7 @@ public class UserService {
 		user.setNickname(userDto.getNickname());
 		return UserDto.DefaultResponse.from(user);
 	}
-	
+
 	@Transactional
 	public void deleteUser(String userEmail, String password) {
 		User user = findUserByEmail(userEmail);
@@ -231,7 +230,12 @@ public class UserService {
 		User findFavoriteUser = userRepository.findByProfileCard_Id(findProfileCard.getId())
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
+		if(findUser == findFavoriteUser){
+			throw new UserException(ErrorCode.DO_NOT_ADD_YOURSELF);
+		}
+
 		Optional<Favorite> optionalFavorite = favoriteRepository.findByUserAndFavoriteUser(findUser, findFavoriteUser);
+
 		if (optionalFavorite.isPresent()) {
 			throw new DuplicateFavoriteUserException("Duplicated favorite user");
 		}
@@ -289,7 +293,6 @@ public class UserService {
 		findUser.deleteFavorite(findFavorite);
 	}
 
-
 	@Transactional
 	public Authentication socialLogin(String token) throws Exception {
 		Long githubId = Long.valueOf(githubService.githubRequest(token));
@@ -302,6 +305,87 @@ public class UserService {
 		}
 
 		return jwtUtils.getAuthenticationByEmail(findUser.getEmail());
+	}
+
+	@Transactional
+	public void updateGithub(String email, String githubId){
+		User findUser = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		Optional<Github> optionalGithub = githubRepository.findByUser(findUser);
+		if(optionalGithub.isPresent()){
+			githubRepository.delete(optionalGithub.get());
+		}
+		try {
+			Github github = Github.from(parsing(githubId));
+			github.setUser(findUser);
+			findUser.setGithub(github);
+			githubRepository.save(github);
+		}catch (Exception e){
+			throw new RuntimeException("잠시 후에 다시 등록해주세요");
+		}
+	}
+
+	@Transactional
+	public void deleteGithub(String email) {
+		User findUser = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+		Github findGithub = githubRepository.findByUser(findUser)
+				.orElseThrow(() -> new UserException(ErrorCode.GITHUB_NOT_FOUND));
+		githubRepository.delete(findGithub);
+	}
+
+	public GithubDto parsing(String githubId) throws IOException, ParseException, java.text.ParseException {
+		JSONParser parser = new JSONParser();
+
+		URL mainUrl = new URL(githubApi + separator + githubId);
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(mainUrl.openStream(), StandardCharsets.UTF_8));
+		String result = br.readLine();
+		JSONObject o1 = (JSONObject) parser.parse(result);
+
+		URL subUrl = new URL(githubApi + separator + githubId + "/events");
+		BufferedReader subBr = new BufferedReader(new InputStreamReader(subUrl.openStream(), StandardCharsets.UTF_8));
+		String subResult = subBr.readLine();
+
+		JSONArray jsonArray = (JSONArray) parser.parse(subResult);
+		String message = "";
+		String date = "";
+
+
+		for (Object o : jsonArray) {
+			JSONObject o2 = (JSONObject) o;
+
+			if (o2.get("type").equals("PushEvent")) {
+				date = (String) o2.get("created_at");
+				Object payload = o2.get("payload");
+				JSONObject payload1 = (JSONObject) payload;
+				Object commits = payload1.get("commits");
+				JSONArray commits1 = (JSONArray) commits;
+
+				if (commits1.size() > 0) {
+					Object o3 = commits1.get(0);
+					JSONObject o31 = (JSONObject) o3;
+					message = (String) o31.get("message");
+					break;
+				}
+			}
+		}
+
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		LocalDate realDate = simpleDateFormat.parse(date).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		return GithubDto.builder()
+				.name((String) o1.get("name"))
+				.login((String) o1.get("login"))
+				.githubId((Long) o1.get("id"))
+				.githubUrl((String) o1.get("url"))
+				.following((Long) o1.get("following"))
+				.followers((Long) o1.get("followers"))
+				.location((String) o1.get("location"))
+				.imageUrl((String) o1.get("avatar_url"))
+				.recentCommitAt(realDate)
+				.recentCommitMessage(message)
+				.build();
 	}
 
 	public void sendUpdateEmail(String userEmail, String updateEmail) {

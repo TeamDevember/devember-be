@@ -40,6 +40,14 @@ public class UserController {
 		return new ResponseEntity(JoinDto.Response.from(user), HttpStatus.OK);
 	}
 
+	@PostMapping("/auth/social-login")
+	public ResponseEntity socialLogin(
+			@RequestBody LoginDto.SocialRequest loginDto
+	) throws Exception {
+		Authentication authentication = userService.socialLogin(loginDto.getToken());
+		return new ResponseEntity<>(userService.login(authentication), HttpStatus.OK);
+	}
+
 	@PostMapping("/auth/login")
 	public ResponseEntity login(
 			@RequestBody LoginDto.Request loginDto
@@ -63,14 +71,6 @@ public class UserController {
 	@PostMapping("/exist")
 	public ResponseEntity<?> existUserByEmail(String email) {
 		return new ResponseEntity<>(userService.checkUser(email), HttpStatus.OK);
-	}
-
-	@PostMapping("/auth/social-login")
-	public ResponseEntity socialLogin(
-			@RequestBody LoginDto.SocialRequest loginDto
-	) throws Exception {
-		Authentication authentication = userService.socialLogin(loginDto.getToken());
-        return new ResponseEntity<>(userService.login(authentication), HttpStatus.OK);
 	}
 
 	@GetMapping("/auth/email-auth")

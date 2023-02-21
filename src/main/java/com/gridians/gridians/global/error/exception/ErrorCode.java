@@ -37,7 +37,9 @@ public enum ErrorCode {
     TOKEN_EXPIRE(401, "A025", "Expire"),
     INVALID_TOKEN(401, "A026", "Error"),
 
-    ALREADY_STATUS(400, "A027", "Already status");
+    ALREADY_STATUS(400, "A027", "Already status"),
+    DO_NOT_ADD_YOURSELF(400, "A028", "Do not add yourslef");
+
 
 
 

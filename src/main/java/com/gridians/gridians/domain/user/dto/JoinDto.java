@@ -10,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 public class JoinDto {
 
 	@Getter
+	@Setter
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
