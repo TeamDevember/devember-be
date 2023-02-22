@@ -4,6 +4,7 @@ import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.User;
+import com.gridians.gridians.domain.user.service.GithubService;
 import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.utils.CookieUtils;
@@ -31,13 +32,18 @@ import java.io.IOException;
 public class UserController {
 
 	private final UserService userService;
+	private final GithubService githubService;
 	private final JwtUtils jwtUtils;
 	private final AuthenticationManager authenticationManager;
 
 	@PostMapping("/auth/signup")
 	public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
+		log.info("userService.signup 호출");
 		User user = userService.signUp(request);
-
+		log.info("githubService.updateGithub 호출");
+		if(request.getGithubNumberId() != null) {
+			githubService.initGithub(user.getEmail(), request.getGithubNumberId());
+		}
 		return new ResponseEntity(JoinDto.Response.from(user), HttpStatus.OK);
 	}
 

@@ -35,7 +35,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class GithubService {
     private static final String GITHUB_USER_INFO_WITH_ID = "https://api.github.com/users/";
-
     private static final String GITHUB_USER_INFO_URL_WITH_TOKEN = "https://api.github.com/user";
     private static final String GITHUB_GET_ACCESS_TOKEN_URL_WITH_CODE = "https://github.com/login/oauth/access_token";
     private JSONParser jsonParser = new JSONParser();
@@ -150,10 +149,11 @@ public class GithubService {
     }
 
     @Transactional
-    public void updateGithub(String email, Long githubId){
+    public void initGithub(String email, Long githubId){
         User findUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
+        findUser.setGithubNumberId(githubId);
         Optional<Github> optionalGithub = githubRepository.findByUser(findUser);
 
         if(optionalGithub.isPresent()){
@@ -168,5 +168,13 @@ public class GithubService {
         }catch (Exception e){
             throw new RuntimeException("잠시 후에 다시 등록해주세요");
         }
+    }
+
+    @Transactional
+    public void updateGithub(String email, Long githubId){
+        if (githubId != null && userRepository.findByGithubNumberId(githubId).isPresent()) {
+            throw new UserException(ErrorCode.DUPLICATED_GITHUB_ID);
+        }
+        initGithub(email, githubId);
     }
 }

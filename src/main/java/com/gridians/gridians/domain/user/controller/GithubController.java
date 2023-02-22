@@ -1,18 +1,16 @@
 package com.gridians.gridians.domain.user.controller;
 
-import com.gridians.gridians.domain.user.dto.LoginDto;
+import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.service.GithubService;
 import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.relational.core.sql.Join;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,18 +19,16 @@ public class GithubController {
 	private final UserService userService;
 	private final GithubService githubService;
 
-	@PutMapping("/user/auth/github")
-	public ResponseEntity<?> updateGithub(@RequestBody LoginDto.SocialRequest request) throws Exception {
-		Long githubId = Long.valueOf(githubService.githubRequest(request.getToken()));
+	@PutMapping("/user/github")
+	public ResponseEntity<?> updateGithub(@RequestBody JoinDto.Request request) {
 		String email = getUserEmail();
-		githubService.updateGithub(email, githubId);
+		githubService.updateGithub(email, request.getGithubNumberId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/user/github")
 	public ResponseEntity<?> deleteGithub() {
-		String email = getUserEmail();
-		githubService.deleteGithub(email);
+		githubService.deleteGithub(getUserEmail());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

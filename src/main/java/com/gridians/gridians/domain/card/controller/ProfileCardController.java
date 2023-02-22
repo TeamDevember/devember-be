@@ -25,8 +25,7 @@ public class ProfileCardController {
 
 	@GetMapping("/my-card")
 	public ResponseEntity<?> getMyCard(){
-		String email = getUserEmail();
-		return new ResponseEntity<>(profileCardService.getMyCard(email), HttpStatus.OK);
+		return new ResponseEntity<>(profileCardService.getMyCard(getUserEmail()), HttpStatus.OK);
 	}
 
 	@GetMapping("/{profileCardId}")
@@ -42,30 +41,28 @@ public class ProfileCardController {
 
 	@GetMapping("/favorites")
 	public ResponseEntity<?> favoriteCardList(int page, int size) {
-		String email = getUserEmail();
 		log.info("Favorite CardList Read");
-		return new ResponseEntity<>(profileCardService.favoriteCardList(email, page, size), HttpStatus.OK);
+		return new ResponseEntity<>(profileCardService.favoriteCardList(getUserEmail(), page, size), HttpStatus.OK);
 	}
 
 	@PostMapping
 	public ResponseEntity<?> create() {
-		String email = getUserEmail();
-		ProfileCard pc = profileCardService.createProfileCard(email);
+		ProfileCard pc = profileCardService.createProfileCard(getUserEmail());
 		log.info("[" + pc.getUser().getNickname() + "] Create Profile Card");
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@PutMapping("/{profileCardId}")
 	public ResponseEntity<?> update(@PathVariable Long profileCardId, @RequestBody @Valid ProfileCardDto.Request request) throws IOException {
-		String email = getUserEmail();
-		profileCardService.input(email, profileCardId, request);
+		ProfileCard pc = profileCardService.input(getUserEmail(), profileCardId, request);
+		log.info("[" + pc.getUser().getNickname() + "] Update Profile Card");
+
 		return new ResponseEntity(HttpStatus.OK);
 	}
 
 	@DeleteMapping
 	public ResponseEntity<?> delete() {
-		String email = getUserEmail();
-		ProfileCard pc = profileCardService.deleteProfileCard(email);
+		ProfileCard pc = profileCardService.deleteProfileCard(getUserEmail());
 		log.info("[" + pc.getUser().getNickname() + "] Delete Profile Card");
 		return ResponseEntity.ok().build();
 	}

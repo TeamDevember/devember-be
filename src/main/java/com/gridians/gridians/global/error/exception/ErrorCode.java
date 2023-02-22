@@ -25,20 +25,21 @@ public enum ErrorCode {
     DUPLICATED_FAVORITE_USER(409, "A016", "Duplicated favorite user"),
     DUPLICATED_SKILL(409, "A017", "Duplicated skill"),
     DUPLICATED_EMAIL(409, "A018", "Duplicated email"),
+    DUPLICATED_GITHUB_ID(409, "A019", "Duplicated github ID"),
 
-    DELETE_ONLY_OWNER(400, "A019", "Delete only owner"),
-    MODIFY_ONLY_WRITER(400, "A020", "Modify only writer"),
-    DELETE_ONLY_WRITER(400, "A021", "Delete only writer"),
-    UPROAD_ONLY_IMAGE_FILE(400, "A022", "Upload only image file"),
+    DELETE_ONLY_OWNER(400, "A020", "Delete only owner"),
+    MODIFY_ONLY_WRITER(400, "A021", "Modify only writer"),
+    DELETE_ONLY_WRITER(400, "A022", "Delete only writer"),
+    UPROAD_ONLY_IMAGE_FILE(400, "A023", "Upload only image file"),
 
-    WRONG_USER_PASSWORD(400, "A023", "Wrong password"),
-    DELETE_USER_ACCESS(400, "A024", "Delete user access"),
+    WRONG_USER_PASSWORD(400, "A024", "Wrong password"),
+    DELETE_USER_ACCESS(400, "A025", "Delete user access"),
 
-    TOKEN_EXPIRE(401, "A025", "Expire"),
-    INVALID_TOKEN(401, "A026", "Error"),
+    TOKEN_EXPIRE(401, "A026", "Expire"),
+    INVALID_TOKEN(401, "A027", "Error"),
 
-    ALREADY_STATUS(400, "A027", "Already status"),
-    DO_NOT_ADD_YOURSELF(400, "A028", "Do not add yourslef");
+    ALREADY_STATUS(400, "A028", "Already status"),
+    DO_NOT_ADD_YOURSELF(400, "A029", "Do not add yourslef");
 
 
 

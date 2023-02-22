@@ -4,12 +4,10 @@ import com.gridians.gridians.domain.card.dto.ProfileCardDto;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.exception.CardException;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
-import com.gridians.gridians.domain.user.dto.GithubDto;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.Favorite;
-import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.Role;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.*;
@@ -27,10 +25,6 @@ import com.gridians.gridians.global.error.exception.ErrorCode;
 import com.gridians.gridians.global.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,15 +32,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -62,7 +51,6 @@ public class UserService {
 	private final JwtUtils jwtUtils;
 	private final TokenRepository tokenRepository;
 	private final GithubService githubService;
-	private final GithubRepository githubRepository;
 
 
 	@Value("${server.host.api}")
@@ -79,28 +67,25 @@ public class UserService {
 	public User signUp(JoinDto.Request request) {
 		User user = User.from(request);
 
-		Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
-
-		if (optionalUser.isPresent()) {
-			throw new DuplicateEmailException(optionalUser.get().getEmail());
+		if (request.getGithubNumberId() != null && userRepository.findByGithubNumberId(request.getGithubNumberId()).isPresent()) {
+			throw new UserException(ErrorCode.DUPLICATED_GITHUB_ID);
 		}
 
-		if (userRepository.existsByNickname(user.getNickname())) {
-			throw new DuplicateNicknameException(user.getNickname());
-		} else {
-			user.setNickname(user.getNickname());
-			user.setUserStatus(UserStatus.UNACTIVE);
-			user.setRole(Role.ANONYMOUS);
-			user.setPassword(passwordEncoder.encode(user.getPassword()));
-			User savedUser = userRepository.save(user);
-			if (request.getGithubNumberId() != null) {
-				user.setGithubNumberId(request.getGithubNumberId());
-				githubService.updateGithub(user.getEmail(), request.getGithubNumberId());
-			}
-			mailComponent.sendMail(user.getEmail(), MailMessage.EMAIL_AUTH_MESSAGE, MailMessage.setContentMessage(savedUser.getId()));
-			return savedUser;
-		}
+		checkDuplicateEmail(request.getEmail());
+		existByNickname(user.getNickname());
+
+		user.setNickname(user.getNickname());
+		user.setUserStatus(UserStatus.UNACTIVE);
+		user.setRole(Role.ANONYMOUS);
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
+		User savedUser = userRepository.save(user);
+
+		mailComponent.sendMail(savedUser.getEmail(),
+				MailMessage.EMAIL_AUTH_MESSAGE,
+				MailMessage.setContentMessage(savedUser.getId()));
+		return savedUser;
 	}
+
 
 	@Transactional
 	public JoinDto.Response joinAuth(String id) {
@@ -109,7 +94,7 @@ public class UserService {
 		findUser.setRole(Role.USER);
 		findUser.setUserStatus(UserStatus.ACTIVE);
 
-		if(findUser.getGithubNumberId() != null) {
+		if (findUser.getGithubNumberId() != null) {
 			githubService.updateGithub(findUser.getEmail(), findUser.getGithubNumberId());
 		}
 
@@ -123,18 +108,18 @@ public class UserService {
 
 		String email = userDetails.getEmail();
 		String nickname = userDetails.getUser().getNickname();
+
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 		tokenRepository.save(refreshToken, email, jwtUtils.getRefreshTokenExpireTime().intValue());
 
-		return LoginDto.Response.from(accessToken, refreshToken, nickname);
+		return LoginDto.Response.from(accessToken, refreshToken, nickname, user.getGithubNumberId());
 	}
 
 	@Transactional
 	public UserDto.DefaultResponse updateUser(String userEmail, UserDto.UpdateRequest userDto) {
 		User user = findUserByEmail(userEmail);
 		if (StringUtils.hasText(userDto.getPassword())) {
-			if (!verifyPassword(userDto.getPassword(), user.getPassword())) {
-				throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
-			}
+			verifyPassword(userDto.getPassword(), user.getPassword());
 			user.setPassword(passwordEncoder.encode(userDto.getUpdatePassword()));
 		}
 
@@ -145,21 +130,14 @@ public class UserService {
 	@Transactional
 	public void deleteUser(String userEmail, String password) {
 		User user = findUserByEmail(userEmail);
-		if (!verifyPassword(password, user.getPassword())) {
-			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
-		}
+		verifyPassword(password, user.getPassword());
 		user.setUserStatus(UserStatus.DELETED);
 	}
 
 	@Transactional
 	public void updateEmail(String userEmail, String updateEmail) {
 		User user = findUserByEmail(userEmail);
-		Optional<User> findUser = userRepository.findByEmail(updateEmail);
-
-		if (findUser.isPresent()) {
-			throw new UserException(ErrorCode.DUPLICATED_EMAIL);
-		}
-
+		checkDuplicateEmail(updateEmail);
 		user.setEmail(updateEmail);
 	}
 
@@ -174,10 +152,8 @@ public class UserService {
 
 	public void verifyUser(String email, String password) {
 		User user = findUserByEmail(email);
+		verifyPassword(password, user.getPassword());
 
-		if(!verifyPassword(password, user.getPassword())) {
-			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
-		}
 		if (user.getUserStatus() == UserStatus.UNACTIVE) {
 			throw new UserException(ErrorCode.EMAIL_NOT_VERIFIED);
 		}
@@ -215,15 +191,12 @@ public class UserService {
 	}
 
 	public boolean checkUser(String email) {
-		if (userRepository.findByEmail(email).isPresent()) {
-			return true;
-		} else {
-			return false;
-		}
+		return userRepository.findByEmail(email).isPresent() ? true : false;
 	}
 
 	@Transactional
 	public HashSet<ProfileCardDto.SimpleResponse> addFavorite(String email, Long favoriteProfileCardId) {
+
 		User findUser = userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
@@ -233,14 +206,14 @@ public class UserService {
 		User findFavoriteUser = userRepository.findByProfileCard_Id(findProfileCard.getId())
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 
-		if(findUser == findFavoriteUser){
+		if (findUser == findFavoriteUser) {
 			throw new UserException(ErrorCode.DO_NOT_ADD_YOURSELF);
 		}
-
-		Optional<Favorite> optionalFavorite = favoriteRepository.findByUserAndFavoriteUser(findUser, findFavoriteUser);
-
-		if (optionalFavorite.isPresent()) {
-			throw new DuplicateFavoriteUserException("Duplicated favorite user");
+		Set<Favorite> favorites = findUser.getFavorites();
+		for (Favorite favorite : favorites) {
+			if(favorite.getFavoriteUser() == findFavoriteUser){
+				throw new UserException(ErrorCode.DUPLICATED_FAVORITE_USER);
+			}
 		}
 
 		Favorite favorite = Favorite.builder()
@@ -257,9 +230,7 @@ public class UserService {
 
 
 	public HashSet<ProfileCardDto.SimpleResponse> favoriteList(String email) {
-		User findUser = userRepository.findByEmail(email)
-				.orElseThrow(() -> new EntityNotFoundException(email));
-
+		User findUser = findUserByEmail(email);
 		return getFavorites(findUser);
 	}
 
@@ -310,24 +281,44 @@ public class UserService {
 		return jwtUtils.getAuthenticationByEmail(findUser.getEmail());
 	}
 
-	public void sendUpdateEmail(String userEmail, String updateEmail) {
-		mailComponent.sendUpdateEmail(updateEmail, MailMessage.EMAIL_EMAIL_UPDATE, MailMessage.setEmailUpdateMessage(updateEmail));
+	public void sendUpdateEmail(String email, String updateEmail) {
+		mailComponent.sendUpdateEmail(
+				updateEmail,
+				MailMessage.EMAIL_EMAIL_UPDATE,
+				MailMessage.setEmailUpdateMessage(updateEmail)
+		);
 	}
-
 
 	private User findUserByEmail(String email) {
 		return userRepository.findByEmail(email)
 				.orElseThrow(() -> new EntityNotFoundException(email + "not found"));
 	}
 
-	private boolean verifyPassword(String rawPassword, String cryptPassword) {
-		return passwordEncoder.matches(rawPassword, cryptPassword);
+	private void checkDuplicateEmail(String email) {
+		Optional<User> optionalUser = userRepository.findByEmail(email);
+		if (optionalUser.isPresent()) {
+			throw new UserException(ErrorCode.DUPLICATE_EMAIL);
+		}
+	}
+
+	private void verifyPassword(String rawPassword, String cryptPassword) {
+		if (!passwordEncoder.matches(rawPassword, cryptPassword)) {
+			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
+		}
+
 	}
 
 	public UserDto.DefaultResponse getUserInfo(String userEmail) {
 		User findUser = findUserByEmail(userEmail);
 		UserDto.DefaultResponse userInfo = UserDto.DefaultResponse.from(findUser);
-		userInfo.setProfileImage(server + separator + profilePath + separator + userEmail);
+		userInfo.setProfileImage(
+				server + separator + profilePath + separator + userEmail);
 		return userInfo;
+	}
+
+	public void existByNickname(String nickname) {
+		if (userRepository.existsByNickname(nickname)) {
+			throw new DuplicateNicknameException(nickname);
+		}
 	}
 }

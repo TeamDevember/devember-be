@@ -14,6 +14,7 @@ import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.FavoriteRepository;
 import com.gridians.gridians.domain.user.repository.GithubRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
+import com.gridians.gridians.domain.user.service.GithubService;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,7 @@ public class ProfileCardService {
 	private final FavoriteRepository favoriteRepository;
 	private final ProfileCardRepository profileCardRepository;
 	private final GithubRepository githubRepository;
+	private final GithubService githubService;
 
 	@Value("${server.host.api}")
 	private String server;
@@ -65,10 +67,6 @@ public class ProfileCardService {
 			throw new CardException(ErrorCode.DUPLICATED_USER);
 		}
 
-		if(findUser.getGithubNumberId() != null){
-
-		}
-
 		ProfileCard pc = ProfileCard.from();
 		pc.setUser(findUser);
 
@@ -78,7 +76,7 @@ public class ProfileCardService {
 	}
 
 	@Transactional
-	public void input(String email, Long profileCardId, ProfileCardDto.Request request) {
+	public ProfileCard input(String email, Long profileCardId, ProfileCardDto.Request request) {
 		User findUser = verifyUserByEmail(email);
 		ProfileCard findProfileCard = verifyProfileCardById(profileCardId);
 
@@ -89,17 +87,19 @@ public class ProfileCardService {
 		findProfileCard.setIntroduction(request.getIntroduction());
 		findProfileCard.setStatusMessage(request.getStatusMessage());
 
-		profileCardRepository.save(findProfileCard);
+		ProfileCard savedProfileCard = profileCardRepository.save(findProfileCard);
+		return savedProfileCard;
 	}
 
 	public ProfileCardDto.DetailResponse readProfileCard(Long profileCardId) {
 		ProfileCard findProfileCard = verifyProfileCardById(profileCardId);
+
 		List<Comment> findCommentList = commentRepository.findAllByProfileCardOrderByCreatedAtDesc(findProfileCard);
 		List<CommentDto.Response> commentDtoList = new ArrayList<>();
 
 		for (Comment comment : findCommentList) {
 			CommentDto.Response response = CommentDto.Response.from(comment);
-			response.setProfileImage(server + separator + profilePath + separator + findProfileCard.getUser().getEmail());
+			response.setProfileImage(setProfileImagePath(findProfileCard.getUser().getEmail()));
 			commentDtoList.add(response);
 		}
 		ProfileCardDto.DetailResponse detailResponse;
@@ -111,13 +111,11 @@ public class ProfileCardService {
 		} else {
 			detailResponse = ProfileCardDto.DetailResponse.from(findProfileCard, commentDtoList);
 		}
-		detailResponse.setProfileImage(server + separator + profilePath + separator + findProfileCard.getUser().getEmail());
-		detailResponse.setSkillImage(findProfileCard.getSkill() == null ?
-				server + separator + skillPath + separator + defaultValue :
-				server + separator + skillPath + separator + findProfileCard.getSkill().getName().toLowerCase()
-		);
+		detailResponse.setProfileImage(setProfileImagePath(findProfileCard.getUser().getEmail()));
+		detailResponse.setSkillImage(setSkillImagePath(findProfileCard));
 		return detailResponse;
 	}
+
 
 	public ProfileCardDto.DetailResponse getMyCard(String email){
 		User user = verifyUserByEmail(email);
@@ -133,10 +131,8 @@ public class ProfileCardService {
 		List<ProfileCardDto.SimpleResponse> profileCardList = new ArrayList<>();
 		for (ProfileCard pc : findProfileCardList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(pc);
-			simpleResponse.setProfileImage(server + separator + profilePath + separator + pc.getUser().getEmail());
-			simpleResponse.setSkillImage(pc.getSkill() == null ?
-					server + separator + skillPath + separator + defaultValue :
-					server + separator + skillPath + separator + pc.getSkill().getName().toLowerCase()
+			simpleResponse.setProfileImage(setProfileImagePath(pc.getUser().getEmail()));
+			simpleResponse.setSkillImage(setSkillImagePath(pc)
 			);
 			profileCardList.add(simpleResponse);
 		}
@@ -155,7 +151,7 @@ public class ProfileCardService {
 
 		for (Favorite favorite : findFavoriteList) {
 			ProfileCardDto.SimpleResponse simpleResponse = ProfileCardDto.SimpleResponse.from(favorite.getUser().getProfileCard());
-			simpleResponse.setProfileImage(server + separator + profilePath + separator + favorite.getUser().getEmail());
+			simpleResponse.setProfileImage(setProfileImagePath(favorite.getUser().getEmail()));
 			profileCardList.add(simpleResponse);
 		}
 		return profileCardList;
@@ -214,5 +210,16 @@ public class ProfileCardService {
 	public ProfileCard verifyProfileCardById(Long profileCardId) {
 		return profileCardRepository.findById(profileCardId)
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
+	}
+
+
+	public String setProfileImagePath(String email){
+		return server + separator + profilePath + separator + email;
+	}
+
+	public String setSkillImagePath(ProfileCard profileCard){
+		return profileCard.getSkill() == null ?
+				server + separator + skillPath + separator + defaultValue :
+				server + separator + skillPath + separator + profileCard.getSkill().getName().toLowerCase();
 	}
 }

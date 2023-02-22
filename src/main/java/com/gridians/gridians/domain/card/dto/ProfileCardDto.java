@@ -47,6 +47,9 @@ public class ProfileCardDto {
 	@AllArgsConstructor
 	public static class DetailResponse {
 
+		private Long profileCardId;
+
+		private String nickname;
 		private String statusMessage;
 		private String introduction;
 		private String field;
@@ -75,6 +78,8 @@ public class ProfileCardDto {
 		private String location;
 		private String company;
 
+		private boolean hasGithub;
+
 		public static DetailResponse from(ProfileCard pc, List<CommentDto.Response> commentDtoList) {
 
 			Set<SnsResponse> snss = new HashSet<>();
@@ -92,6 +97,8 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
+					.nickname(pc.getUser().getNickname())
+					.profileCardId(pc.getId())
 					.commentList(commentDtoList)
 					.introduction(pc.getIntroduction())
 					.statusMessage(pc.getStatusMessage())
@@ -119,10 +126,13 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
+					.nickname(pc.getUser().getNickname())
+					.hasGithub(pc.getUser().getGithub() != null ? true : false)
+					.profileCardId(pc.getId())
 					.commentList(commentDtoList)
 					.statusMessage(pc.getStatusMessage())
-					.field(pc.getField().getName())
-					.skill(pc.getSkill().getName())
+					.field(pc.getField() != null ? pc.getField().getName(): "")
+					.skill(pc.getSkill() != null ? pc.getSkill().getName(): "")
 					.tagSet(tags)
 					.snsSet(snss)
 					.githubName(github.getName())
