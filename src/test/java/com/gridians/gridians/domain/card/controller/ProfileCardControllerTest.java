@@ -3,6 +3,7 @@ package com.gridians.gridians.domain.card.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gridians.gridians.domain.card.entity.Field;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
+import com.gridians.gridians.domain.card.entity.Skill;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
 import com.gridians.gridians.domain.user.entity.User;
@@ -15,6 +16,7 @@ import com.gridians.gridians.global.config.security.service.CustomUserDetailsSer
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 import com.gridians.gridians.global.utils.JwtUtils;
+import groovy.util.logging.Slf4j;
 import org.junit.Before;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,6 +31,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,6 +39,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,8 +48,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
 public class ProfileCardControllerTest {
@@ -116,13 +122,38 @@ public class ProfileCardControllerTest {
 		profileCard.setUser(new User());
 		profileCard.setStatusMessage("hi");
 
-
 		mockMvc.perform(put("/cards/").with(csrf())
-				.header("Authorization", "Bearer " + accessToken)
-				.content(objectMapper.writeValueAsString(profileCard))
-				.contentType(MediaType.APPLICATION_JSON))
+						.header("Authorization", "Bearer " + accessToken)
+						.content(objectMapper.writeValueAsString(profileCard))
+						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andReturn();
+	}
+
+	@Test
+	public void deleteCard() throws Exception {
+
+		profileCard = new ProfileCard();
+
+		mockMvc.perform(delete("/cards").with(csrf())
+						.header("Authorization", "Bearer " + accessToken)
+						.content(objectMapper.writeValueAsString(profileCard))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn();
+	}
+
+	@Test
+	public void getMyCard() throws Exception {
+
+		profileCard = new ProfileCard();
+
+		mockMvc.perform(delete("/cards/my-card").with(csrf())
+						.header("Authorization", "Bearer " + accessToken))
+				.andExpect(jsonPath("$[0]").exists())
+				.andExpect(status().isOk());
 
 	}
+
+
 }

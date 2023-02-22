@@ -40,7 +40,9 @@ public class UserController {
 		log.info("userService.signup 호출");
 		User user = userService.signUp(request);
 		log.info("githubService.updateGithub 호출");
-		githubService.initGithub(user.getEmail(), request.getGithubNumberId());
+		if(request.getGithubNumberId() != null) {
+			githubService.initGithub(user.getEmail(), request.getGithubNumberId());
+		}
 		return new ResponseEntity(JoinDto.Response.from(user), HttpStatus.OK);
 	}
 
