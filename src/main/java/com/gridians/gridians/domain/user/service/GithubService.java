@@ -172,9 +172,14 @@ public class GithubService {
 
     @Transactional
     public void updateGithub(String email, Long githubId){
-        if (githubId != null && userRepository.findByGithubNumberId(githubId).isPresent()) {
+        if (githubId == null){
+            throw new UserException(ErrorCode.GITHUB_NOT_FOUND);
+        }
+
+        if(userRepository.findByGithubNumberId(githubId).isPresent()) {
             throw new UserException(ErrorCode.DUPLICATED_GITHUB_ID);
         }
+
         initGithub(email, githubId);
     }
 }

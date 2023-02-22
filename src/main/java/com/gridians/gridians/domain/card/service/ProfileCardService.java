@@ -78,7 +78,12 @@ public class ProfileCardService {
 	@Transactional
 	public ProfileCard input(String email, Long profileCardId, ProfileCardDto.Request request) {
 		User findUser = verifyUserByEmail(email);
+
 		ProfileCard findProfileCard = verifyProfileCardById(profileCardId);
+
+		if (findProfileCard.getId() != findUser.getProfileCard().getId()) {
+			throw new CardException(ErrorCode.MODIFY_ONLY_OWNER);
+		}
 
 		saveField(findProfileCard, request);
 		saveSnsSet(findProfileCard, request);
@@ -117,7 +122,7 @@ public class ProfileCardService {
 	}
 
 
-	public ProfileCardDto.DetailResponse getMyCard(String email){
+	public ProfileCardDto.DetailResponse getMyCard(String email) {
 		User user = verifyUserByEmail(email);
 		ProfileCard profileCard = verifyProfileCardById(user.getProfileCard().getId());
 		return readProfileCard(profileCard.getId());
@@ -213,11 +218,11 @@ public class ProfileCardService {
 	}
 
 
-	public String setProfileImagePath(String email){
+	public String setProfileImagePath(String email) {
 		return server + separator + profilePath + separator + email;
 	}
 
-	public String setSkillImagePath(ProfileCard profileCard){
+	public String setSkillImagePath(ProfileCard profileCard) {
 		return profileCard.getSkill() == null ?
 				server + separator + skillPath + separator + defaultValue :
 				server + separator + skillPath + separator + profileCard.getSkill().getName().toLowerCase();

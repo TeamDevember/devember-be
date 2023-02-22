@@ -27,19 +27,20 @@ public enum ErrorCode {
     DUPLICATED_EMAIL(409, "A018", "Duplicated email"),
     DUPLICATED_GITHUB_ID(409, "A019", "Duplicated github ID"),
 
-    DELETE_ONLY_OWNER(400, "A020", "Delete only owner"),
-    MODIFY_ONLY_WRITER(400, "A021", "Modify only writer"),
-    DELETE_ONLY_WRITER(400, "A022", "Delete only writer"),
-    UPROAD_ONLY_IMAGE_FILE(400, "A023", "Upload only image file"),
+    MODIFY_ONLY_OWNER(400, "A020", "Modify only owner"),
+    DELETE_ONLY_OWNER(400, "A021", "Delete only owner"),
+    MODIFY_ONLY_WRITER(400, "A022", "Modify only writer"),
+    DELETE_ONLY_WRITER(400, "A023", "Delete only writer"),
+    UPROAD_ONLY_IMAGE_FILE(400, "A024", "Upload only image file"),
 
-    WRONG_USER_PASSWORD(400, "A024", "Wrong password"),
-    DELETE_USER_ACCESS(400, "A025", "Delete user access"),
+    WRONG_USER_PASSWORD(400, "A025", "Wrong password"),
+    DELETE_USER_ACCESS(400, "A026", "Delete user access"),
 
-    TOKEN_EXPIRE(401, "A026", "Expire"),
-    INVALID_TOKEN(401, "A027", "Error"),
+    TOKEN_EXPIRE(401, "A027", "Expire"),
+    INVALID_TOKEN(401, "A028", "Error"),
 
-    ALREADY_STATUS(400, "A028", "Already status"),
-    DO_NOT_ADD_YOURSELF(400, "A029", "Do not add yourslef");
+    ALREADY_STATUS(400, "A029", "Already status"),
+    DO_NOT_ADD_YOURSELF(400, "A030", "Do not add yourslef");
 
 
 
