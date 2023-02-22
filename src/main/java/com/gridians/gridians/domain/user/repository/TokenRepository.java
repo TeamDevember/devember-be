@@ -25,10 +25,10 @@ public class TokenRepository {
 
     public void saveBlackList(String key, Object value, int time) {
         redisBlackListTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(value.getClass()));
-        redisBlackListTemplate.opsForValue().set(key, value, time, TimeUnit.MILLISECONDS);
+        redisBlackListTemplate.opsForValue().set("RT:" + key, value, time, TimeUnit.MILLISECONDS);
     }
 
     public boolean hasKeyBlackList(String key) {
-        return redisBlackListTemplate.hasKey(key);
+        return redisBlackListTemplate.hasKey("RT:" + key);
     }
 }

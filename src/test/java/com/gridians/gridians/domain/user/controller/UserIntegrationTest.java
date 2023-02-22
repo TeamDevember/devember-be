@@ -1,6 +1,5 @@
 package com.gridians.gridians.domain.user.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gridians.gridians.domain.user.WithCustomMockUser;
 import com.gridians.gridians.domain.user.dto.JoinDto;
@@ -8,92 +7,83 @@ import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.Role;
 import com.gridians.gridians.domain.user.entity.User;
-import com.gridians.gridians.domain.user.exception.DuplicateEmailException;
-import com.gridians.gridians.domain.user.exception.DuplicateNicknameException;
-import com.gridians.gridians.domain.user.exception.UserException;
+import com.gridians.gridians.domain.user.repository.TokenRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
-import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
-import com.gridians.gridians.global.error.GlobalExceptionHandler;
-import com.gridians.gridians.global.error.exception.EntityNotFoundException;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 import com.gridians.gridians.global.utils.JwtUtils;
-import org.junit.jupiter.api.Assertions;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import javax.xml.transform.Result;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles({"test"})
-@WebAppConfiguration
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(value = UserController.class)
-@Import({UserController.class, JwtUserDetails.class, User.class, ObjectMapper.class})
-class UserControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+public class UserIntegrationTest {
 
     @Autowired
     MockMvc mvc;
+
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    PasswordEncoder passwordEncoder;
+    @Autowired
+    UserController userController;
     @Autowired
     ObjectMapper objectMapper;
-    @InjectMocks
-    GlobalExceptionHandler globalExceptionHandler;
-
-    @MockBean
-    UserService userService;
-    @MockBean
+    @Autowired
     JwtUtils jwtUtils;
-    @MockBean
+    @Autowired
     AuthenticationManager authenticationManager;
-    @MockBean
-    UserRepository userRepository;
-    @InjectMocks
-    UserController userController;
+    @Autowired
+    TokenRepository tokenRepository;
+
+
     User verifyUser;
     User notVerifyUser;
+    String accessToken;
+    String rawPassword = "password";
+
 
     @BeforeEach
     public void beforeEach() throws Exception {
         UUID uuid = UUID.randomUUID();
         verifyUser = User.builder()
                 .id(uuid)
-                .email("email@email.com")
-                .nickname("nickname")
-                .password("encodedPassword")
+                .email("verifyUser@email.com")
+                .nickname("verifyUserNickname")
+                .password(passwordEncoder.encode(rawPassword))
                 .role(Role.USER)
                 .userStatus(UserStatus.ACTIVE)
                 .build();
@@ -102,29 +92,27 @@ class UserControllerTest {
                 .id(uuid)
                 .email("email@email.com")
                 .nickname("nickname")
-                .password("encodedPassword")
+                .password(passwordEncoder.encode(rawPassword))
                 .role(Role.ANONYMOUS)
                 .userStatus(UserStatus.UNACTIVE)
                 .build();
 
-        ReflectionTestUtils.setField(userController, "userService", userService);
-        ReflectionTestUtils.setField(userController, "jwtUtils", jwtUtils);
-        ReflectionTestUtils.setField(userController, "authenticationManager", authenticationManager);
-        mvc = MockMvcBuilders.standaloneSetup(userController)
-                .setControllerAdvice(globalExceptionHandler)
-                .build();
+        accessToken = jwtUtils.createAccessToken(JwtUserDetails.create(verifyUser));
+    }
+
+    @AfterEach
+    public void afterEach() {
+        userRepository.deleteAll();
     }
 
     @Test
     @DisplayName("회원가입 테스트")
     public void singUpTest() throws Exception {
         JoinDto.Request requestDto = JoinDto.Request.builder()
-                .email("email@email.com")
-                .nickname("nickname")
+                .email(notVerifyUser.getEmail())
+                .nickname(notVerifyUser.getNickname())
                 .password("password12!")
                 .build();
-
-        when(userService.signUp(any(JoinDto.Request.class))).thenReturn(notVerifyUser);
 
         mvc.perform(post("/user/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -134,22 +122,37 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("nickname").value(notVerifyUser.getNickname()))
         ;
+
+        Optional<User> optionalUser = userRepository.findByEmail(requestDto.getEmail());
+        assertThat(optionalUser).isNotEmpty();
+
+        User user = optionalUser.get();
+        assertThat(user.getEmail()).isEqualTo(notVerifyUser.getEmail());
+        assertThat(passwordEncoder.matches(requestDto.getPassword(), user.getPassword())).isTrue();
+    }
+
+    public ResultActions errorResponseExpect(ResultActions resultActions, ErrorCode errorCode) throws Exception {
+        return resultActions
+                .andExpect(jsonPath("message").value(errorCode.getMessage()))
+                .andExpect(jsonPath("status").value(errorCode.getStatus()))
+                .andExpect(jsonPath("code").value(errorCode.getCode()));
     }
 
     @Test
     @DisplayName("회원가입 테스트 - 이메일 중복")
     public void signUpEmailDuplicateTest() throws Exception {
+        userRepository.save(User.builder()
+                .email(notVerifyUser.getEmail())
+                .build());
         JoinDto.Request requestDto = JoinDto.Request.builder()
-                .email("email@email.com")
-                .nickname("nickname")
-                .password("password")
+                .email(notVerifyUser.getEmail())
+                .nickname(notVerifyUser.getNickname())
+                .password(notVerifyUser.getPassword())
                 .build();
-
-        when(userService.signUp(any(JoinDto.Request.class))).thenThrow(new DuplicateEmailException(requestDto.getEmail()));
 
         mvc.perform(post("/user/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(new ObjectMapper().writeValueAsBytes(requestDto)))
+                        .content(objectMapper.writeValueAsBytes(requestDto)))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("message").value(ErrorCode.DUPLICATE_EMAIL.getMessage()))
@@ -158,22 +161,29 @@ class UserControllerTest {
                 .andExpect(jsonPath("param").isEmpty())
                 .andExpect(jsonPath("errors").isEmpty())
         ;
+
+        List<User> users = userRepository.findAll();
+        assertThat(users.size()).isEqualTo(1);
+        assertThat(users.get(0).getEmail()).isEqualTo(notVerifyUser.getEmail());
     }
 
     @Test
     @DisplayName("회원가입 테스트 - 닉네임 중복")
     public void signUpNicknameDuplicateTest() throws Exception {
+        userRepository.save(User.builder()
+                .email("test@email.com")
+                .nickname(notVerifyUser.getNickname())
+                .build());
+
         JoinDto.Request requestDto = JoinDto.Request.builder()
-                .email("email@email.com")
-                .nickname("nickname")
+                .email(notVerifyUser.getEmail())
+                .nickname(notVerifyUser.getNickname())
                 .password("password")
                 .build();
 
-        when(userService.signUp(any(JoinDto.Request.class))).thenThrow(new DuplicateNicknameException(requestDto.getEmail()));
-
         ResultActions resultActions = mvc.perform(post("/user/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(new ObjectMapper().writeValueAsBytes(requestDto))
+                        .content(objectMapper.writeValueAsBytes(requestDto))
                         .with(csrf()))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
@@ -181,7 +191,10 @@ class UserControllerTest {
         errorResponseExpect(resultActions, ErrorCode.DUPLICATED_NICKNAME)
                 .andExpect(jsonPath("param").isEmpty())
                 .andExpect(jsonPath("errors").isEmpty());
-        ;
+
+        List<User> users = userRepository.findAll();
+        assertThat(users.size()).isEqualTo(1);
+        assertThat(users.get(0).getEmail()).isNotEqualTo(notVerifyUser.getNickname());
     }
 
     @Test
@@ -196,45 +209,45 @@ class UserControllerTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
         errorResponseExpect(resultActions, ErrorCode.INVALID_INPUT_VALUE);
+
+        List<User> users = userRepository.findAll();
+        assertThat(users.size()).isEqualTo(0);
     }
 
     @Test
     @DisplayName("로그인 테스트")
-    @WithMockUser
     public void loginTest() throws Exception {
-        String resAccessToken = "accessToken";
-        String resRefreshToken = "refreshToken";
-
-        LoginDto.Response res = LoginDto.Response.builder()
-                .accessToken(resAccessToken)
-                .refreshToken(resRefreshToken)
-                .nickname(verifyUser.getNickname())
+        userRepository.save(verifyUser);
+        LoginDto.Request requestDto = LoginDto.Request.builder()
+                .email(verifyUser.getEmail())
+                .password(rawPassword)
                 .build();
 
-        doNothing().when(userService).verifyUser(anyString(), anyString());
-        when(userService.login(any())).thenReturn(res);
-
-        mvc.perform(post("/user/auth/login")
+        ResultActions resultActions = mvc.perform(post("/user/auth/login")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(new ObjectMapper().writeValueAsBytes(verifyUser))
+                        .content(objectMapper.writeValueAsBytes(requestDto))
                         .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("accessToken").value(resAccessToken))
-                .andExpect(jsonPath("refreshToken").value(resRefreshToken))
-                .andExpect(jsonPath("nickname").value(verifyUser.getNickname()))
-        ;
+                .andExpect(jsonPath("accessToken").isNotEmpty())
+                .andExpect(jsonPath("refreshToken").isNotEmpty())
+                .andExpect(jsonPath("nickname").value(verifyUser.getNickname()));
+
+        String contentAsString = resultActions.andReturn().getResponse().getContentAsString();
+        LoginDto.Response response = objectMapper.readValue(contentAsString, LoginDto.Response.class);
+        assertThat(response.getNickname()).isEqualTo(verifyUser.getNickname());
+        assertThat(jwtUtils.validateToken(response.getAccessToken())).isTrue();
+        assertThat(jwtUtils.validateToken(response.getRefreshToken())).isTrue();
     }
 
     @Test
     @DisplayName("로그인 실패 - 패스워드 불일치")
     public void loginPasswordNotMatchTest() throws Exception {
+        userRepository.save(verifyUser);
         LoginDto.Request requestDto = LoginDto.Request.builder()
-                .email("email@email.com")
+                .email(verifyUser.getEmail())
                 .password("test!")
                 .build();
-
-        doThrow(new UserException(ErrorCode.WRONG_USER_PASSWORD)).when(userService).verifyUser(anyString(), anyString());
 
         ResultActions resultActions = mvc.perform(post("/user/auth/login")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -248,29 +261,26 @@ class UserControllerTest {
     @DisplayName("로그인 테스트 - 존재하지 않는 유저")
     public void userLoginNotExistUserTest() throws Exception {
         LoginDto.Request requestDto = LoginDto.Request.builder()
-                .email("email@email.com")
-                .password("test!")
+                .email("none@email.com")
+                .password(rawPassword)
                 .build();
-
-        doThrow(new UserException(ErrorCode.USER_NOT_FOUND)).when(userService).verifyUser(anyString(), anyString());
 
         ResultActions resultActions = mvc.perform(post("/user/auth/login")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsBytes(requestDto))
                         .with(csrf()))
                 .andExpect(status().is4xxClientError());
-        errorResponseExpect(resultActions, ErrorCode.USER_NOT_FOUND);
+        errorResponseExpect(resultActions, ErrorCode.ENTITY_NOT_FOUND);
     }
 
     @Test
     @DisplayName("로그인 테스트 - 이메일 인증되지 않은 유저")
     public void userLoginNotVerifyUserTest() throws Exception {
+        userRepository.save(notVerifyUser);
         LoginDto.Request requestDto = LoginDto.Request.builder()
                 .email("email@email.com")
-                .password("test!")
+                .password(rawPassword)
                 .build();
-
-        doThrow(new UserException(ErrorCode.EMAIL_NOT_VERIFIED)).when(userService).verifyUser(anyString(), anyString());
 
         ResultActions resultActions = mvc.perform(post("/user/auth/login")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -281,112 +291,177 @@ class UserControllerTest {
         errorResponseExpect(resultActions, ErrorCode.EMAIL_NOT_VERIFIED);
     }
 
-    public ResultActions errorResponseExpect(ResultActions resultActions, ErrorCode errorCode) throws Exception {
-        return resultActions
-                .andExpect(jsonPath("message").value(errorCode.getMessage()))
-                .andExpect(jsonPath("status").value(errorCode.getStatus()))
-                .andExpect(jsonPath("code").value(errorCode.getCode()));
+    @Test
+    @DisplayName("유저 이메일 인증")
+    public void userEmailVerify() throws Exception {
+        User savedUser = userRepository.save(notVerifyUser);
+
+        mvc.perform(get("/user/auth/email-auth")
+                .param("id", savedUser.getId().toString()))
+                .andExpect(status().isOk());
+
+        User findUser = userRepository.findById(savedUser.getId()).get();
+        assertThat(findUser.getUserStatus()).isEqualTo(UserStatus.ACTIVE);
+        assertThat(findUser.getRole()).isEqualTo(Role.USER);
     }
 
     @Test
     @DisplayName("유저 이메일 변경")
-    public void userEmailUpdateTest() {
+    public void userEmailUpdateTest() throws Exception {
+        userRepository.save(verifyUser);
+        String updateEmail = "updateEmail@email.com";
+        UserDto.UpdateRequest userDto = UserDto.UpdateRequest.builder()
+                .email(updateEmail)
+                .build();
 
+        mvc.perform(put("/user/email")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsBytes(userDto))
+                .header("Authorization", "Bearer: " + accessToken))
+                .andExpect(status().isOk());
+
+        Optional<User> optionalUser = userRepository.findByEmail(verifyUser.getEmail());
+        assertThat(optionalUser).isEmpty();
+
+        Optional<User> updateOptionalUser = userRepository.findByEmail(updateEmail);
+        assertThat(updateOptionalUser).isNotEmpty();
+
+        User user = updateOptionalUser.get();
+        assertThat(user.getEmail()).isEqualTo(updateEmail);
+        assertThat(user.getEmail()).isNotEqualTo(verifyUser.getEmail());
     }
 
     @Test
     @DisplayName("유저 정보 변경 - 닉네임 변경")
-    @WithCustomMockUser
     public void userNicknameUpdateTest() throws Exception {
+        userRepository.save(verifyUser);
         UserDto.UpdateRequest requestDto = UserDto.UpdateRequest.builder()
-                .nickname("nickname")
+                .nickname("updateNickname")
                 .build();
-
-        when(userService.updateUser(anyString(), any(UserDto.UpdateRequest.class))).thenReturn(null);
-
-        mvc.perform(put("/user")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsBytes(requestDto))
-                        .with(csrf()))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("유저 정보 변경 - 패스워드 변경")
-    @WithCustomMockUser
-    public void userPasswordUpdateTest() throws Exception {
-        UserDto.UpdateRequest requestDto = UserDto.UpdateRequest.builder()
-                .password("password")
-                .updatePassword("updatePassword")
-                .build();
-
-        when(userService.updateUser(anyString(), any(UserDto.UpdateRequest.class))).thenReturn(null);
-
-        mvc.perform(put("/user")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsBytes(requestDto))
-                        .with(csrf()))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("유저 정보 변경 - 패스워드 불일치")
-    @WithCustomMockUser
-    public void userUpdatePasswordNotMatchTest() throws Exception {
-        UserDto.UpdateRequest requestDto = UserDto.UpdateRequest.builder()
-                .password("password")
-                .updatePassword("updatePassword")
-                .build();
-
-        when(userService.updateUser(anyString(), any(UserDto.UpdateRequest.class))).thenThrow(new UserException(ErrorCode.WRONG_USER_PASSWORD));
 
         ResultActions resultActions = mvc.perform(put("/user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsBytes(requestDto))
+                        .header("Authorization", "Bearer: " + accessToken)
+                        .with(csrf()))
+                .andExpect(status().isOk());
+
+        User user = userRepository.findByEmail(verifyUser.getEmail()).get();
+
+        assertThat(user.getNickname()).isEqualTo(requestDto.getNickname());
+    }
+
+    @Test
+    @DisplayName("유저 정보 변경 - 패스워드 변경")
+    public void userPasswordUpdateTest() throws Exception {
+        userRepository.save(verifyUser);
+        UserDto.UpdateRequest requestDto = UserDto.UpdateRequest.builder()
+                .password(rawPassword)
+                .updatePassword("updatePassword")
+                .build();
+
+        mvc.perform(put("/user")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsBytes(requestDto))
+                        .header("Authorization", "Bearer: " + accessToken)
+                        .with(csrf()))
+                .andExpect(status().isOk());
+
+        User user = userRepository.findByEmail(verifyUser.getEmail()).get();
+
+        assertThat(passwordEncoder.matches("updatePassword", user.getPassword())).isTrue();
+    }
+
+    @Test
+    @DisplayName("유저 정보 변경 - 패스워드 불일치")
+    public void userUpdatePasswordNotMatchTest() throws Exception {
+        userRepository.save(verifyUser);
+        UserDto.UpdateRequest requestDto = UserDto.UpdateRequest.builder()
+                .password("test")
+                .updatePassword("updatePassword")
+                .build();
+
+        ResultActions resultActions = mvc.perform(put("/user")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsBytes(requestDto))
+                        .header("Authorization", "Bearer: " +accessToken)
                         .with(csrf()))
                 .andExpect(status().is4xxClientError());
         errorResponseExpect(resultActions, ErrorCode.WRONG_USER_PASSWORD);
+
+        assertThat(passwordEncoder.matches("password", verifyUser.getPassword())).isTrue();
     }
 
     @Test
     @DisplayName("유저 탈퇴")
-    @WithCustomMockUser
     public void deleteUserTest() throws Exception {
         userRepository.save(verifyUser);
         UserDto.DeleteRequest requestDto = UserDto.DeleteRequest.builder()
-                .password("password12!")
+                .password(rawPassword)
                 .build();
-
-        JwtUserDetails jwtUserDetails = JwtUserDetails.create(verifyUser);
-
-        doNothing().when(userService).deleteUser(jwtUserDetails.getEmail(), requestDto.getPassword());
 
         mvc.perform(delete("/user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(new ObjectMapper().writeValueAsBytes(requestDto))
+                        .header("Authorization", "Bearer: " + accessToken)
                         .with(csrf()))
                 .andExpect(status().isOk())
         ;
+
+        List<User> users = userRepository.findAll();
+        assertThat(users.size()).isEqualTo(1);
+        assertThat(users.get(0).getUserStatus()).isEqualTo(UserStatus.DELETED);
     }
 
     @Test
     @DisplayName("유저 탈퇴 - 비밀번호 불일치")
-    @WithCustomMockUser
     public void deleteUserPasswordNotMatch() throws Exception {
+        userRepository.save(verifyUser);
         UserDto.DeleteRequest requestDto = UserDto.DeleteRequest.builder()
-                .password("lll")
+                .password("test")
                 .build();
-
-        JwtUserDetails jwtUserDetails = JwtUserDetails.create(verifyUser);
-
-        doThrow(new UserException(ErrorCode.WRONG_USER_PASSWORD)).when(userService).deleteUser(anyString(), anyString());
 
         ResultActions resultActions = mvc.perform(delete("/user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(new ObjectMapper().writeValueAsBytes(requestDto))
+                        .header("Authorization", "Bearer: " + accessToken)
                         .with(csrf()))
                 .andDo(print())
                 .andExpect(status().is(ErrorCode.WRONG_USER_PASSWORD.getStatus()));
         errorResponseExpect(resultActions, ErrorCode.WRONG_USER_PASSWORD);
+
+        List<User> users = userRepository.findAll();
+
+        assertThat(users.size()).isEqualTo(1);
+        assertThat(users.get(0).getUserStatus()).isNotEqualTo(UserStatus.DELETED);
+    }
+
+    @Test
+    @DisplayName("토큰 재발급")
+    public void reissueTokenTest() throws Exception {
+        userRepository.save(verifyUser);
+        Authentication authenticate = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(verifyUser.getEmail(), rawPassword));
+        String refreshToken = jwtUtils.createRefreshToken(authenticate);
+
+        tokenRepository.save(accessToken, verifyUser.getEmail(), jwtUtils.getAccessTokenExpireTime().intValue());
+        tokenRepository.save(refreshToken, verifyUser.getEmail(), jwtUtils.getRefreshTokenExpireTime().intValue());
+
+        UserDto.RequestToken requestToken = UserDto.RequestToken.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+
+        ResultActions resultActions = mvc.perform(post("/user/auth/reissue")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsBytes(requestToken)))
+                .andExpect(status().isOk());
+
+        String result = resultActions.andReturn().getResponse().getContentAsString();
+        UserDto.ResponseToken responseToken = objectMapper.readValue(result, UserDto.ResponseToken.class);
+
+        assertThat(jwtUtils.validateToken(responseToken.getAccessToken())).isTrue();
+        assertThat(jwtUtils.getUserEmailFromToken(responseToken.getAccessToken())).isEqualTo(verifyUser.getEmail());
+        assertThat(tokenRepository.hasKeyToken(refreshToken)).isTrue();
     }
 }

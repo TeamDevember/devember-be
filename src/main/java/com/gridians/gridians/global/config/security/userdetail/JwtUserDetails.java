@@ -15,7 +15,12 @@ public class JwtUserDetails implements UserDetails {
 
     public JwtUserDetails(User user) {
         super();
-        authorities = List.of(new SimpleGrantedAuthority(user.getRole().getValue()));
+        if(user.getRole() == null) {
+            authorities = List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS"));
+        }
+        else {
+            authorities = List.of(new SimpleGrantedAuthority(user.getRole().getValue()));
+        }
         this.user = user;
     }
 
