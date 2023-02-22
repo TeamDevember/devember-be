@@ -86,7 +86,6 @@ public class UserService {
 		return savedUser;
 	}
 
-
 	@Transactional
 	public JoinDto.Response joinAuth(String id) {
 		User findUser = userRepository.findById(UUID.fromString(id))

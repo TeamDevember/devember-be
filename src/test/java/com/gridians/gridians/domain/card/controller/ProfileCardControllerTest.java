@@ -6,6 +6,7 @@ import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.entity.Skill;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.card.service.ProfileCardService;
+import com.gridians.gridians.domain.user.entity.Role;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.UserRepository;
@@ -92,34 +93,51 @@ public class ProfileCardControllerTest {
 	@Autowired
 	ObjectMapper objectMapper;
 
-	String email = "dlwodud821@gmail.com";
-	String password = "password12!";
-
-
+	String rawPassword = "password12!";
 	String accessToken;
-	User user;
+
+	User verifyUser;
+	User notVerifyUser;
+
 	ProfileCard profileCard;
 
 	@BeforeEach
-	public void init() {
-		when(jwtUtils.createAccessToken((JwtUserDetails) customUserDetailsService.loadUserByUsername(email)))
-				.thenReturn("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkMDhjOWRmYS1jZmMzLTRmNWYtYTk2ZC04ZDA4MjU1YWVlMGMiLCJlbWFpbCI6ImVtYWlsQGVtYWlsLmNvbSIsInJvbGUiOiJbUk9MRV9VU0VSXSIsImlhdCI6MTY3Njk1MzY0MSwiZXhwIjoxNjc2OTU1NDQxfQ.MmIlgZIYRDkbxOxxtWYuEFyroqz9AvcZft70GfPv6rmpbhQiAB9FV41UeZgyqBFZVjXNrbWoJX0nGqg9q2heLQ");
-		accessToken = jwtUtils.createAccessToken((JwtUserDetails) customUserDetailsService.loadUserByUsername(email));
+	public void beforeEach() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		verifyUser = User.builder()
+				.id(uuid)
+				.email("verifyUser@email.com")
+				.nickname("verifyUserNickname")
+				.password(passwordEncoder.encode(rawPassword))
+				.role(Role.USER)
+				.userStatus(UserStatus.ACTIVE)
+				.build();
 
+		notVerifyUser = User.builder()
+				.id(uuid)
+				.email("email@email.com")
+				.nickname("nickname")
+				.password(passwordEncoder.encode(rawPassword))
+				.role(Role.ANONYMOUS)
+				.userStatus(UserStatus.UNACTIVE)
+				.build();
+
+		accessToken = jwtUtils.createAccessToken(JwtUserDetails.create(verifyUser));
 	}
 
 	@Test
 	public void create() throws Exception {
 		mockMvc.perform(post("/cards")
 				.with(csrf())
-				.header("Authorization", "Bearer " + accessToken));
+				.header("Authorization", "Bearer " + accessToken))
+				.andDo(print());
 	}
 
 	@Test
 	public void input() throws Exception {
 
 		profileCard = new ProfileCard();
-		profileCard.setUser(new User());
+		profileCard.setUser(verifyUser);
 		profileCard.setStatusMessage("hi");
 
 		mockMvc.perform(put("/cards/").with(csrf())
