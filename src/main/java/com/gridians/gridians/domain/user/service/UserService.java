@@ -131,7 +131,6 @@ public class UserService {
 	@Transactional
 	public UserDto.DefaultResponse updateUser(String userEmail, UserDto.UpdateRequest userDto) {
 		User user = findUserByEmail(userEmail);
-
 		if (StringUtils.hasText(userDto.getPassword())) {
 			if (!verifyPassword(userDto.getPassword(), user.getPassword())) {
 				throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
@@ -149,7 +148,6 @@ public class UserService {
 		if (!verifyPassword(password, user.getPassword())) {
 			throw new UserException(ErrorCode.WRONG_USER_PASSWORD);
 		}
-
 		user.setUserStatus(UserStatus.DELETED);
 	}
 

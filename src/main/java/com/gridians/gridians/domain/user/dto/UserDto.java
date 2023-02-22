@@ -19,6 +19,9 @@ public class UserDto {
 	}
 
 	@Getter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class DeleteRequest {
 		private String password;
 	}

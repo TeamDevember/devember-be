@@ -5,6 +5,7 @@ import com.gridians.gridians.domain.card.entity.Field;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.user.dto.JoinDto;
+import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.Favorite;
 import com.gridians.gridians.domain.user.entity.Role;
@@ -210,14 +211,20 @@ class UserServiceTest {
     @Test
     @DisplayName("로그인 테스트")
     public void signInTest() {
+        String accessToken = "accessToken";
+        String refreshToken = "refreshToken";
+
         JwtUserDetails jwtUserDetails = JwtUserDetails.create(verifyUser);
         Authentication authentication = mock(Authentication.class);
 
         when(authentication.getPrincipal()).thenReturn(jwtUserDetails);
-
+        when(userService.createAccessToken(authentication)).thenReturn(accessToken);
+        when(userService.createRefreshToken(authentication)).thenReturn(refreshToken);
         doNothing().when(tokenRepository).save(any(), any(), anyInt());
 
-        userService.login(authentication);
+        LoginDto.Response login = userService.login(authentication);
+        assertThat(login.getAccessToken()).isEqualTo(accessToken);
+        assertThat(login.getRefreshToken()).isEqualTo(refreshToken);
     }
 
     @Test

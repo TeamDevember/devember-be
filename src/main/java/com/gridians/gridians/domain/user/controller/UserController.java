@@ -8,6 +8,7 @@ import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.utils.CookieUtils;
 import com.gridians.gridians.global.utils.JwtUtils;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
