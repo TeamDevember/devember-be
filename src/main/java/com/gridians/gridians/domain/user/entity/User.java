@@ -28,9 +28,6 @@ public class User extends BaseEntity {
 	@Column(columnDefinition = "BINARY(16)", name = "id")
 	private UUID id;
 
-	@Column(unique = true)
-	private Long githubNumberId;
-
 	@Enumerated(EnumType.STRING)
 	@Column(name = "create_type")
 	private CreateType createType;

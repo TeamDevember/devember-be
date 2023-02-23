@@ -245,29 +245,6 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("소셜 로그인 테스트")
-    public void socialLoginTest() throws Exception {
-        JoinDto.Request request = JoinDto.Request.builder()
-                .email("email@email.com")
-                .password("password12!")
-                .nickname("nickname")
-                .githubNumberId(1L)
-                .build();
-
-        String token = "1";
-
-        Authentication authentication = mock(Authentication.class);
-
-        when(githubService.githubRequest(anyString())).thenReturn("1");
-        when(userRepository.findByGithubNumberId(any())).thenReturn(Optional.of(verifyUser));
-        when(jwtUtils.getAuthenticationByEmail(anyString())).thenReturn(authentication);
-
-        Authentication savedAuthentication = userService.socialLogin(token);
-
-        assertThat(authentication).isEqualTo(savedAuthentication);
-    }
-
-    @Test
     @DisplayName("유저 닉네임 업데이트 테스트")
     public void updateUserNickNameTest() {
         UserDto.UpdateRequest requestDto = UserDto.UpdateRequest.builder()
