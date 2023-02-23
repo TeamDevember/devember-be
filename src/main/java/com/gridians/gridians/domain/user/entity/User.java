@@ -57,7 +57,11 @@ public class User extends BaseEntity {
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private ProfileImage profileImage;
 
+
+	@Column(unique = true)
 	private String email;
+
+	@Column(unique = true)
 	private String nickname;
 	private String password;
 

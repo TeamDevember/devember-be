@@ -272,8 +272,7 @@ public class UserService {
 	}
 
 	private void checkDuplicateEmail(String email) {
-		Optional<User> optionalUser = userRepository.findByEmail(email);
-		if (optionalUser.isPresent()) {
+		if (userRepository.findByEmail(email).isPresent()) {
 			throw new UserException(ErrorCode.DUPLICATE_EMAIL);
 		}
 	}
