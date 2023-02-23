@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -22,28 +23,6 @@ import java.io.IOException;
 public class ProfileCardController {
 
 	private final ProfileCardService profileCardService;
-
-	@GetMapping("/my-card")
-	public ResponseEntity<?> getMyCard(){
-		return new ResponseEntity<>(profileCardService.getMyCard(getUserEmail()), HttpStatus.OK);
-	}
-
-	@GetMapping("/{profileCardId}")
-	public ResponseEntity<?> read(@PathVariable Long profileCardId) {
-		return new ResponseEntity<>(profileCardService.readProfileCard(profileCardId), HttpStatus.OK);
-	}
-
-	@GetMapping
-	public ResponseEntity<?> cardList(int page, int size) {
-		log.info("CardList Read");
-		return new ResponseEntity<>(profileCardService.allProfileCardList(page, size), HttpStatus.OK);
-	}
-
-	@GetMapping("/favorites")
-	public ResponseEntity<?> favoriteCardList(int page, int size) {
-		log.info("Favorite CardList Read");
-		return new ResponseEntity<>(profileCardService.favoriteCardList(getUserEmail(), page, size), HttpStatus.OK);
-	}
 
 	@PostMapping
 	public ResponseEntity<?> create() {
@@ -65,6 +44,26 @@ public class ProfileCardController {
 		ProfileCard pc = profileCardService.deleteProfileCard(getUserEmail());
 		log.info("[" + pc.getUser().getNickname() + "] Delete Profile Card");
 		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping("/{profileCardId}")
+	public ResponseEntity<?> read(@PathVariable Long profileCardId) {
+		return new ResponseEntity<>(profileCardService.readProfileCard(profileCardId), HttpStatus.OK);
+	}
+
+	@GetMapping("/my-card")
+	public ResponseEntity<?> getMyCard(){
+		return new ResponseEntity<>(profileCardService.getMyCard(getUserEmail()), HttpStatus.OK);
+	}
+
+	@GetMapping
+	public ResponseEntity<?> cardList(int page, int size) {
+		return new ResponseEntity<>(profileCardService.allProfileCardList(page, size), HttpStatus.OK);
+	}
+
+	@GetMapping("/favorites")
+	public ResponseEntity<?> favoriteCardList(int page, int size) {
+		return new ResponseEntity<>(profileCardService.favoriteCardList(getUserEmail(), page, size), HttpStatus.OK);
 	}
 
 	private String getUserEmail() {

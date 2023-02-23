@@ -48,7 +48,7 @@ public class CommentController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PostMapping("/{commentId}")
+	@PostMapping("/{commentId}/replies")
 	public ResponseEntity<?> writeReply(@PathVariable Long commentId, @RequestBody ReplyDto.Request request) {
 		String email = getUserEmail();
 		replyService.write(commentId, request, email);

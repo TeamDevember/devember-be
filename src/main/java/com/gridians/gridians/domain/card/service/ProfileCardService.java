@@ -62,10 +62,7 @@ public class ProfileCardService {
 	@Transactional
 	public ProfileCard createProfileCard(String email) {
 		User findUser = verifyUserByEmail(email);
-		Optional<ProfileCard> findProfileCard = profileCardRepository.findByUser(findUser);
-		if (findProfileCard.isPresent()) {
-			throw new CardException(ErrorCode.DUPLICATED_USER);
-		}
+		profileCardDuplicationCheck(findUser);
 
 		ProfileCard pc = ProfileCard.from();
 		pc.setUser(findUser);
@@ -165,7 +162,7 @@ public class ProfileCardService {
 	@Transactional
 	public void saveField(ProfileCard pc, ProfileCardDto.Request request) {
 		Field findField = fieldRepository.findByName(request.getField())
-				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
+				.orElseThrow(() -> new CardException(ErrorCode.FIELD_NOT_FOUND));
 		pc.setField(findField);
 	}
 
@@ -190,7 +187,7 @@ public class ProfileCardService {
 	@Transactional
 	public void saveSkill(ProfileCard pc, ProfileCardDto.Request request) {
 		Skill findSkill = skillRepository.findByName(request.getSkill())
-				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
+				.orElseThrow(() -> new CardException(ErrorCode.SKILL_NOT_FOUND));
 		findSkill.addProfileCard(pc);
 	}
 
@@ -217,6 +214,13 @@ public class ProfileCardService {
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 	}
 
+	public ProfileCard profileCardDuplicationCheck(User user){
+		Optional<ProfileCard> optionalProfileCard = profileCardRepository.findByUser(user);
+		if(optionalProfileCard.isPresent()){
+			throw new CardException(ErrorCode.DUPLICATED_USER);
+		}
+		return optionalProfileCard.get();
+	}
 
 	public String setProfileImagePath(String email) {
 		return server + separator + profilePath + separator + email;
