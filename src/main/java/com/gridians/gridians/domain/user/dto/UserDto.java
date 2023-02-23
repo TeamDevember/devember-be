@@ -46,6 +46,13 @@ public class UserDto {
 
 	@Getter
 	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class GitRequest {
+		private String token;
+	}
+
+	@Getter
+	@NoArgsConstructor
 	@Builder
 	@AllArgsConstructor
 	public static class RequestToken {

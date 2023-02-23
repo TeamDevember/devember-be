@@ -4,12 +4,10 @@ import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.User;
-import com.gridians.gridians.domain.user.service.GithubService;
 import com.gridians.gridians.domain.user.service.UserService;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.utils.CookieUtils;
 import com.gridians.gridians.global.utils.JwtUtils;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,27 +30,13 @@ import java.io.IOException;
 public class UserController {
 
 	private final UserService userService;
-	private final GithubService githubService;
 	private final JwtUtils jwtUtils;
 	private final AuthenticationManager authenticationManager;
 
 	@PostMapping("/auth/signup")
 	public ResponseEntity<?> signUp(@Valid @RequestBody JoinDto.Request request) {
-		log.info("userService.signup 호출");
 		User user = userService.signUp(request);
-		log.info("githubService.updateGithub 호출");
-		if(request.getGithubNumberId() != null) {
-			githubService.initGithub(user.getEmail(), request.getGithubNumberId());
-		}
 		return new ResponseEntity(JoinDto.Response.from(user), HttpStatus.OK);
-	}
-
-	@PostMapping("/auth/social-login")
-	public ResponseEntity socialLogin(
-			@RequestBody LoginDto.SocialRequest loginDto
-	) throws Exception {
-		Authentication authentication = userService.socialLogin(loginDto.getToken());
-		return new ResponseEntity<>(userService.login(authentication), HttpStatus.OK);
 	}
 
 	@PostMapping("/auth/login")
@@ -63,6 +47,7 @@ public class UserController {
 		UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
 				new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword());
 		Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+
 		return new ResponseEntity<>(userService.login(authentication), HttpStatus.OK);
 	}
 

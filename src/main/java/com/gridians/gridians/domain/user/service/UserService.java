@@ -8,6 +8,7 @@ import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
 import com.gridians.gridians.domain.user.entity.Favorite;
+import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.Role;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.exception.*;
@@ -67,10 +68,6 @@ public class UserService {
 	public User signUp(JoinDto.Request request) {
 		User user = User.from(request);
 
-		if (request.getGithubNumberId() != null && userRepository.findByGithubNumberId(request.getGithubNumberId()).isPresent()) {
-			throw new UserException(ErrorCode.DUPLICATED_GITHUB_ID);
-		}
-
 		checkDuplicateEmail(request.getEmail());
 		existByNickname(user.getNickname());
 
@@ -93,10 +90,6 @@ public class UserService {
 		findUser.setRole(Role.USER);
 		findUser.setUserStatus(UserStatus.ACTIVE);
 
-		if (findUser.getGithubNumberId() != null) {
-			githubService.updateGithub(findUser.getEmail(), findUser.getGithubNumberId());
-		}
-
 		return JoinDto.Response.from(userRepository.save(findUser));
 	}
 
@@ -108,10 +101,9 @@ public class UserService {
 		String email = userDetails.getEmail();
 		String nickname = userDetails.getUser().getNickname();
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 		tokenRepository.save(refreshToken, email, jwtUtils.getRefreshTokenExpireTime().intValue());
 
-		return LoginDto.Response.from(accessToken, refreshToken, nickname, user.getGithubNumberId());
+		return LoginDto.Response.from(accessToken, refreshToken, nickname);
 	}
 
 	@Transactional
@@ -264,20 +256,6 @@ public class UserService {
 
 		favoriteRepository.delete(findFavorite);
 		findUser.deleteFavorite(findFavorite);
-	}
-
-	@Transactional
-	public Authentication socialLogin(String token) throws Exception {
-		Long githubId = Long.valueOf(githubService.githubRequest(token));
-
-		User findUser = userRepository.findByGithubNumberId(githubId)
-				.orElseThrow(() -> new GithubIdNotFoundException("User not found", githubId.toString()));
-
-		if (findUser.getUserStatus() == UserStatus.UNACTIVE) {
-			throw new EmailNotVerifiedException("Email not verified");
-		}
-
-		return jwtUtils.getAuthenticationByEmail(findUser.getEmail());
 	}
 
 	public void sendUpdateEmail(String email, String updateEmail) {

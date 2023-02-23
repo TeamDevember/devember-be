@@ -33,6 +33,7 @@ public class Github extends BaseEntity {
 	private String location;
 	private String company;
 
+	@Column(unique = true)
 	private Long githubNumberId;
 	private Long followers;
 	private Long following;

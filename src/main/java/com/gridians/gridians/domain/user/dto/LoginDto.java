@@ -22,26 +22,16 @@ public class LoginDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Response {
-        private String token;
         private String accessToken;
         private String refreshToken;
 		private String nickname;
-		private Long githubNumberId;
 
-        public static Response from(String accessToken, String refreshToken, String nickname, Long githubNumberId) {
+        public static Response from(String accessToken, String refreshToken, String nickname) {
             return Response.builder()
-		            .githubNumberId(githubNumberId)
 		            .nickname(nickname)
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();
         }
-	}
-
-	@Getter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class SocialRequest {
-		private String token;
 	}
 }

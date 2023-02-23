@@ -3,9 +3,12 @@ package com.gridians.gridians.domain.user.service;
 import com.gridians.gridians.domain.user.dto.GithubDto;
 import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.User;
+import com.gridians.gridians.domain.user.exception.EmailNotVerifiedException;
+import com.gridians.gridians.domain.user.exception.GithubIdNotFoundException;
 import com.gridians.gridians.domain.user.exception.UserException;
 import com.gridians.gridians.domain.user.repository.GithubRepository;
 import com.gridians.gridians.domain.user.repository.UserRepository;
+import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 import com.gridians.gridians.global.utils.ApiUtils;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +18,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -153,7 +157,6 @@ public class GithubService {
         User findUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        findUser.setGithubNumberId(githubId);
         Optional<Github> optionalGithub = githubRepository.findByUser(findUser);
 
         if(optionalGithub.isPresent()){
@@ -176,10 +179,18 @@ public class GithubService {
             throw new UserException(ErrorCode.GITHUB_NOT_FOUND);
         }
 
-        if(userRepository.findByGithubNumberId(githubId).isPresent()) {
+        if(githubRepository.existsByGithubNumberId(githubId)) {
             throw new UserException(ErrorCode.DUPLICATED_GITHUB_ID);
         }
 
         initGithub(email, githubId);
     }
+
+    @Transactional
+    public void saveGithub(String email, String token) throws Exception {
+        Long githubId = Long.valueOf(githubRequest(token));
+
+        updateGithub(email, githubId);
+    }
+
 }
