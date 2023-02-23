@@ -214,12 +214,11 @@ public class ProfileCardService {
 				.orElseThrow(() -> new CardException(ErrorCode.CARD_NOT_FOUND));
 	}
 
-	public ProfileCard profileCardDuplicationCheck(User user){
+	public void profileCardDuplicationCheck(User user){
 		Optional<ProfileCard> optionalProfileCard = profileCardRepository.findByUser(user);
 		if(optionalProfileCard.isPresent()){
 			throw new CardException(ErrorCode.DUPLICATED_USER);
 		}
-		return optionalProfileCard.get();
 	}
 
 	public String setProfileImagePath(String email) {
