@@ -126,6 +126,7 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
+					.introduction(pc.getIntroduction())
 					.nickname(pc.getUser().getNickname())
 					.hasGithub(pc.getUser().getGithub() != null ? true : false)
 					.profileCardId(pc.getId())
