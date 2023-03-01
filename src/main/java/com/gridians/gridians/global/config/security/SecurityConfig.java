@@ -76,10 +76,10 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeRequests()
-                .antMatchers("/user/auth/**", "/image/**").permitAll()
+                .antMatchers("/user/auth/**", "/profile-images/**", "/skill-images/**").permitAll()
                 .antMatchers("/user/**").hasRole("USER")
                 .antMatchers("/fav").hasRole("USER")
-                .antMatchers("/cards").permitAll()
+                .antMatchers(HttpMethod.GET, "/cards/*", "/cards/*/comments", "/cards/*/comments/*/replies").permitAll()
 
                 .and()
                 .exceptionHandling()

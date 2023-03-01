@@ -8,11 +8,16 @@ import java.util.List;
 
 public class MatcherFactory {
 
-    public static String[] permitUrls = {"/user/auth/**", "/cards", "/image/**", "/profile-images/**", "/skill-images/**"};
+    public static String[] permitUrlsMethodAll = {"/user/auth/**", "/cards", "/profile-images/**", "/skill-images/**"};
+    public static String[] permitUrlsMethodGet = {"/cards/*", "/cards/*/comments", "/cards/*/comments/*/replies"};
     public static List<RequestMatcher> getMatcher() {
         List<RequestMatcher> requestMatchers = new ArrayList<>();
-        for(String permitUrl : permitUrls) {
+        for(String permitUrl : permitUrlsMethodAll) {
             requestMatchers.add(new AntPathRequestMatcher(permitUrl));
+        }
+
+        for(String permitUrl : permitUrlsMethodGet) {
+            requestMatchers.add(new AntPathRequestMatcher(permitUrl, "GET"));
         }
 
         return requestMatchers;
