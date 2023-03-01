@@ -79,6 +79,7 @@ public class ProfileCardDto {
 		private String company;
 
 		private boolean hasGithub;
+		private boolean hasProfileImage;
 
 		public static DetailResponse from(ProfileCard pc, List<CommentDto.Response> commentDtoList) {
 
@@ -97,6 +98,7 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
+					.hasProfileImage(pc.getUser().getProfileImage() == null ? false : true)
 					.nickname(pc.getUser().getNickname())
 					.profileCardId(pc.getId())
 					.commentList(commentDtoList)
@@ -126,6 +128,8 @@ public class ProfileCardDto {
 			}
 
 			return DetailResponse.builder()
+					.hasProfileImage(pc.getUser().getProfileImage() == null ? false : true)
+					.introduction(pc.getIntroduction())
 					.nickname(pc.getUser().getNickname())
 					.hasGithub(pc.getUser().getGithub() != null ? true : false)
 					.profileCardId(pc.getId())
@@ -162,10 +166,12 @@ public class ProfileCardDto {
 		private String skill;
 		private String skillImage;
 		private Long profileCardId;
+		private boolean hasProfileImage;
 
 		public static SimpleResponse from(ProfileCard pc) {
 
 			return SimpleResponse.builder()
+					.hasProfileImage(pc.getUser().getProfileImage() == null ? false : true)
 					.field(pc.getField() == null ? "" : pc.getField().getName())
 					.nickname(pc.getUser() == null ? "" : pc.getUser().getNickname())
 					.skill(pc.getSkill() == null ? "" : pc.getSkill().getName())
