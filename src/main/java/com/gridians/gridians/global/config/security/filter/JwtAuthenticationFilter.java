@@ -8,9 +8,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -27,12 +24,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService customUserDetailsService;
 
-    private RequestMatcher requestMatcherUser = new AntPathRequestMatcher("/user/auth/**");
-    private RequestMatcher requestMatcherImage = new AntPathRequestMatcher("/image/**");
+    private String[] permitUrl = {"/user/auth/**", "/cards", "/image/**"};
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (!requestMatcherImage.matches(request) && !requestMatcherUser.matches(request)) {
+        boolean needTokenUrl = true;
+        for(String matcher : permitUrl) {
+            if(matcher.matches(request.getRequestURI())) {
+                needTokenUrl = false;
+            }
+        }
+
+        if (needTokenUrl) {
             try {
                 String jwt = getResolveAuthHeader(request);
                 log.info("jwt = {}", jwt);
@@ -50,6 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //            } catch (JwtException exception) {
 //                throw exception;
             } catch (Exception exception) {
+                request.getRequestURI();
                 exception.printStackTrace();
                 throw exception;
             }
