@@ -4,7 +4,6 @@ import com.gridians.gridians.domain.card.controller.ProfileCardController;
 import com.gridians.gridians.domain.card.entity.ProfileCard;
 import com.gridians.gridians.domain.card.repository.ProfileCardRepository;
 import com.gridians.gridians.domain.user.controller.UserController;
-import com.gridians.gridians.domain.user.entity.Github;
 import com.gridians.gridians.domain.user.entity.Role;
 import com.gridians.gridians.domain.user.entity.User;
 import com.gridians.gridians.domain.user.repository.UserRepository;
@@ -56,7 +55,7 @@ public class GridiansApplication {
 //                .role(Role.USER)
 //                .userStatus(UserStatus.ACTIVE)
 //                .build();
-//
+
 //        User user3 = User.builder()
 //                .email("qwejklasd@naver.com")
 //                .password(passwordEncoder.encode("password12!"))
@@ -64,10 +63,17 @@ public class GridiansApplication {
 //                .role(Role.USER)
 //                .userStatus(UserStatus.ACTIVE)
 //                .build();
+
 //
 //        User saveUser = userRepository.save(user1);
 //        userRepository.save(user2);
 //        userRepository.save(user3);
+
+//        ProfileCard pc1 = ProfileCard.builder()
+//                .id(1L)
+//                .build();
+//        pc1.setUser(saveUser);
+//        profileCardRepository.save(pc1);
 //
 //        for (int i = 0; i <= 99; i++) {
 //            User user = User.builder().password("test1234").build();

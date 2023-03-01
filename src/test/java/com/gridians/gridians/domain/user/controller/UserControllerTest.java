@@ -36,6 +36,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -43,6 +44,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -56,7 +58,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles({"test"})
-@WebAppConfiguration
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(value = UserController.class)
 @Import({UserController.class, JwtUserDetails.class, User.class, ObjectMapper.class})
@@ -106,6 +107,7 @@ class UserControllerTest {
         ReflectionTestUtils.setField(userController, "userService", userService);
         ReflectionTestUtils.setField(userController, "jwtUtils", jwtUtils);
         ReflectionTestUtils.setField(userController, "authenticationManager", authenticationManager);
+
         mvc = MockMvcBuilders.standaloneSetup(userController)
                 .setControllerAdvice(globalExceptionHandler)
                 .build();
@@ -347,6 +349,7 @@ class UserControllerTest {
     @Test
     @DisplayName("유저 탈퇴")
     @WithCustomMockUser
+    @Rollback
     public void deleteUserTest() throws Exception {
         userRepository.save(verifyUser);
         UserDto.DeleteRequest requestDto = UserDto.DeleteRequest.builder()
