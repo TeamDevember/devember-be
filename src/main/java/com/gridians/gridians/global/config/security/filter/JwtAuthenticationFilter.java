@@ -8,6 +8,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -16,6 +19,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,18 +28,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService customUserDetailsService;
 
-    private String[] permitUrl = {"/user/auth/**", "/cards", "/image/**"};
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        boolean needTokenUrl = true;
-        for(String matcher : permitUrl) {
-            if(matcher.matches(request.getRequestURI())) {
-                needTokenUrl = false;
+        boolean urlCheck = true;
+        List<RequestMatcher> requestMatchers = MatcherFactory.getMatcher();
+        for(RequestMatcher requestMatcher : requestMatchers) {
+            if(requestMatcher.matches(request)) {
+                urlCheck = false;
             }
         }
 
-        if (needTokenUrl) {
+        if (urlCheck) {
             try {
                 String jwt = getResolveAuthHeader(request);
                 log.info("jwt = {}", jwt);
