@@ -79,7 +79,7 @@ public class SecurityConfig {
                 .antMatchers("/user/auth/**", "/profile-images/**", "/skill-images/**").permitAll()
                 .antMatchers("/user/**").hasRole("USER")
                 .antMatchers("/fav").hasRole("USER")
-                .antMatchers(HttpMethod.GET, "/cards/*", "/cards/*/comments", "/cards/*/comments/*/replies").permitAll()
+                .antMatchers(HttpMethod.GET, "/cards", "/cards/*", "/cards/*/comments", "/cards/*/comments/*/replies").permitAll()
 
                 .and()
                 .exceptionHandling()
