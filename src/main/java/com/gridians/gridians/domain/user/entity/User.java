@@ -41,9 +41,7 @@ public class User extends BaseEntity {
 	private Role role;
 
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-
-
-
+	private ProfileCard profileCard;
 
 	@Builder.Default
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
