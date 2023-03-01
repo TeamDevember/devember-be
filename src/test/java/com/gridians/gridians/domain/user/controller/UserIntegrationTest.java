@@ -1,7 +1,6 @@
 package com.gridians.gridians.domain.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gridians.gridians.domain.user.WithCustomMockUser;
 import com.gridians.gridians.domain.user.dto.JoinDto;
 import com.gridians.gridians.domain.user.dto.LoginDto;
 import com.gridians.gridians.domain.user.dto.UserDto;
@@ -13,9 +12,6 @@ import com.gridians.gridians.domain.user.type.UserStatus;
 import com.gridians.gridians.global.config.security.userdetail.JwtUserDetails;
 import com.gridians.gridians.global.error.exception.ErrorCode;
 import com.gridians.gridians.global.utils.JwtUtils;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -46,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Transactional
 @ActiveProfiles({"test"})
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -307,6 +305,7 @@ public class UserIntegrationTest {
 
     @Test
     @DisplayName("유저 이메일 변경")
+    @Transactional
     public void userEmailUpdateTest() throws Exception {
         userRepository.save(verifyUser);
         String updateEmail = "updateEmail@email.com";

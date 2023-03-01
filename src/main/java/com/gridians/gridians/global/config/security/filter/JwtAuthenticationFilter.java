@@ -64,6 +64,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(StringUtils.hasText(auth) && auth.startsWith("Bearer")){
             return auth.substring(7);
         }
-        return null;
+        throw new RuntimeException("not found authorization value");
     }
 }

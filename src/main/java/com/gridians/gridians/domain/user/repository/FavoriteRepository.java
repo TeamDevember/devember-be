@@ -14,4 +14,6 @@ import java.util.Set;
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     Page<Favorite> findAllByUser(User user, Pageable pageable);
     Optional<Favorite> findByUserAndFavoriteUser(User user, User favoriteUser);
+
+    void deleteAllByFavoriteUser(User user);
 }

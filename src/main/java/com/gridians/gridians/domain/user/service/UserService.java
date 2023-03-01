@@ -122,7 +122,8 @@ public class UserService {
 	public void deleteUser(String userEmail, String password) {
 		User user = findUserByEmail(userEmail);
 		verifyPassword(password, user.getPassword());
-		user.setUserStatus(UserStatus.DELETED);
+		favoriteRepository.deleteAllByFavoriteUser(user);
+		userRepository.delete(user);
 	}
 
 	@Transactional

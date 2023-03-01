@@ -40,24 +40,27 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
-	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private ProfileCard profileCard;
 
 
 	@Builder.Default
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Set<Favorite> favorites = new HashSet<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Comment> commentList = new ArrayList<>();
 
-	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Github github;
 
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	private ProfileImage profileImage;
 
+	@Column(unique = true)
 	private String email;
+
+	@Column(unique = true)
 	private String nickname;
 	private String password;
 
