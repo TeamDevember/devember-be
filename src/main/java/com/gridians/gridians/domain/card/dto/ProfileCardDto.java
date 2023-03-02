@@ -25,17 +25,11 @@ public class ProfileCardDto {
 	@AllArgsConstructor
 	public static class Request {
 
-		@NotBlank
 		private String statusMessage;
-		@NotBlank
 		private String introduction;
-		@NotBlank
 		private String field;
-		@NotNull
 		private String skill;
-		@NotNull
 		private Set<SnsResponse> snsSet;
-		@NotNull
 		private Set<String> tagSet;
 
 	}

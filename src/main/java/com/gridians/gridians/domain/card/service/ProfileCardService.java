@@ -161,6 +161,9 @@ public class ProfileCardService {
 
 	@Transactional
 	public void saveField(ProfileCard pc, ProfileCardDto.Request request) {
+		if(request.getField() == null){
+			return ;
+		}
 		Field findField = fieldRepository.findByName(request.getField())
 				.orElseThrow(() -> new CardException(ErrorCode.FIELD_NOT_FOUND));
 		pc.setField(findField);
@@ -168,6 +171,9 @@ public class ProfileCardService {
 
 	@Transactional
 	public void saveSnsSet(ProfileCard pc, ProfileCardDto.Request request) {
+		if(request.getSnsSet() == null){
+			return ;
+		}
 		snsRepository.deleteAllInBatch(pc.getSnsSet());
 		Set<ProfileCardDto.SnsResponse> sSet = request.getSnsSet();
 		for (ProfileCardDto.SnsResponse snsResponse : sSet) {
@@ -177,6 +183,9 @@ public class ProfileCardService {
 
 	@Transactional
 	public void saveTagSet(ProfileCard pc, ProfileCardDto.Request request) {
+		if(request.getTagSet() == null){
+			return ;
+		}
 		tagRepository.deleteAllInBatch(pc.getTagList());
 		Set<String> requestTagSet = request.getTagSet();
 		for (String s : requestTagSet) {
@@ -186,6 +195,9 @@ public class ProfileCardService {
 
 	@Transactional
 	public void saveSkill(ProfileCard pc, ProfileCardDto.Request request) {
+		if(request.getSkill() == null){
+			return ;
+		}
 		Skill findSkill = skillRepository.findByName(request.getSkill())
 				.orElseThrow(() -> new CardException(ErrorCode.SKILL_NOT_FOUND));
 		findSkill.addProfileCard(pc);
