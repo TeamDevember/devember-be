@@ -122,7 +122,7 @@ public class ProfileCardService {
 	public ProfileCardDto.DetailResponse getMyCard(String email) {
 		User user = verifyUserByEmail(email);
 		ProfileCard profileCard = verifyProfileCardById(user.getProfileCard().getId());
-		return readProfileCard(ㅇ.getId());
+		return readProfileCard(profileCard.getId());
 	}
 
 	public List<ProfileCardDto.SimpleResponse> allProfileCardList(int page, int size) {

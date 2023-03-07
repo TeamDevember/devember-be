@@ -31,7 +31,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         boolean urlCheck = true;
-        List<RequestMatcher>  requestMatchers = MatcherFactory.getHasRole();
+        List<RequestMatcher> requestMatchers = MatcherFactory.getMatcher();
+        for(RequestMatcher requestMatcher : requestMatchers) {
+            if(requestMatcher.matches(request)) {
+                urlCheck = false;
+            }
+        }
+
+        requestMatchers = MatcherFactory.getHasRole();
         for(RequestMatcher requestMatcher : requestMatchers) {
             if(requestMatcher.matches(request)) {
                 urlCheck = true;
