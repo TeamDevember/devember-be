@@ -23,4 +23,15 @@ public class MatcherFactory {
         return requestMatchers;
     }
 
+    public static String[] hasRoleUrlsMethodGet = {"/cards/my-card", "/favorite"};
+
+    public static List<RequestMatcher> getHasRole() {
+        List<RequestMatcher> requestMatchers = new ArrayList<>();
+        for(String hasRoleUrl : hasRoleUrlsMethodGet) {
+            requestMatchers.add(new AntPathRequestMatcher(hasRoleUrl));
+        }
+
+        return requestMatchers;
+    }
+
 }

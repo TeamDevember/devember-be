@@ -31,10 +31,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         boolean urlCheck = true;
-        List<RequestMatcher> requestMatchers = MatcherFactory.getMatcher();
+        List<RequestMatcher>  requestMatchers = MatcherFactory.getHasRole();
         for(RequestMatcher requestMatcher : requestMatchers) {
             if(requestMatcher.matches(request)) {
-                urlCheck = false;
+                urlCheck = true;
             }
         }
 
